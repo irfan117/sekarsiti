@@ -42,16 +42,16 @@ export const INITIAL_SEED_ORDERS: ClientInvitationData[] = [
     accountHolder: 'Kirana Ayu Lestari',
     songTitle: 'Until I Found You - Stephen Sanchez (Violin Solo)',
     mediaSlots: {
-      heroImage: '/src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-      bridePortrait: '/src/assets/images/wedding_bride_veil_1790901501919.jpg',
-      groomPortrait: '/src/assets/images/editorial_groom_portrait_1790915490996.jpg',
+      heroImage: '/images/editorial_couple_portrait_1790838636662.jpg',
+      bridePortrait: '/images/wedding_bride_veil_1790901501919.jpg',
+      groomPortrait: '/images/editorial_groom_portrait_1790915490996.jpg',
       galleryImages: [
-        '/src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-        '/src/assets/images/wedding_bride_veil_1790901501919.jpg',
-        '/src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
-        '/src/assets/images/wedding_dance_lights_1790901533590.jpg',
-        '/src/assets/images/wedding_shoes_jewelry_1790901548736.jpg',
-        '/src/assets/images/editorial_venue_rings_1790838653826.jpg'
+        '/images/editorial_couple_portrait_1790838636662.jpg',
+        '/images/wedding_bride_veil_1790901501919.jpg',
+        '/images/wedding_vows_bouquet_1790901516667.jpg',
+        '/images/wedding_dance_lights_1790901533590.jpg',
+        '/images/wedding_shoes_jewelry_1790901548736.jpg',
+        '/images/editorial_venue_rings_1790838653826.jpg'
       ]
     },
     guestbookEntries: [
@@ -94,12 +94,12 @@ export const INITIAL_SEED_ORDERS: ClientInvitationData[] = [
     accountHolder: 'Damar Aji Wibisono',
     songTitle: 'Until I Found You - Acoustic Strings',
     mediaSlots: {
-      heroImage: '/src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg',
-      bridePortrait: '/src/assets/images/wedding_bride_portrait_1790833939171.jpg',
-      groomPortrait: '/src/assets/images/editorial_groom_portrait_1790915490996.jpg',
+      heroImage: '/images/sage_outdoor_couple_portrait_1790919006777.jpg',
+      bridePortrait: '/images/wedding_bride_portrait_1790833939171.jpg',
+      groomPortrait: '/images/editorial_groom_portrait_1790915490996.jpg',
       galleryImages: [
-        '/src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg',
-        '/src/assets/images/botanical_estate_venue_1790919022237.jpg'
+        '/images/sage_outdoor_couple_portrait_1790919006777.jpg',
+        '/images/botanical_estate_venue_1790919022237.jpg'
       ]
     }
   },
@@ -135,16 +135,16 @@ export const INITIAL_SEED_ORDERS: ClientInvitationData[] = [
     accountHolder: 'Fajar Nugraha Pratama',
     songTitle: 'Lagu Senja Analog - 35mm Acoustic Tape',
     mediaSlots: {
-      heroImage: '/src/assets/images/film_vintage_couple_1791034007642.jpg',
+      heroImage: '/images/film_vintage_couple_1791034007642.jpg',
       filmstripImages: [
-        '/src/assets/images/film_vintage_couple_1791034007642.jpg',
-        '/src/assets/images/wedding_bride_veil_1790901501919.jpg',
-        '/src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
-        '/src/assets/images/wedding_dance_lights_1790901533590.jpg'
+        '/images/film_vintage_couple_1791034007642.jpg',
+        '/images/wedding_bride_veil_1790901501919.jpg',
+        '/images/wedding_vows_bouquet_1790901516667.jpg',
+        '/images/wedding_dance_lights_1790901533590.jpg'
       ],
       galleryImages: [
-        '/src/assets/images/film_vintage_couple_1791034007642.jpg',
-        '/src/assets/images/editorial_venue_rings_1790838653826.jpg'
+        '/images/film_vintage_couple_1791034007642.jpg',
+        '/images/editorial_venue_rings_1790838653826.jpg'
       ]
     }
   }

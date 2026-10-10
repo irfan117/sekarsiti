@@ -17,16 +17,16 @@ interface CetakBiruTemplateProps {
 }
 
 const DEFAULT_GALLERY_PHOTOS = [
-  'src/assets/images/blueprint_couple_hero_1791171076790.jpg',
-  'src/assets/images/blueprint_couple_candid_1791171089791.jpg',
-  'src/assets/images/blueprint_venue_detail_1791171101186.jpg',
-  'src/assets/images/blueprint_groom_portrait_1791171047935.jpg',
-  'src/assets/images/blueprint_bride_portrait_1791171064118.jpg',
-  'src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-  'src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
-  'src/assets/images/editorial_venue_rings_1790838653826.jpg',
-  'src/assets/images/botanical_estate_venue_1790919022237.jpg',
-  'src/assets/images/wedding_dance_lights_1790901533590.jpg'
+  '/images/blueprint_couple_hero_1791171076790.jpg',
+  '/images/blueprint_couple_candid_1791171089791.jpg',
+  '/images/blueprint_venue_detail_1791171101186.jpg',
+  '/images/blueprint_groom_portrait_1791171047935.jpg',
+  '/images/blueprint_bride_portrait_1791171064118.jpg',
+  '/images/editorial_couple_portrait_1790838636662.jpg',
+  '/images/wedding_vows_bouquet_1790901516667.jpg',
+  '/images/editorial_venue_rings_1790838653826.jpg',
+  '/images/botanical_estate_venue_1790919022237.jpg',
+  '/images/wedding_dance_lights_1790901533590.jpg'
 ];
 
 const REGISTRATION_MARKS = [
@@ -127,28 +127,28 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
 
   const heroCoverPhoto =
     customData?.mediaSlots?.heroImage ||
-    'src/assets/images/blueprint_couple_hero_1791171076790.jpg';
+    '/images/blueprint_couple_hero_1791171076790.jpg';
   const groomPortraitPhoto =
     customData?.mediaSlots?.groomPortrait ||
-    'src/assets/images/blueprint_groom_portrait_1791171047935.jpg';
+    '/images/blueprint_groom_portrait_1791171047935.jpg';
   const bridePortraitPhoto =
     customData?.mediaSlots?.bridePortrait ||
-    'src/assets/images/blueprint_bride_portrait_1791171064118.jpg';
+    '/images/blueprint_bride_portrait_1791171064118.jpg';
   const gateBgPhoto =
     customData?.mediaSlots?.heroImage ||
-    'src/assets/images/blueprint_couple_candid_1791171089791.jpg';
+    '/images/blueprint_couple_candid_1791171089791.jpg';
   const fullbleed1Photo =
     (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[0]) ||
-    '/src/assets/images/blueprint_couple_candid_1791171089791.jpg';
+    '/images/blueprint_couple_candid_1791171089791.jpg';
   const elevation1Photo =
     (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[1]) ||
-    '/src/assets/images/blueprint_venue_detail_1791171101186.jpg';
+    '/images/blueprint_venue_detail_1791171101186.jpg';
   const elevation2Photo =
     (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[2]) ||
-    '/src/assets/images/botanical_estate_venue_1790919022237.jpg';
+    '/images/botanical_estate_venue_1790919022237.jpg';
   const closingBgPhoto =
     (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[3]) ||
-    '/src/assets/images/blueprint_couple_hero_1791171076790.jpg';
+    '/images/blueprint_couple_hero_1791171076790.jpg';
 
   const photoSlotMap: Record<string, string> = {
     'couple-cover': heroCoverPhoto,

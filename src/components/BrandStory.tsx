@@ -10,7 +10,7 @@ export const BrandStory: React.FC = () => {
           <div className="md:col-span-5 flex justify-center md:justify-start">
             <div className="w-56 sm:w-64 rounded-2xl overflow-hidden border border-[#EBE6DD] bg-white shadow-sm">
               <img
-                src="src/assets/images/brand_story_botanical_1790831303860.jpg"
+                src="/images/brand_story_botanical_1790831303860.jpg"
                 alt="Detail kertas buatan tangan dan ranting zaitun sekarsiti"
                 referrerPolicy="no-referrer"
                 className="w-full aspect-square object-cover"

@@ -110,143 +110,143 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   const galleryImages = (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0)
     ? customData.mediaSlots.galleryImages
     : [
-        'src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-        'src/assets/images/wedding_bride_veil_1790901501919.jpg',
-        'src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
-        'src/assets/images/wedding_dance_lights_1790901533590.jpg',
-        'src/assets/images/wedding_shoes_jewelry_1790901548736.jpg',
-        'src/assets/images/editorial_venue_rings_1790838653826.jpg',
-        'src/assets/images/art_deco_emerald_couple_1790840336340.jpg',
-        'src/assets/images/art_deco_venue_details_1790840351864.jpg'
+        '/images/editorial_couple_portrait_1790838636662.jpg',
+        '/images/wedding_bride_veil_1790901501919.jpg',
+        '/images/wedding_vows_bouquet_1790901516667.jpg',
+        '/images/wedding_dance_lights_1790901533590.jpg',
+        '/images/wedding_shoes_jewelry_1790901548736.jpg',
+        '/images/editorial_venue_rings_1790838653826.jpg',
+        '/images/art_deco_emerald_couple_1790840336340.jpg',
+        '/images/art_deco_venue_details_1790840351864.jpg'
       ];
 
   const heroImage = customData?.mediaSlots?.heroImage || galleryImages[0];
   const bridePortrait = customData?.mediaSlots?.bridePortrait || galleryImages[1];
-  const groomPortrait = customData?.mediaSlots?.groomPortrait || 'src/assets/images/editorial_groom_portrait_1790915490996.jpg';
+  const groomPortrait = customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
 
   // Curatorial photos for Left Exhibition Companion (Rich 18+ High-Fidelity Plates)
   const defaultCompanionPlates = [
     { 
-      src: 'src/assets/images/editorial_couple_portrait_1790838636662.jpg', 
+      src: '/images/editorial_couple_portrait_1790838636662.jpg', 
       plate: '01', 
       title: `${brideName} & ${groomName}`, 
       meta: 'Dokumentasi 35mm · Sanur Paviliun',
       spec: 'Summilux 50mm · f/2.0 · ISO 100'
     },
     { 
-      src: 'src/assets/images/wedding_bride_veil_1790901501919.jpg', 
+      src: '/images/wedding_bride_veil_1790901501919.jpg', 
       plate: '02', 
       title: 'Pesona Sutra & Veil Pengantin', 
       meta: 'Gaun Adat Modern · Studio Sekarsiti',
       spec: 'Noctilux 75mm · f/1.4 · ISO 160'
     },
     { 
-      src: 'src/assets/images/editorial_groom_portrait_1790915490996.jpg', 
+      src: '/images/editorial_groom_portrait_1790915490996.jpg', 
       plate: '03', 
       title: 'Sang Mempelai Pria (The Groom)', 
       meta: 'Setelan Wol Noir · Ruang Tenang',
       spec: 'Elmarit 28mm · f/2.8 · ISO 200'
     },
     { 
-      src: 'src/assets/images/editorial_venue_rings_1790838653826.jpg', 
+      src: '/images/editorial_venue_rings_1790838653826.jpg', 
       plate: '04', 
       title: 'Dua Cincin & Meja Travertine', 
       meta: 'Ikrar Abadi · Emas Kuning 18 Karat',
       spec: 'Macro-Elmar 90mm · f/4.0 · ISO 100'
     },
     { 
-      src: 'src/assets/images/wedding_vows_bouquet_1790901516667.jpg', 
+      src: '/images/wedding_vows_bouquet_1790901516667.jpg', 
       plate: '05', 
       title: 'Rangkaian Bunga & Janji Suci', 
       meta: 'Peony Putih & Daun Eukaliptus',
       spec: 'Summicron 35mm · f/2.0 · ISO 250'
     },
     { 
-      src: 'src/assets/images/wedding_dance_lights_1790901533590.jpg', 
+      src: '/images/wedding_dance_lights_1790901533590.jpg', 
       plate: '06', 
       title: 'Langkah Pertama di Bawah Lampu', 
       meta: 'Malam Resepsi Aryaduta Ballroom',
       spec: 'Voigtländer 35mm · f/1.2 · ISO 800'
     },
     { 
-      src: 'src/assets/images/wedding_shoes_jewelry_1790901548736.jpg', 
+      src: '/images/wedding_shoes_jewelry_1790901548736.jpg', 
       plate: '07', 
       title: 'Sepatu Sutra & Anting Antik', 
       meta: 'Detail Busana Pernikahan Klasik',
       spec: 'Summilux 50mm · f/2.4 · ISO 125'
     },
     { 
-      src: 'src/assets/images/wedding_ring_exchange_1790833922500.jpg', 
+      src: '/images/wedding_ring_exchange_1790833922500.jpg', 
       plate: '08', 
       title: 'Momen Ijab & Janji Sehidup Semati', 
       meta: 'Sakralitas Akad · Keheningan Khidmat',
       spec: 'Summilux 50mm · f/1.8 · ISO 320'
     },
     { 
-      src: 'src/assets/images/wedding_bride_portrait_1790833939171.jpg', 
+      src: '/images/wedding_bride_portrait_1790833939171.jpg', 
       plate: '09', 
       title: 'Anggun Bersahaja Sang Pengantin', 
       meta: 'Rias Kebaya Gading Tradisi',
       spec: 'Apo-Summicron 75mm · f/2.0 · ISO 160'
     },
     { 
-      src: 'src/assets/images/wedding_couple_portrait_1790833906470.jpg', 
+      src: '/images/wedding_couple_portrait_1790833906470.jpg', 
       plate: '10', 
       title: 'Kemesraan Hangat Dua Jiwa', 
       meta: 'Tatapan Penuh Harapan Masa Depan',
       spec: 'Summicron 35mm · f/2.8 · ISO 200'
     },
     { 
-      src: 'src/assets/images/wedding_table_botanical_1790833955186.jpg', 
+      src: '/images/wedding_table_botanical_1790833955186.jpg', 
       plate: '11', 
       title: 'Jamuan Meja Botanical & Lilin', 
       meta: 'Nuansa Perjamuan Hangat Kerabat',
       spec: 'Elmarit 24mm · f/3.5 · ISO 400'
     },
     { 
-      src: 'src/assets/images/wax_seal_gold_monogram_1790915522548.jpg', 
+      src: '/images/wax_seal_gold_monogram_1790915522548.jpg', 
       plate: '12', 
       title: 'Segel Lilin Monogram Emas Sekarsiti', 
       meta: 'Stempel Lilin Archival Pengesahan',
       spec: 'Macro 60mm · f/5.6 · ISO 100'
     },
     { 
-      src: 'src/assets/images/film_vintage_couple_1791034007642.jpg', 
+      src: '/images/film_vintage_couple_1791034007642.jpg', 
       plate: '13', 
       title: 'Nostalgia Analog 35mm Klise Klasik', 
       meta: 'Sesi Foto Hangat Lensa Manual',
       spec: 'Carl Zeiss 50mm · f/1.4 · ISO 400'
     },
     { 
-      src: 'src/assets/images/art_deco_emerald_couple_1790840336340.jpg', 
+      src: '/images/art_deco_emerald_couple_1790840336340.jpg', 
       plate: '14', 
       title: 'Resepsi Malam Zamrud & Onyx Mewah', 
       meta: 'Elegansi Gemerlap Ballroom Malam Hari',
       spec: 'Summilux 35mm · f/1.4 · ISO 640'
     },
     { 
-      src: 'src/assets/images/art_deco_venue_details_1790840351864.jpg', 
+      src: '/images/art_deco_venue_details_1790840351864.jpg', 
       plate: '15', 
       title: 'Kemilau Cahaya Lilin & Meja Jamuan', 
       meta: 'Sentuhan Kemewahan Ornamen Emas',
       spec: 'Noctilux 50mm · f/1.2 · ISO 320'
     },
     { 
-      src: 'src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg', 
+      src: '/images/sage_outdoor_couple_portrait_1790919006777.jpg', 
       plate: '16', 
       title: 'Teduh Alam & Senja Terbuka', 
       meta: 'Potret Pasangan Berlatar Dedaunan Sage',
       spec: 'Summicron 50mm · f/2.0 · ISO 200'
     },
     { 
-      src: 'src/assets/images/botanical_estate_venue_1790919022237.jpg', 
+      src: '/images/botanical_estate_venue_1790919022237.jpg', 
       plate: '17', 
       title: 'Lanskap Paviliun Griya Warisan Heritage', 
       meta: 'Arsitektur Kayu Jati & Kolam Tenang',
       spec: 'Super-Elmar 21mm · f/3.4 · ISO 100'
     },
     { 
-      src: 'src/assets/images/brand_story_botanical_1790831303860.jpg', 
+      src: '/images/brand_story_botanical_1790831303860.jpg', 
       plate: '18', 
       title: 'Monograf Kertas Seni Serat Tangan', 
       meta: 'Tekstur Kertas Berserat Kapas Alami',
@@ -485,7 +485,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 01',
       title: 'Titik Temu di Kota Kembang',
       location: 'Bandung · Sudut Baca Kampus',
-      image: 'src/assets/images/film_vintage_couple_1791034007642.jpg',
+      image: '/images/film_vintage_couple_1791034007642.jpg',
       quote: '“Pertemuan pertama yang tak disengaja di ruang baca kampus...”',
       story: 'Dipertemukan dalam lingkaran perkuliahan di Bandung. Dari obrolan hangat tentang arsitektur, karya desain, dan secangkir kopi di sudut kota, kisah kami perlahan menemukan jalannya. Tak ada yang tergesa, semua mengalir bersahaja dan apa adanya.'
     },
@@ -495,7 +495,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 02',
       title: 'Saling Menguatkan Cita',
       location: 'Jakarta & Denpasar · Meniti Karir',
-      image: 'src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
+      image: '/images/wedding_vows_bouquet_1790901516667.jpg',
       quote: '“Menemukan ketenangan di tengah riuhnya langkah awal...”',
       story: 'Menghadapi fase awal dunia kerja dan kesibukan yang sesekali memisahkan jarak, kami belajar arti saling percaya dan mendengarkan. Setiap perbincangan malam menjadi tempat pulang ternyaman di tengah riuhnya dunia luar.'
     },
@@ -505,7 +505,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 03',
       title: 'Satu Niat di Hadapan Keluarga',
       location: 'Jakarta Selatan · Ikrar Pertunangan',
-      image: 'src/assets/images/editorial_venue_rings_1790838653826.jpg',
+      image: '/images/editorial_venue_rings_1790838653826.jpg',
       quote: '“Di hadapan kedua keluarga besar, doa-doa mulai berpadu...”',
       story: 'Di hadapan kedua orang tua dan keluarga besar yang kami muliakan, sebuah cincin melingkar sebagai tanda kesungguhan hati. Sebuah komitmen tulus untuk melangkah ke jenjang yang lebih tinggi dan saling menyempurnakan seumur hidup.'
     },
@@ -515,7 +515,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 04',
       title: 'Menyatukan Dua Jiwa',
       location: 'Grand Ballroom Aryaduta · Janji Suci',
-      image: 'src/assets/images/editorial_couple_portrait_1790838636662.jpg',
+      image: '/images/editorial_couple_portrait_1790838636662.jpg',
       quote: '“Awal dari pelayaran panjang yang dibangun di atas cinta dan iman.”',
       story: 'Kini, dengan penuh rasa syukur dan memohon ridho Allah SWT, kami melangkah menuju gerbang pernikahan suci. Menyatukan dua keluarga, melayari samudra kehidupan bersama dalam sakinah, mawaddah, dan rahmah.'
     }
@@ -943,7 +943,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full overflow-hidden p-0.5 bg-[#C5A880]/30 shadow-md">
               <img 
-                src="src/assets/images/wax_seal_gold_monogram_1790915522548.jpg" 
+                src="/images/wax_seal_gold_monogram_1790915522548.jpg" 
                 alt="Segel Lilin" 
                 className="w-full h-full object-cover rounded-full filter contrast-[1.1] animate-seal-spin"
               />
@@ -1126,7 +1126,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
               {/* Monogram Seal */}
               <div className="w-16 h-16 rounded-full overflow-hidden shadow-2xl p-0.5 bg-[#C5A880]/40">
                 <img 
-                  src="src/assets/images/wax_seal_gold_monogram_1790915522548.jpg" 
+                  src="/images/wax_seal_gold_monogram_1790915522548.jpg" 
                   alt="Segel Lilin Emas" 
                   className="w-full h-full object-cover rounded-full filter contrast-[1.08]"
                 />

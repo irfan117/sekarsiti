@@ -18,18 +18,18 @@ interface DamarAlyaTemplateProps {
 
 // Stage sections matching the exact HTML data-stage attributes
 const STAGE_CONFIG = [
-  { id: 'sec-hero-couple', key: 'hero-couple', image: 'src/assets/images/atlas_cinta_groom_portrait_1791177974718.jpg', text: 'Damar & Alya, menghitung hari.' },
-  { id: 'sec-opening', key: 'opening', image: 'src/assets/images/brand_story_botanical_1790831303860.jpg', text: 'Tenteram dalam satu ikatan suci.' },
-  { id: 'sec-couple', key: 'couple', image: 'src/assets/images/editorial_couple_portrait_1790838636662.jpg', text: 'Damar & Alya, mempelai yang berbahagia.' },
-  { id: 'sec-story', key: 'story', image: 'src/assets/images/wedding_bride_veil_1790901501919.jpg', text: 'Kisah yang bermula dari kedai kopi kecil.' },
-  { id: 'sec-spotlight-1', key: 'spotlight1', image: 'src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg', text: 'Berjalan berdampingan, satu tujuan.' },
-  { id: 'sec-schedule', key: 'schedule', image: 'src/assets/images/wedding_dance_lights_1790901533590.jpg', text: 'Akad dan resepsi, dua janji dalam satu hari.' },
-  { id: 'sec-gallery', key: 'gallery', image: 'src/assets/images/art_deco_emerald_couple_1790840336340.jpg', text: 'Setiap foto membuka diri, satu per satu.' },
-  { id: 'sec-spotlight-2', key: 'spotlight2', image: 'src/assets/images/atlas_cinta_bride_portrait_1791177955237.jpg', text: 'Waktu berhenti sejenak untuk kami berdua.' },
-  { id: 'sec-gift', key: 'gift', image: 'src/assets/images/wedding_vows_bouquet_1790901516667.jpg', text: 'Doa restu Anda adalah hadiah paling berarti.' },
-  { id: 'sec-guestbook', key: 'guestbook', image: 'src/assets/images/wedding_ring_exchange_1790833922500.jpg', text: 'Setiap ucapan, kami simpan sebagai doa.' },
-  { id: 'sec-rsvp', key: 'rsvp', image: 'src/assets/images/wedding_bride_portrait_1790833939171.jpg', text: 'Kehadiran Anda melengkapi hari kami.' },
-  { id: 'sec-closing', key: 'closing', image: 'src/assets/images/wedding_dance_lights_1790901533590.jpg', text: 'Terima kasih telah menjadi bagian dari kisah ini.' }
+  { id: 'sec-hero-couple', key: 'hero-couple', image: '/images/atlas_cinta_groom_portrait_1791177974718.jpg', text: 'Damar & Alya, menghitung hari.' },
+  { id: 'sec-opening', key: 'opening', image: '/images/brand_story_botanical_1790831303860.jpg', text: 'Tenteram dalam satu ikatan suci.' },
+  { id: 'sec-couple', key: 'couple', image: '/images/editorial_couple_portrait_1790838636662.jpg', text: 'Damar & Alya, mempelai yang berbahagia.' },
+  { id: 'sec-story', key: 'story', image: '/images/wedding_bride_veil_1790901501919.jpg', text: 'Kisah yang bermula dari kedai kopi kecil.' },
+  { id: 'sec-spotlight-1', key: 'spotlight1', image: '/images/sage_outdoor_couple_portrait_1790919006777.jpg', text: 'Berjalan berdampingan, satu tujuan.' },
+  { id: 'sec-schedule', key: 'schedule', image: '/images/wedding_dance_lights_1790901533590.jpg', text: 'Akad dan resepsi, dua janji dalam satu hari.' },
+  { id: 'sec-gallery', key: 'gallery', image: '/images/art_deco_emerald_couple_1790840336340.jpg', text: 'Setiap foto membuka diri, satu per satu.' },
+  { id: 'sec-spotlight-2', key: 'spotlight2', image: '/images/atlas_cinta_bride_portrait_1791177955237.jpg', text: 'Waktu berhenti sejenak untuk kami berdua.' },
+  { id: 'sec-gift', key: 'gift', image: '/images/wedding_vows_bouquet_1790901516667.jpg', text: 'Doa restu Anda adalah hadiah paling berarti.' },
+  { id: 'sec-guestbook', key: 'guestbook', image: '/images/wedding_ring_exchange_1790833922500.jpg', text: 'Setiap ucapan, kami simpan sebagai doa.' },
+  { id: 'sec-rsvp', key: 'rsvp', image: '/images/wedding_bride_portrait_1790833939171.jpg', text: 'Kehadiran Anda melengkapi hari kami.' },
+  { id: 'sec-closing', key: 'closing', image: '/images/wedding_dance_lights_1790901533590.jpg', text: 'Terima kasih telah menjadi bagian dari kisah ini.' }
 ];
 
 export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
@@ -63,19 +63,19 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
   const quoteSource = customData?.quoteSource || 'QS. Ar-Rum: 21';
   const songTitle = customData?.songTitle || 'Until I Found You - Acoustic Strings';
 
-  const heroImage = customData?.mediaSlots?.heroImage || 'src/assets/images/wedding_couple_portrait_1790833906470.jpg';
-  const bridePortrait = customData?.mediaSlots?.bridePortrait || 'src/assets/images/wedding_bride_portrait_1790833939171.jpg';
-  const groomPortrait = customData?.mediaSlots?.groomPortrait || 'src/assets/images/editorial_groom_portrait_1790915490996.jpg';
+  const heroImage = customData?.mediaSlots?.heroImage || '/images/wedding_couple_portrait_1790833906470.jpg';
+  const bridePortrait = customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_portrait_1790833939171.jpg';
+  const groomPortrait = customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
 
   const galleryImages = (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0)
     ? customData.mediaSlots.galleryImages
     : [
-        'src/assets/images/wedding_bride_veil_1790901501919.jpg',
-        'src/assets/images/wedding_shoes_jewelry_1790901548736.jpg',
-        'src/assets/images/wedding_table_botanical_1790833955186.jpg',
-        'src/assets/images/wedding_dance_lights_1790901533590.jpg',
-        'src/assets/images/editorial_venue_rings_1790838653826.jpg',
-        'src/assets/images/art_deco_emerald_couple_1790840336340.jpg'
+        '/images/wedding_bride_veil_1790901501919.jpg',
+        '/images/wedding_shoes_jewelry_1790901548736.jpg',
+        '/images/wedding_table_botanical_1790833955186.jpg',
+        '/images/wedding_dance_lights_1790901533590.jpg',
+        '/images/editorial_venue_rings_1790838653826.jpg',
+        '/images/art_deco_emerald_couple_1790840336340.jpg'
       ];
 
   // Dynamic Stage Config: maps desktop left panel to real images from hero/gallery/bride/groom
@@ -937,7 +937,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-invitation-type="pernikahan" 
             id="sec-story" 
             data-stage-key="story" 
-            data-stage-image="/src/assets/images/wedding_vows_bouquet_1790901516667.jpg" 
+            data-stage-image="/images/wedding_vows_bouquet_1790901516667.jpg" 
             data-stage-text="Kisah yang bermula dari kedai kopi kecil."
           >
             <div className="section-inner center">
@@ -949,7 +949,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
                   <p data-list-item-field="description">Bertemu tanpa sengaja di sebuah kedai kopi kecil dekat kampus, saat hujan sore tak kunjung reda.</p>
                   <div className="story-photo">
                     <img 
-                      src="/src/assets/images/brand_story_botanical_1790831303860.jpg" 
+                      src="/images/brand_story_botanical_1790831303860.jpg" 
                       alt="Kisah 1" 
                       data-list-item-field="photo" 
                       data-photo-slot="story-1" 
@@ -963,7 +963,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
                   <p data-list-item-field="description">Setelah tiga tahun saling mengenal, kami memutuskan untuk melangkah bersama sebagai sepasang kekasih.</p>
                   <div className="story-photo">
                     <img 
-                      src="/src/assets/images/wedding_ring_exchange_1790833922500.jpg" 
+                      src="/images/wedding_ring_exchange_1790833922500.jpg" 
                       alt="Kisah 2" 
                       data-list-item-field="photo" 
                       data-photo-slot="story-2" 
@@ -977,7 +977,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
                   <p data-list-item-field="description">Damar melamar Alya di tepi danau saat senja, disaksikan keluarga terdekat.</p>
                   <div className="story-photo">
                     <img 
-                      src="/src/assets/images/wedding_vows_bouquet_1790901516667.jpg" 
+                      src="/images/wedding_vows_bouquet_1790901516667.jpg" 
                       alt="Kisah 3" 
                       data-list-item-field="photo" 
                       data-photo-slot="story-3" 
@@ -995,12 +995,12 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-section-type="static" 
             id="sec-spotlight-1" 
             data-stage-key="spotlight1" 
-            data-stage-image="/src/assets/images/editorial_couple_portrait_1790838636662.jpg" 
+            data-stage-image="/images/editorial_couple_portrait_1790838636662.jpg" 
             data-stage-text="Berjalan berdampingan, satu tujuan."
           >
             <div className="spotlight-media">
               <img 
-                src="/src/assets/images/editorial_couple_portrait_1790838636662.jpg" 
+                src="/images/editorial_couple_portrait_1790838636662.jpg" 
                 alt="Momen Damar dan Alya" 
                 data-photo-slot="spotlight-1" 
                 data-slot-type="static-background" 
@@ -1019,7 +1019,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-invitation-type="pernikahan" 
             id="sec-schedule" 
             data-stage-key="schedule" 
-            data-stage-image="/src/assets/images/botanical_estate_venue_1790919022237.jpg" 
+            data-stage-image="/images/botanical_estate_venue_1790919022237.jpg" 
             data-stage-text="Akad dan resepsi, dua janji dalam satu hari."
           >
             <div className="section-inner">
@@ -1055,7 +1055,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-invitation-type="pernikahan" 
             id="sec-gallery" 
             data-stage-key="gallery" 
-            data-stage-image="/src/assets/images/wedding_table_botanical_1790833955186.jpg" 
+            data-stage-image="/images/wedding_table_botanical_1790833955186.jpg" 
             data-stage-text="Setiap foto membuka diri, satu per satu."
           >
             <div className="section-inner">
@@ -1081,12 +1081,12 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-section-type="static" 
             id="sec-spotlight-2" 
             data-stage-key="spotlight2" 
-            data-stage-image="/src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg" 
+            data-stage-image="/images/sage_outdoor_couple_portrait_1790919006777.jpg" 
             data-stage-text="Waktu berhenti sejenak untuk kami berdua."
           >
             <div className="spotlight-media">
               <img 
-                src="/src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg" 
+                src="/images/sage_outdoor_couple_portrait_1790919006777.jpg" 
                 alt="Momen Damar dan Alya" 
                 data-photo-slot="spotlight-2" 
                 data-slot-type="static-background" 
@@ -1105,7 +1105,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-invitation-type="pernikahan" 
             id="sec-gift" 
             data-stage-key="gift" 
-            data-stage-image="/src/assets/images/editorial_venue_rings_1790838653826.jpg" 
+            data-stage-image="/images/editorial_venue_rings_1790838653826.jpg" 
             data-stage-text="Doa restu Anda adalah hadiah paling berarti."
           >
             <div className="section-inner center">
@@ -1134,7 +1134,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-invitation-type="pernikahan" 
             id="sec-guestbook" 
             data-stage-key="guestbook" 
-            data-stage-image="/src/assets/images/brand_story_botanical_1790831303860.jpg" 
+            data-stage-image="/images/brand_story_botanical_1790831303860.jpg" 
             data-stage-text="Setiap ucapan, kami simpan sebagai doa."
           >
             <div className="section-inner">
@@ -1182,7 +1182,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-invitation-type="pernikahan" 
             id="sec-rsvp" 
             data-stage-key="rsvp" 
-            data-stage-image="/src/assets/images/wedding_shoes_jewelry_1790901548736.jpg" 
+            data-stage-image="/images/wedding_shoes_jewelry_1790901548736.jpg" 
             data-stage-text="Kehadiran Anda melengkapi hari kami."
           >
             <div className="section-inner center">
@@ -1271,12 +1271,12 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-section-type="static" 
             id="sec-closing" 
             data-stage-key="closing" 
-            data-stage-image="/src/assets/images/wedding_dance_lights_1790901533590.jpg" 
+            data-stage-image="/images/wedding_dance_lights_1790901533590.jpg" 
             data-stage-text="Terima kasih telah menjadi bagian dari kisah ini."
           >
             <div className="closing-bg">
               <img 
-                src="/src/assets/images/wedding_dance_lights_1790901533590.jpg" 
+                src="/images/wedding_dance_lights_1790901533590.jpg" 
                 alt="Foto penutup" 
                 data-photo-slot="closing-bg" 
                 data-slot-type="static-background" 

@@ -276,12 +276,12 @@ export class AdminStore {
       songTitle: payload.songTitle || templateDefaults.songTitle || 'Until I Found You',
       audioUrl: payload.audioUrl || '',
       mediaSlots: payload.mediaSlots || {
-        heroImage: '/src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-        bridePortrait: '/src/assets/images/wedding_bride_veil_1790901501919.jpg',
-        groomPortrait: '/src/assets/images/editorial_groom_portrait_1790915490996.jpg',
+        heroImage: '/images/editorial_couple_portrait_1790838636662.jpg',
+        bridePortrait: '/images/wedding_bride_veil_1790901501919.jpg',
+        groomPortrait: '/images/editorial_groom_portrait_1790915490996.jpg',
         galleryImages: [
-          '/src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-          '/src/assets/images/wedding_vows_bouquet_1790901516667.jpg'
+          '/images/editorial_couple_portrait_1790838636662.jpg',
+          '/images/wedding_vows_bouquet_1790901516667.jpg'
         ]
       },
       accessCode: payload.accessCode || slug || id,

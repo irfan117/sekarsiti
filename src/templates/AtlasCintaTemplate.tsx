@@ -17,16 +17,16 @@ interface AtlasCintaTemplateProps {
 }
 
 const DEFAULT_ATLAS_GALLERY = [
-  'src/assets/images/atlas_cinta_hero_cover_1791177934302.jpg',
-  'src/assets/images/atlas_cinta_interlude_landscape_1791177985962.jpg',
-  'src/assets/images/atlas_cinta_bride_portrait_1791177955237.jpg',
-  'src/assets/images/atlas_cinta_groom_portrait_1791177974718.jpg',
-  'src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg',
-  'src/assets/images/botanical_estate_venue_1790919022237.jpg',
-  'src/assets/images/film_vintage_couple_1791034007642.jpg',
-  'src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
-  'src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-  'src/assets/images/wedding_dance_lights_1790901533590.jpg'
+  '/images/atlas_cinta_hero_cover_1791177934302.jpg',
+  '/images/atlas_cinta_interlude_landscape_1791177985962.jpg',
+  '/images/atlas_cinta_bride_portrait_1791177955237.jpg',
+  '/images/atlas_cinta_groom_portrait_1791177974718.jpg',
+  '/images/sage_outdoor_couple_portrait_1790919006777.jpg',
+  '/images/botanical_estate_venue_1790919022237.jpg',
+  '/images/film_vintage_couple_1791034007642.jpg',
+  '/images/wedding_vows_bouquet_1790901516667.jpg',
+  '/images/editorial_couple_portrait_1790838636662.jpg',
+  '/images/wedding_dance_lights_1790901533590.jpg'
 ];
 
 const DEFAULT_ITINERARY = [
@@ -139,25 +139,25 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
 
   const heroCoverBg =
     customData?.mediaSlots?.heroImage ||
-    'src/assets/images/atlas_cinta_hero_cover_1791177934302.jpg';
+    '/images/atlas_cinta_hero_cover_1791177934302.jpg';
   const bridePortraitPhoto =
     customData?.mediaSlots?.bridePortrait ||
-    'src/assets/images/atlas_cinta_bride_portrait_1791177955237.jpg';
+    '/images/atlas_cinta_bride_portrait_1791177955237.jpg';
   const groomPortraitPhoto =
     customData?.mediaSlots?.groomPortrait ||
-    'src/assets/images/atlas_cinta_groom_portrait_1791177974718.jpg';
+    '/images/atlas_cinta_groom_portrait_1791177974718.jpg';
   const interludeBg =
     (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[0]) ||
-    'src/assets/images/atlas_cinta_interlude_landscape_1791177985962.jpg';
+    '/images/atlas_cinta_interlude_landscape_1791177985962.jpg';
   const parallaxBg =
     (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[1]) ||
-    'src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg';
+    '/images/sage_outdoor_couple_portrait_1790919006777.jpg';
   const fullPlatePhoto =
     (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[2]) ||
-    'src/assets/images/atlas_cinta_bride_portrait_1791177955237.jpg';
+    '/images/atlas_cinta_bride_portrait_1791177955237.jpg';
   const footerClosingBg =
     (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[3]) ||
-    'src/assets/images/atlas_cinta_hero_cover_1791177934302.jpg';
+    '/images/atlas_cinta_hero_cover_1791177934302.jpg';
 
   const storyTrails =
     customData?.mediaSlots?.storyChapters && customData.mediaSlots.storyChapters.length > 0

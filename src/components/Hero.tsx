@@ -59,7 +59,7 @@ export const Hero: React.FC<HeroProps> = ({
               {/* Main Stationery Photograph */}
               <div className="relative rounded-2xl overflow-hidden shadow-sm border border-[#EBE6DD] bg-white">
                 <img
-                  src="src/assets/images/template_ruang_rasa_1790831267799.jpg"
+                  src="/images/template_ruang_rasa_1790831267799.jpg"
                   alt="Komposisi stationery undangan pernikahan sekarsiti dengan pita sutra dan segel lilin"
                   referrerPolicy="no-referrer"
                   className="w-full h-auto aspect-4/3 sm:aspect-16/11 object-cover"
@@ -69,7 +69,7 @@ export const Hero: React.FC<HeroProps> = ({
               {/* Overlapping secondary stationery card with delicate botanical detail */}
               <div className="hidden sm:block absolute -bottom-6 -left-6 w-52 rounded-xl overflow-hidden shadow-md border border-[#EBE6DD] bg-white p-2.5 transition-transform hover:-translate-y-1">
                 <img
-                  src="src/assets/images/template_sore_teduh_1790831280150.jpg"
+                  src="/images/template_sore_teduh_1790831280150.jpg"
                   alt="Detail tekstur kertas dan bayangan daun zaitun"
                   referrerPolicy="no-referrer"
                   className="w-full h-32 object-cover rounded-lg"

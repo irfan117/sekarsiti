@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="100" fill="#181816"/>
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#C5A880" stroke-width="6" stroke-dasharray="8 6"/>
+  <circle cx="256" cy="256" r="176" fill="none" stroke="#C5A880" stroke-width="2"/>
+  <text x="256" y="295" font-family="'DM Serif Display', 'Bodoni Moda', serif" font-size="160" font-weight="bold" font-style="italic" fill="#FAF7F2" text-anchor="middle">S</text>
+  <text x="256" y="360" font-family="'Plus Jakarta Sans', sans-serif" font-size="28" font-weight="600" letter-spacing="8" fill="#C5A880" text-anchor="middle">SEKARSITI</text>
+</svg>

@@ -39,14 +39,14 @@ Kutipan Ayat / Doa: Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptaka
 Sumber Kutipan: QS. Ar-Rum: 21
 
 --- UPLOAD MEDIA & FOTO (GOOGLE FORM FILE UPLOAD) ---
-Foto Sampul Utama (Hero Image): /src/assets/images/editorial_couple_portrait_1790838636662.jpg
-Foto Potret Mempelai Wanita: /src/assets/images/wedding_bride_veil_1790901501919.jpg
-Foto Potret Mempelai Pria: /src/assets/images/editorial_groom_portrait_1790915490996.jpg
-Foto Galeri Prewedding (Bisa Banyak File): /src/assets/images/editorial_couple_portrait_1790838636662.jpg, /src/assets/images/wedding_vows_bouquet_1790901516667.jpg, /src/assets/images/editorial_venue_rings_1790838653826.jpg, /src/assets/images/wedding_dance_lights_1790901533590.jpg
+Foto Sampul Utama (Hero Image): /images/editorial_couple_portrait_1790838636662.jpg
+Foto Potret Mempelai Wanita: /images/wedding_bride_veil_1790901501919.jpg
+Foto Potret Mempelai Pria: /images/editorial_groom_portrait_1790915490996.jpg
+Foto Galeri Prewedding (Bisa Banyak File): /images/editorial_couple_portrait_1790838636662.jpg, /images/wedding_vows_bouquet_1790901516667.jpg, /images/editorial_venue_rings_1790838653826.jpg, /images/wedding_dance_lights_1790901533590.jpg
 Link Folder Google Drive Dokumentasi: https://drive.google.com/drive/folders/1SekarsitiClientFolder2027`;
 
 export const SAMPLE_SPREADSHEET_ROW = `Timestamp\tNama Pasangan\tNomor WhatsApp Pemesan\tEmail Pemesan\tPilihan Template\tNama Panggilan Wanita\tNama Lengkap & Gelar Mempelai Wanita\tOrang Tua Mempelai Wanita\tInstagram Wanita\tNama Panggilan Pria\tNama Lengkap & Gelar Mempelai Pria\tOrang Tua Mempelai Pria\tInstagram Pria\tTanggal Acara\tWaktu Akad\tTempat Akad\tWaktu Resepsi\tTempat Resepsi\tKota Acara\tLink Google Maps\tNama Bank 1\tNomor Rekening 1\tAtas Nama Rekening 1\tNama Bank 2\tNomor Rekening 2\tAtas Nama Rekening 2\tPilihan Musik\tFoto Sampul Hero\tFoto Mempelai Wanita\tFoto Mempelai Pria\tFoto Galeri Prewedding
-04/10/2026 15:10\tAlya & Damar\t081322334455\talya.damar@gmail.com\tsetangkai\tAlya\tAlya Puspita Ningrum, S.Ars.\tPutri dari Bapak Bambang Tri Atmojo & Ibu Sri Wahyuni\t@alyapuspita\tDamar\tDamar Aji Wibisono, S.T.\tPutra dari Bapak Suhartono Wibisono & Ibu Endang Lestari\t@damaraji\tSabtu, 14 November 2026\t07.30 – 09.00 WIB\tGriya Kunang Estate\t10.30 – 13.30 WIB\tGriya Kunang Lawn & Pavilion\tSleman, Yogyakarta\thttps://maps.google.com\tBCA\t8801234567\tDamar Aji Wibisono\tBNI\t0918273645\tAlya Puspita Ningrum\tUntil I Found You - Acoustic Strings\t/src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg\t/src/assets/images/wedding_bride_portrait_1790833939171.jpg\t/src/assets/images/editorial_groom_portrait_1790915490996.jpg\t/src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg, /src/assets/images/botanical_estate_venue_1790919022237.jpg, /src/assets/images/wedding_table_botanical_1790833955186.jpg`;
+04/10/2026 15:10\tAlya & Damar\t081322334455\talya.damar@gmail.com\tsetangkai\tAlya\tAlya Puspita Ningrum, S.Ars.\tPutri dari Bapak Bambang Tri Atmojo & Ibu Sri Wahyuni\t@alyapuspita\tDamar\tDamar Aji Wibisono, S.T.\tPutra dari Bapak Suhartono Wibisono & Ibu Endang Lestari\t@damaraji\tSabtu, 14 November 2026\t07.30 – 09.00 WIB\tGriya Kunang Estate\t10.30 – 13.30 WIB\tGriya Kunang Lawn & Pavilion\tSleman, Yogyakarta\thttps://maps.google.com\tBCA\t8801234567\tDamar Aji Wibisono\tBNI\t0918273645\tAlya Puspita Ningrum\tUntil I Found You - Acoustic Strings\t/images/sage_outdoor_couple_portrait_1790919006777.jpg\t/images/wedding_bride_portrait_1790833939171.jpg\t/images/editorial_groom_portrait_1790915490996.jpg\t/images/sage_outdoor_couple_portrait_1790919006777.jpg, /images/botanical_estate_venue_1790919022237.jpg, /images/wedding_table_botanical_1790833955186.jpg`;
 
 export const GFORM_STANDARD_QUESTIONS = `DAFTAR PERTANYAAN STANDAR GOOGLE FORM KLIEN — SEKARSITI STUDIO
 

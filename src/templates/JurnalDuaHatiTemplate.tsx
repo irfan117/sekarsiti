@@ -39,32 +39,32 @@ const SECTION_ORDER = [
 ];
 
 const SECTION_PHOTOS: Record<string, string> = {
-  cover: '/src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-  couple: '/src/assets/images/art_deco_emerald_couple_1790840336340.jpg',
-  'moment-1': '/src/assets/images/wedding_couple_portrait_1790833906470.jpg',
-  datetime: '/src/assets/images/wedding_bride_veil_1790901501919.jpg',
-  lokasi: '/src/assets/images/art_deco_venue_details_1790840351864.jpg',
-  turut: '/src/assets/images/editorial_groom_portrait_1790915490996.jpg',
-  'our-story': '/src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
-  'moment-2': '/src/assets/images/wedding_dance_lights_1790901533590.jpg',
-  dresscode: '/src/assets/images/wedding_shoes_jewelry_1790901548736.jpg',
-  'moment-3': '/src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg',
-  gallery: '/src/assets/images/editorial_venue_rings_1790838653826.jpg',
-  gift: '/src/assets/images/wedding_table_botanical_1790833955186.jpg',
-  guestbook: '/src/assets/images/wedding_ring_exchange_1790833922500.jpg',
-  rsvp: '/src/assets/images/wedding_bride_portrait_1790833939171.jpg',
-  closing: '/src/assets/images/editorial_venue_rings_1790838653826.jpg'
+  cover: '/images/editorial_couple_portrait_1790838636662.jpg',
+  couple: '/images/art_deco_emerald_couple_1790840336340.jpg',
+  'moment-1': '/images/wedding_couple_portrait_1790833906470.jpg',
+  datetime: '/images/wedding_bride_veil_1790901501919.jpg',
+  lokasi: '/images/art_deco_venue_details_1790840351864.jpg',
+  turut: '/images/editorial_groom_portrait_1790915490996.jpg',
+  'our-story': '/images/wedding_vows_bouquet_1790901516667.jpg',
+  'moment-2': '/images/wedding_dance_lights_1790901533590.jpg',
+  dresscode: '/images/wedding_shoes_jewelry_1790901548736.jpg',
+  'moment-3': '/images/sage_outdoor_couple_portrait_1790919006777.jpg',
+  gallery: '/images/editorial_venue_rings_1790838653826.jpg',
+  gift: '/images/wedding_table_botanical_1790833955186.jpg',
+  guestbook: '/images/wedding_ring_exchange_1790833922500.jpg',
+  rsvp: '/images/wedding_bride_portrait_1790833939171.jpg',
+  closing: '/images/editorial_venue_rings_1790838653826.jpg'
 };
 
 const GALLERY_PHOTOS = [
-  { src: 'src/assets/images/wedding_bride_veil_1790901501919.jpg', alt: 'Veil & Senyuman Lembut' },
-  { src: 'src/assets/images/editorial_groom_portrait_1790915490996.jpg', alt: 'Potret Mempelai Pria' },
-  { src: 'src/assets/images/wedding_vows_bouquet_1790901516667.jpg', alt: 'Janji Suci & Buket Bunga' },
-  { src: 'src/assets/images/wedding_shoes_jewelry_1790901548736.jpg', alt: 'Perhiasan & Detail Busana' },
-  { src: 'src/assets/images/editorial_venue_rings_1790838653826.jpg', alt: 'Sepasang Cincin Pernikahan' },
-  { src: 'src/assets/images/wedding_table_botanical_1790833955186.jpg', alt: 'Dekorasi Meja Jamuan' },
-  { src: 'src/assets/images/wedding_dance_lights_1790901533590.jpg', alt: 'Tarian Pertama di Bawah Gemerlap' },
-  { src: 'src/assets/images/art_deco_emerald_couple_1790840336340.jpg', alt: 'Momen Bahagia Bersama' }
+  { src: '/images/wedding_bride_veil_1790901501919.jpg', alt: 'Veil & Senyuman Lembut' },
+  { src: '/images/editorial_groom_portrait_1790915490996.jpg', alt: 'Potret Mempelai Pria' },
+  { src: '/images/wedding_vows_bouquet_1790901516667.jpg', alt: 'Janji Suci & Buket Bunga' },
+  { src: '/images/wedding_shoes_jewelry_1790901548736.jpg', alt: 'Perhiasan & Detail Busana' },
+  { src: '/images/editorial_venue_rings_1790838653826.jpg', alt: 'Sepasang Cincin Pernikahan' },
+  { src: '/images/wedding_table_botanical_1790833955186.jpg', alt: 'Dekorasi Meja Jamuan' },
+  { src: '/images/wedding_dance_lights_1790901533590.jpg', alt: 'Tarian Pertama di Bawah Gemerlap' },
+  { src: '/images/art_deco_emerald_couple_1790840336340.jpg', alt: 'Momen Bahagia Bersama' }
 ];
 
 export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
@@ -1082,7 +1082,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
                 <div className="cover-photo-frame">
                   <img 
                     className="cover-bg" 
-                    src="src/assets/images/editorial_couple_portrait_1790838636662.jpg" 
+                    src="/images/editorial_couple_portrait_1790838636662.jpg" 
                     alt="Sampul Jurnal Kirana &amp; Adhitya"
                   />
                 </div>
@@ -1108,7 +1108,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
                     disabled={isCoverOpening}
                   >
                     <img 
-                      src={customData?.mediaSlots?.waxSealEmblem || "src/assets/images/wax_seal_gold_monogram_1790915522548.jpg"} 
+                      src={customData?.mediaSlots?.waxSealEmblem || "/images/wax_seal_gold_monogram_1790915522548.jpg"} 
                       alt="Segel lilin emas monogram" 
                       className="w-6 h-6 rounded-full object-cover shadow-sm group-hover:rotate-12 transition-transform"
                     />
@@ -1158,7 +1158,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             {/* Couple Archival Photo Frame */}
             <div className="couple-photo-frame mx-4 sm:mx-6 border border-[#D8C9A3]/80">
               <img 
-                src="src/assets/images/art_deco_emerald_couple_1790840336340.jpg" 
+                src="/images/art_deco_emerald_couple_1790840336340.jpg" 
                 alt="Foto pasangan mempelai Kirana &amp; Adhitya" 
               />
               <div className="absolute bottom-3 left-4 z-10">
@@ -1245,7 +1245,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             <img 
               loading="lazy" 
               className="moment-bg" 
-              src="src/assets/images/wedding_couple_portrait_1790833906470.jpg" 
+              src="/images/wedding_couple_portrait_1790833906470.jpg" 
               alt="Momen Cahaya Sore" 
             />
             <div className="moment-caption reveal">
@@ -1295,7 +1295,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             <img 
               loading="lazy" 
               className="lokasi-bg" 
-              src="src/assets/images/art_deco_venue_details_1790840351864.jpg" 
+              src="/images/art_deco_venue_details_1790840351864.jpg" 
               alt={resepsiVenue} 
             />
             <div className="lokasi-content">
@@ -1352,7 +1352,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             <img 
               loading="lazy" 
               className="moment-bg" 
-              src="src/assets/images/wedding_dance_lights_1790901533590.jpg" 
+              src="/images/wedding_dance_lights_1790901533590.jpg" 
               alt="Momen Tawa yang Sama" 
             />
             <div className="moment-caption reveal">
@@ -1380,7 +1380,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             <img 
               loading="lazy" 
               className="moment-bg" 
-              src="src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg" 
+              src="/images/sage_outdoor_couple_portrait_1790919006777.jpg" 
               alt="Momen Menuju Rumah" 
             />
             <div className="moment-caption reveal">
@@ -1537,7 +1537,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             <img 
               loading="lazy" 
               className="closing-bg" 
-              src="src/assets/images/editorial_venue_rings_1790838653826.jpg" 
+              src="/images/editorial_venue_rings_1790838653826.jpg" 
               alt="Penutup Jurnal" 
             />
             <div className="closing-content reveal">

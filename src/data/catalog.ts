@@ -14,7 +14,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Seri Editorial Modern)',
     completionTime: '1 Hari Pengerjaan',
-    image: 'src/assets/images/template_ruang_rasa_1790831267799.jpg',
+    image: '/images/template_ruang_rasa_1790831267799.jpg',
     description: 'Tipografi editorial yang bersih, ruang lapang, dan keindahan dalam kesederhanaan monokrom.',
     features: [
       'Website responsif mobile & desktop',
@@ -53,7 +53,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Malam Zamrud)',
     completionTime: '1 Hari Pengerjaan',
-    image: 'src/assets/images/template_sore_teduh_1790831280150.jpg',
+    image: '/images/template_sore_teduh_1790831280150.jpg',
     description: 'Nuansa malam onyx yang megah, aksen kuningan art-deco, dan kemewahan zamrud yang memikat.',
     features: [
       'Motif kipas sunburst Art Deco mewah',
@@ -92,7 +92,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Damar & Alya)',
     completionTime: '1 Hari Pengerjaan',
-    image: 'src/assets/images/template_setangkai_1790831293717.jpg',
+    image: '/images/template_setangkai_1790831293717.jpg',
     description: 'Desain minimalis bernuansa kertas gading dan sage green. Tampil anggun dengan panel panggung desktop dan galeri wipe-reveal.',
     features: [
       'Dual-pane panggung desktop interaktif',
@@ -131,7 +131,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Jurnal Dua Hati)',
     completionTime: '1 Hari Pengerjaan',
-    image: 'src/assets/images/brand_story_botanical_1790831303860.jpg',
+    image: '/images/brand_story_botanical_1790831303860.jpg',
     description: 'Desain buku jurnal interaktif dengan sampul 3D lipat buka, panel panggung desktop dinamis, linimasa bergaris buku catatan, dan galeri foto polaroid.',
     features: [
       'Sampul jurnal 3D lipat buka (3D open book swing)',
@@ -170,7 +170,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Reel Sinematik)',
     completionTime: '1 Hari Pengerjaan',
-    image: 'src/assets/images/editorial_couple_portrait_1790838636662.jpg',
+    image: '/images/editorial_couple_portrait_1790838636662.jpg',
     description: 'Konsep sinematik rol film 35mm retro. Dilengkapi gerbang sampul dua pintu, tiket bioskop berlubang perforasi, navigasi filmstrip horizontal bawah layar, dan kolase polaroid berserak.',
     features: [
       'Gerbang sampul dua pintu (double door gate slide)',
@@ -209,7 +209,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Cetak Biru Arsitektur)',
     completionTime: '1 Hari Pengerjaan',
-    image: 'src/assets/images/wedding_couple_portrait_1790833906470.jpg',
+    image: '/images/wedding_couple_portrait_1790833906470.jpg',
     description: 'Estetika lembar kerja arsitektur cyanotype dengan 3 zona desktop asimetris, garis ukur interaktif, lembar potret tampak mempelai, denah lokasi SVG, dan pita ukur hitung mundur.',
     features: [
       'Gerbang cetak biru lipat 3D dengan kompas arsitektur',
@@ -248,7 +248,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Atlas Cinta)',
     completionTime: '1 Hari Pengerjaan',
-    image: 'src/assets/images/art_deco_emerald_couple_1790840336340.jpg',
+    image: '/images/art_deco_emerald_couple_1790840336340.jpg',
     description: 'Desain jurnal perjalanan dan kartu pos ekspedisi dengan dua panel mengambang di layar desktop (konten di kiri, cermin kartu pos dinamis di kanan), tiket boarding pass, dan peta kontur topografi.',
     features: [
       'Sampul jurnal berstempel MULAI & animasi rute pesawat terbang',
@@ -284,7 +284,7 @@ export const TEMPLATES: InvitationItem[] = [
     originalPrice: 129000,
     isBestSeller: false,
     completionTime: '1 Hari Pengerjaan',
-    image: 'src/assets/images/hero_invitation_showcase_1790827045499.jpg',
+    image: '/images/hero_invitation_showcase_1790827045499.jpg',
     description: 'Sentuhan kaligrafi klasik dengan napas modern yang tidak lekang oleh waktu.',
     features: [
       'Harmoni sentuhan tradisional dan modern',

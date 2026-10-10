@@ -165,7 +165,7 @@ export function extractAllMediaUrlsFromText(text: string): string[] {
     }
   }
 
-  // 3. Regex path lokal Sekarsiti (/src/assets/images/...)
+  // 3. Regex path lokal Sekarsiti (/images/...)
   const localMatches = text.match(/(?:\/src\/assets\/images\/|src\/assets\/images\/)[a-zA-Z0-9_\-.]+/gi) || [];
   for (const match of localMatches) {
     const path = match.startsWith('/') ? match : `/${match}`;
@@ -190,82 +190,82 @@ export const TEMPLATE_FALLBACK_ASSETS: Record<TemplateId, {
   waxSealEmblem?: string;
 }> = {
   'ruang-rasa': {
-    heroImage: '/src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-    bridePortrait: '/src/assets/images/wedding_bride_veil_1790901501919.jpg',
-    groomPortrait: '/src/assets/images/editorial_groom_portrait_1790915490996.jpg',
+    heroImage: '/images/editorial_couple_portrait_1790838636662.jpg',
+    bridePortrait: '/images/wedding_bride_veil_1790901501919.jpg',
+    groomPortrait: '/images/editorial_groom_portrait_1790915490996.jpg',
     galleryImages: [
-      '/src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-      '/src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
-      '/src/assets/images/wedding_dance_lights_1790901533590.jpg',
-      '/src/assets/images/editorial_venue_rings_1790838653826.jpg'
+      '/images/editorial_couple_portrait_1790838636662.jpg',
+      '/images/wedding_vows_bouquet_1790901516667.jpg',
+      '/images/wedding_dance_lights_1790901533590.jpg',
+      '/images/editorial_venue_rings_1790838653826.jpg'
     ]
   },
   'malam-zamrud': {
-    heroImage: '/src/assets/images/art_deco_emerald_couple_1790840336340.jpg',
-    bridePortrait: '/src/assets/images/wedding_bride_veil_1790901501919.jpg',
-    groomPortrait: '/src/assets/images/editorial_couple_portrait_1790838636662.jpg',
+    heroImage: '/images/art_deco_emerald_couple_1790840336340.jpg',
+    bridePortrait: '/images/wedding_bride_veil_1790901501919.jpg',
+    groomPortrait: '/images/editorial_couple_portrait_1790838636662.jpg',
     galleryImages: [
-      '/src/assets/images/art_deco_venue_details_1790840351864.jpg',
-      '/src/assets/images/wedding_shoes_jewelry_1790901548736.jpg',
-      '/src/assets/images/editorial_venue_rings_1790838653826.jpg',
-      '/src/assets/images/wedding_table_botanical_1790833955186.jpg'
+      '/images/art_deco_venue_details_1790840351864.jpg',
+      '/images/wedding_shoes_jewelry_1790901548736.jpg',
+      '/images/editorial_venue_rings_1790838653826.jpg',
+      '/images/wedding_table_botanical_1790833955186.jpg'
     ]
   },
   'setangkai': {
-    heroImage: '/src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg',
-    bridePortrait: '/src/assets/images/wedding_bride_portrait_1790833939171.jpg',
-    groomPortrait: '/src/assets/images/editorial_groom_portrait_1790915490996.jpg',
+    heroImage: '/images/sage_outdoor_couple_portrait_1790919006777.jpg',
+    bridePortrait: '/images/wedding_bride_portrait_1790833939171.jpg',
+    groomPortrait: '/images/editorial_groom_portrait_1790915490996.jpg',
     galleryImages: [
-      '/src/assets/images/botanical_estate_venue_1790919022237.jpg',
-      '/src/assets/images/wedding_couple_portrait_1790833906470.jpg',
-      '/src/assets/images/wedding_vows_bouquet_1790901516667.jpg'
+      '/images/botanical_estate_venue_1790919022237.jpg',
+      '/images/wedding_couple_portrait_1790833906470.jpg',
+      '/images/wedding_vows_bouquet_1790901516667.jpg'
     ]
   },
   'suasana': {
-    waxSealEmblem: '/src/assets/images/wax_seal_gold_monogram_1790915522548.jpg',
-    heroImage: '/src/assets/images/film_vintage_couple_1791034007642.jpg',
-    bridePortrait: '/src/assets/images/wedding_bride_veil_1790901501919.jpg',
-    groomPortrait: '/src/assets/images/editorial_groom_portrait_1790915490996.jpg',
+    waxSealEmblem: '/images/wax_seal_gold_monogram_1790915522548.jpg',
+    heroImage: '/images/film_vintage_couple_1791034007642.jpg',
+    bridePortrait: '/images/wedding_bride_veil_1790901501919.jpg',
+    groomPortrait: '/images/editorial_groom_portrait_1790915490996.jpg',
     galleryImages: [
-      '/src/assets/images/wedding_table_botanical_1790833955186.jpg',
-      '/src/assets/images/brand_story_botanical_1790831303860.jpg',
-      '/src/assets/images/editorial_venue_rings_1790838653826.jpg'
+      '/images/wedding_table_botanical_1790833955186.jpg',
+      '/images/brand_story_botanical_1790831303860.jpg',
+      '/images/editorial_venue_rings_1790838653826.jpg'
     ]
   },
   'lembayung': {
-    heroImage: '/src/assets/images/film_vintage_couple_1791034007642.jpg',
-    bridePortrait: '/src/assets/images/wedding_bride_veil_1790901501919.jpg',
-    groomPortrait: '/src/assets/images/editorial_groom_portrait_1790915490996.jpg',
+    heroImage: '/images/film_vintage_couple_1791034007642.jpg',
+    bridePortrait: '/images/wedding_bride_veil_1790901501919.jpg',
+    groomPortrait: '/images/editorial_groom_portrait_1790915490996.jpg',
     filmstripImages: [
-      '/src/assets/images/film_vintage_couple_1791034007642.jpg',
-      '/src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
-      '/src/assets/images/wedding_dance_lights_1790901533590.jpg',
-      '/src/assets/images/editorial_venue_rings_1790838653826.jpg',
-      '/src/assets/images/wedding_shoes_jewelry_1790901548736.jpg'
+      '/images/film_vintage_couple_1791034007642.jpg',
+      '/images/wedding_vows_bouquet_1790901516667.jpg',
+      '/images/wedding_dance_lights_1790901533590.jpg',
+      '/images/editorial_venue_rings_1790838653826.jpg',
+      '/images/wedding_shoes_jewelry_1790901548736.jpg'
     ],
     galleryImages: [
-      '/src/assets/images/film_vintage_couple_1791034007642.jpg',
-      '/src/assets/images/wedding_vows_bouquet_1790901516667.jpg'
+      '/images/film_vintage_couple_1791034007642.jpg',
+      '/images/wedding_vows_bouquet_1790901516667.jpg'
     ]
   },
   'cetak-biru': {
-    heroImage: '/src/assets/images/blueprint_couple_hero_1791171076790.jpg',
-    groomPortrait: '/src/assets/images/blueprint_groom_portrait_1791171047935.jpg',
-    bridePortrait: '/src/assets/images/blueprint_bride_portrait_1791171064118.jpg',
+    heroImage: '/images/blueprint_couple_hero_1791171076790.jpg',
+    groomPortrait: '/images/blueprint_groom_portrait_1791171047935.jpg',
+    bridePortrait: '/images/blueprint_bride_portrait_1791171064118.jpg',
     galleryImages: [
-      '/src/assets/images/blueprint_venue_detail_1791171101186.jpg',
-      '/src/assets/images/editorial_venue_rings_1790838653826.jpg',
-      '/src/assets/images/botanical_estate_venue_1790919022237.jpg'
+      '/images/blueprint_venue_detail_1791171101186.jpg',
+      '/images/editorial_venue_rings_1790838653826.jpg',
+      '/images/botanical_estate_venue_1790919022237.jpg'
     ]
   },
   'atlas-cinta': {
-    heroImage: '/src/assets/images/atlas_cinta_couple_hero_1791177959089.jpg',
-    bridePortrait: '/src/assets/images/atlas_cinta_bride_portrait_1791177989392.jpg',
-    groomPortrait: '/src/assets/images/atlas_cinta_groom_portrait_1791177974718.jpg',
+    heroImage: '/images/atlas_cinta_couple_hero_1791177959089.jpg',
+    bridePortrait: '/images/atlas_cinta_bride_portrait_1791177989392.jpg',
+    groomPortrait: '/images/atlas_cinta_groom_portrait_1791177974718.jpg',
     galleryImages: [
-      '/src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-      '/src/assets/images/wedding_bride_veil_1790901501919.jpg',
-      '/src/assets/images/wedding_vows_bouquet_1790901516667.jpg'
+      '/images/editorial_couple_portrait_1790838636662.jpg',
+      '/images/wedding_bride_veil_1790901501919.jpg',
+      '/images/wedding_vows_bouquet_1790901516667.jpg'
     ]
   }
 };

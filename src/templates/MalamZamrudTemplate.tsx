@@ -222,14 +222,14 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
   const galleryImages = customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
     ? customData.mediaSlots.galleryImages
     : [
-        'src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-        'src/assets/images/wedding_bride_veil_1790901501919.jpg',
-        'src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
-        'src/assets/images/wedding_dance_lights_1790901533590.jpg',
-        'src/assets/images/art_deco_emerald_couple_1790840336340.jpg',
-        'src/assets/images/editorial_venue_rings_1790838653826.jpg',
-        'src/assets/images/art_deco_venue_details_1790840351864.jpg',
-        'src/assets/images/wedding_shoes_jewelry_1790901548736.jpg'
+        '/images/editorial_couple_portrait_1790838636662.jpg',
+        '/images/wedding_bride_veil_1790901501919.jpg',
+        '/images/wedding_vows_bouquet_1790901516667.jpg',
+        '/images/wedding_dance_lights_1790901533590.jpg',
+        '/images/art_deco_emerald_couple_1790840336340.jpg',
+        '/images/editorial_venue_rings_1790838653826.jpg',
+        '/images/art_deco_venue_details_1790840351864.jpg',
+        '/images/wedding_shoes_jewelry_1790901548736.jpg'
       ];
 
   const heroImage = customData?.mediaSlots?.heroImage || galleryImages[0];
@@ -244,22 +244,22 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
 
   // Continuous Filmstrip Photos for Left (Portraits & Moments) and Right (Details & Atmosphere)
   const leftFilmstripPhotos = [
-    { src: 'src/assets/images/editorial_couple_portrait_1790838636662.jpg', tag: 'KIRANA & ADHITYA · 01', caption: 'Mempelai Berbahagia' },
-    { src: 'src/assets/images/wedding_bride_veil_1790901501919.jpg', tag: 'THE BRIDE · 02', caption: 'Anggun Dalam Balutan Gaun' },
-    { src: 'src/assets/images/wedding_vows_bouquet_1790901516667.jpg', tag: 'HOLY VOWS · 03', caption: 'Janji Suci & Buket Bunga' },
-    { src: 'src/assets/images/wedding_dance_lights_1790901533590.jpg', tag: 'FIRST DANCE · 04', caption: 'Tarian Pertama di Bawah Cahaya' },
-    { src: 'src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg', tag: 'ROMANTIC MOMENT · 05', caption: 'Langkah Awal Bersama' },
-    { src: 'src/assets/images/art_deco_emerald_couple_1790840336340.jpg', tag: 'FOREVER AFTER · 06', caption: 'Cinta Seumur Hidup' },
+    { src: '/images/editorial_couple_portrait_1790838636662.jpg', tag: 'KIRANA & ADHITYA · 01', caption: 'Mempelai Berbahagia' },
+    { src: '/images/wedding_bride_veil_1790901501919.jpg', tag: 'THE BRIDE · 02', caption: 'Anggun Dalam Balutan Gaun' },
+    { src: '/images/wedding_vows_bouquet_1790901516667.jpg', tag: 'HOLY VOWS · 03', caption: 'Janji Suci & Buket Bunga' },
+    { src: '/images/wedding_dance_lights_1790901533590.jpg', tag: 'FIRST DANCE · 04', caption: 'Tarian Pertama di Bawah Cahaya' },
+    { src: '/images/sage_outdoor_couple_portrait_1790919006777.jpg', tag: 'ROMANTIC MOMENT · 05', caption: 'Langkah Awal Bersama' },
+    { src: '/images/art_deco_emerald_couple_1790840336340.jpg', tag: 'FOREVER AFTER · 06', caption: 'Cinta Seumur Hidup' },
   ];
 
   const rightFilmstripPhotos = [
-    { src: 'src/assets/images/art_deco_venue_details_1790840351864.jpg', tag: 'BALLROOM · 01', caption: 'Kemilau Lilin & Meja Jamuan' },
-    { src: 'src/assets/images/wedding_shoes_jewelry_1790901548736.jpg', tag: 'DETAILS · 02', caption: 'Sepatu Sutra & Perhiasan Emas' },
-    { src: 'src/assets/images/editorial_venue_rings_1790838653826.jpg', tag: 'RINGS · 03', caption: 'Cincin Emas di Atas Travertine' },
-    { src: 'src/assets/images/wedding_table_botanical_1790833955186.jpg', tag: 'BLOOMS · 04', caption: 'Rangkaian Mawar & Daun Eukaliptus' },
-    { src: 'src/assets/images/botanical_estate_venue_1790919022237.jpg', tag: 'EVENING GLOW · 05', caption: 'Suasana Temaram Resepsi' },
-    { src: 'src/assets/images/brand_story_botanical_1790831303860.jpg', tag: 'PROMISE · 06', caption: 'Buku Janji & Momen Khidmat' },
-    { src: 'src/assets/images/wedding_dance_lights_1790901533590.jpg', tag: 'SOIREE · 07', caption: 'Pesta Dansa di Bawah Lentera Emas' },
+    { src: '/images/art_deco_venue_details_1790840351864.jpg', tag: 'BALLROOM · 01', caption: 'Kemilau Lilin & Meja Jamuan' },
+    { src: '/images/wedding_shoes_jewelry_1790901548736.jpg', tag: 'DETAILS · 02', caption: 'Sepatu Sutra & Perhiasan Emas' },
+    { src: '/images/editorial_venue_rings_1790838653826.jpg', tag: 'RINGS · 03', caption: 'Cincin Emas di Atas Travertine' },
+    { src: '/images/wedding_table_botanical_1790833955186.jpg', tag: 'BLOOMS · 04', caption: 'Rangkaian Mawar & Daun Eukaliptus' },
+    { src: '/images/botanical_estate_venue_1790919022237.jpg', tag: 'EVENING GLOW · 05', caption: 'Suasana Temaram Resepsi' },
+    { src: '/images/brand_story_botanical_1790831303860.jpg', tag: 'PROMISE · 06', caption: 'Buku Janji & Momen Khidmat' },
+    { src: '/images/wedding_dance_lights_1790901533590.jpg', tag: 'SOIREE · 07', caption: 'Pesta Dansa di Bawah Lentera Emas' },
   ];
 
   // Active section tracking & Smooth Continuous Scroll Progress

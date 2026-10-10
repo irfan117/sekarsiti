@@ -6,17 +6,17 @@ import { uploadToCloudinary, isCloudinaryConfigured } from '../../utils/cloudina
 
 // Library of high-res authentic wedding photos ready for quick pick
 const ASSET_LIBRARY = [
-  { label: 'Potret Mempelai Berdua (Editorial)', src: '/src/assets/images/editorial_couple_portrait_1790838636662.jpg' },
-  { label: 'Mempelai Wanita Gaun Sutra & Veil', src: '/src/assets/images/wedding_bride_veil_1790901501919.jpg' },
-  { label: 'Mempelai Pria Jas Hitam Klasik', src: '/src/assets/images/editorial_groom_portrait_1790915490996.jpg' },
-  { label: 'Sepasang Cincin Emas di Meja Travertine', src: '/src/assets/images/editorial_venue_rings_1790838653826.jpg' },
-  { label: 'Buket Mawar Putih & Buku Sumpah', src: '/src/assets/images/wedding_vows_bouquet_1790901516667.jpg' },
-  { label: 'Tarian Pertama di Bawah Cahaya Lampu', src: '/src/assets/images/wedding_dance_lights_1790901533590.jpg' },
-  { label: 'Sepatu Pengantin & Perhiasan Antik', src: '/src/assets/images/wedding_shoes_jewelry_1790901548736.jpg' },
-  { label: 'Pasangan Analog 35mm Vintage', src: '/src/assets/images/film_vintage_couple_1791034007642.jpg' },
-  { label: 'Pasangan Outdoor Sage Botanical', src: '/src/assets/images/sage_outdoor_couple_portrait_1790919006777.jpg' },
-  { label: 'Resepsi Onyx Emerald Art Deco', src: '/src/assets/images/art_deco_emerald_couple_1790840336340.jpg' },
-  { label: 'Segel Lilin Emas Monogram KA', src: '/src/assets/images/wax_seal_gold_monogram_1790915522548.jpg' },
+  { label: 'Potret Mempelai Berdua (Editorial)', src: '/images/editorial_couple_portrait_1790838636662.jpg' },
+  { label: 'Mempelai Wanita Gaun Sutra & Veil', src: '/images/wedding_bride_veil_1790901501919.jpg' },
+  { label: 'Mempelai Pria Jas Hitam Klasik', src: '/images/editorial_groom_portrait_1790915490996.jpg' },
+  { label: 'Sepasang Cincin Emas di Meja Travertine', src: '/images/editorial_venue_rings_1790838653826.jpg' },
+  { label: 'Buket Mawar Putih & Buku Sumpah', src: '/images/wedding_vows_bouquet_1790901516667.jpg' },
+  { label: 'Tarian Pertama di Bawah Cahaya Lampu', src: '/images/wedding_dance_lights_1790901533590.jpg' },
+  { label: 'Sepatu Pengantin & Perhiasan Antik', src: '/images/wedding_shoes_jewelry_1790901548736.jpg' },
+  { label: 'Pasangan Analog 35mm Vintage', src: '/images/film_vintage_couple_1791034007642.jpg' },
+  { label: 'Pasangan Outdoor Sage Botanical', src: '/images/sage_outdoor_couple_portrait_1790919006777.jpg' },
+  { label: 'Resepsi Onyx Emerald Art Deco', src: '/images/art_deco_emerald_couple_1790840336340.jpg' },
+  { label: 'Segel Lilin Emas Monogram KA', src: '/images/wax_seal_gold_monogram_1790915522548.jpg' },
 ];
 
 interface MediaSlotUploaderProps {

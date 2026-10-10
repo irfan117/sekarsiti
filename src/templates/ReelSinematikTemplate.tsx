@@ -37,51 +37,51 @@ interface ReelSinematikTemplateProps {
 
 // Chapters for the bottom filmstrip navigation
 const CHAPTERS = [
-  { id: 's-hero', title: 'Pembuka', thumbSeed: 'hero', photo: 'src/assets/images/editorial_couple_portrait_1790838636662.jpg' },
-  { id: 's-profil', title: 'Profil', thumbSeed: 'couple', photo: 'src/assets/images/art_deco_emerald_couple_1790840336340.jpg' },
-  { id: 's-sisipan-1', title: 'Naskah I', thumbSeed: 'quote1', photo: 'src/assets/images/wedding_vows_bouquet_1790901516667.jpg' },
-  { id: 's-mempelai', title: 'Mempelai', thumbSeed: 'groom', photo: 'src/assets/images/editorial_groom_portrait_1790915490996.jpg' },
-  { id: 's-story', title: 'Adegan Cinta', thumbSeed: 'story', photo: 'src/assets/images/wedding_couple_portrait_1790833906470.jpg' },
-  { id: 's-waktu', title: 'Jadwal Tayang', thumbSeed: 'ticket', photo: 'src/assets/images/wedding_table_botanical_1790833955186.jpg' },
-  { id: 's-galeri', title: 'Contact Sheet', thumbSeed: 'gallery', photo: 'src/assets/images/film_vintage_couple_1791034007642.jpg' },
-  { id: 's-dresscode', title: 'Wardrobe', thumbSeed: 'dresscode', photo: 'src/assets/images/wedding_shoes_jewelry_1790901548736.jpg' },
-  { id: 's-sisipan-2', title: 'Naskah II', thumbSeed: 'quote2', photo: 'src/assets/images/editorial_venue_rings_1790838653826.jpg' },
-  { id: 's-hadiah', title: 'Tanda Kasih', thumbSeed: 'gift', photo: 'src/assets/images/brand_story_botanical_1790831303860.jpg' },
-  { id: 's-rsvp', title: 'Reservasi', thumbSeed: 'rsvp', photo: 'src/assets/images/wedding_bride_veil_1790901501919.jpg' },
-  { id: 's-ucapan', title: 'Papan Ucapan', thumbSeed: 'ucapan', photo: 'src/assets/images/wedding_ring_exchange_1790833922500.jpg' },
-  { id: 's-penutup', title: 'Tamat', thumbSeed: 'closing', photo: 'src/assets/images/wedding_dance_lights_1790901533590.jpg' }
+  { id: 's-hero', title: 'Pembuka', thumbSeed: 'hero', photo: '/images/editorial_couple_portrait_1790838636662.jpg' },
+  { id: 's-profil', title: 'Profil', thumbSeed: 'couple', photo: '/images/art_deco_emerald_couple_1790840336340.jpg' },
+  { id: 's-sisipan-1', title: 'Naskah I', thumbSeed: 'quote1', photo: '/images/wedding_vows_bouquet_1790901516667.jpg' },
+  { id: 's-mempelai', title: 'Mempelai', thumbSeed: 'groom', photo: '/images/editorial_groom_portrait_1790915490996.jpg' },
+  { id: 's-story', title: 'Adegan Cinta', thumbSeed: 'story', photo: '/images/wedding_couple_portrait_1790833906470.jpg' },
+  { id: 's-waktu', title: 'Jadwal Tayang', thumbSeed: 'ticket', photo: '/images/wedding_table_botanical_1790833955186.jpg' },
+  { id: 's-galeri', title: 'Contact Sheet', thumbSeed: 'gallery', photo: '/images/film_vintage_couple_1791034007642.jpg' },
+  { id: 's-dresscode', title: 'Wardrobe', thumbSeed: 'dresscode', photo: '/images/wedding_shoes_jewelry_1790901548736.jpg' },
+  { id: 's-sisipan-2', title: 'Naskah II', thumbSeed: 'quote2', photo: '/images/editorial_venue_rings_1790838653826.jpg' },
+  { id: 's-hadiah', title: 'Tanda Kasih', thumbSeed: 'gift', photo: '/images/brand_story_botanical_1790831303860.jpg' },
+  { id: 's-rsvp', title: 'Reservasi', thumbSeed: 'rsvp', photo: '/images/wedding_bride_veil_1790901501919.jpg' },
+  { id: 's-ucapan', title: 'Papan Ucapan', thumbSeed: 'ucapan', photo: '/images/wedding_ring_exchange_1790833922500.jpg' },
+  { id: 's-penutup', title: 'Tamat', thumbSeed: 'closing', photo: '/images/wedding_dance_lights_1790901533590.jpg' }
 ];
 
 // 8 scattered polaroids for gallery
 const GALLERY_POLAROIDS = [
-  { src: 'src/assets/images/wedding_bride_veil_1790901501919.jpg', cap: '01 · Senyuman Pertama', alt: 'Veil mempelai wanita' },
-  { src: 'src/assets/images/editorial_groom_portrait_1790915490996.jpg', cap: '02 · Tatapan Hangat', alt: 'Potret mempelai pria' },
-  { src: 'src/assets/images/wedding_vows_bouquet_1790901516667.jpg', cap: '03 · Janji Suci & Buket', alt: 'Buket bunga vintage' },
-  { src: 'src/assets/images/wedding_shoes_jewelry_1790901548736.jpg', cap: '04 · Detail Wardrobe', alt: 'Sepatu dan perhiasan' },
-  { src: 'src/assets/images/editorial_venue_rings_1790838653826.jpg', cap: '05 · Sepasang Cincin', alt: 'Cincin kawin di atas batu' },
-  { src: 'src/assets/images/wedding_table_botanical_1790833955186.jpg', cap: '06 · Jamuan Meja', alt: 'Dekorasi meja jamuan' },
-  { src: 'src/assets/images/wedding_dance_lights_1790901533590.jpg', cap: '07 · Dansa Malam', alt: 'Tarian di bawah lampu gantung' },
-  { src: 'src/assets/images/editorial_couple_portrait_1790838636662.jpg', cap: '08 · Pelukan Bahagia', alt: 'Momen berpelukan' }
+  { src: '/images/wedding_bride_veil_1790901501919.jpg', cap: '01 · Senyuman Pertama', alt: 'Veil mempelai wanita' },
+  { src: '/images/editorial_groom_portrait_1790915490996.jpg', cap: '02 · Tatapan Hangat', alt: 'Potret mempelai pria' },
+  { src: '/images/wedding_vows_bouquet_1790901516667.jpg', cap: '03 · Janji Suci & Buket', alt: 'Buket bunga vintage' },
+  { src: '/images/wedding_shoes_jewelry_1790901548736.jpg', cap: '04 · Detail Wardrobe', alt: 'Sepatu dan perhiasan' },
+  { src: '/images/editorial_venue_rings_1790838653826.jpg', cap: '05 · Sepasang Cincin', alt: 'Cincin kawin di atas batu' },
+  { src: '/images/wedding_table_botanical_1790833955186.jpg', cap: '06 · Jamuan Meja', alt: 'Dekorasi meja jamuan' },
+  { src: '/images/wedding_dance_lights_1790901533590.jpg', cap: '07 · Dansa Malam', alt: 'Tarian di bawah lampu gantung' },
+  { src: '/images/editorial_couple_portrait_1790838636662.jpg', cap: '08 · Pelukan Bahagia', alt: 'Momen berpelukan' }
 ];
 
 // 16 tiles for hero analog mosaic
 const HERO_TILES = [
-  'src/assets/images/editorial_couple_portrait_1790838636662.jpg',
-  'src/assets/images/art_deco_emerald_couple_1790840336340.jpg',
-  'src/assets/images/wedding_bride_veil_1790901501919.jpg',
-  'src/assets/images/editorial_groom_portrait_1790915490996.jpg',
-  'src/assets/images/wedding_dance_lights_1790901533590.jpg',
-  'src/assets/images/wedding_vows_bouquet_1790901516667.jpg',
-  'src/assets/images/wedding_shoes_jewelry_1790901548736.jpg',
-  'src/assets/images/editorial_venue_rings_1790838653826.jpg',
-  'src/assets/images/wedding_couple_portrait_1790833906470.jpg',
-  'src/assets/images/wedding_table_botanical_1790833955186.jpg',
-  'src/assets/images/film_vintage_couple_1791034007642.jpg',
-  'src/assets/images/brand_story_botanical_1790831303860.jpg',
-  'src/assets/images/art_deco_venue_details_1790840351864.jpg',
-  'src/assets/images/wedding_bride_portrait_1790833939171.jpg',
-  'src/assets/images/wedding_couple_portrait_1790833906470.jpg',
-  'src/assets/images/wedding_table_botanical_1790833955186.jpg'
+  '/images/editorial_couple_portrait_1790838636662.jpg',
+  '/images/art_deco_emerald_couple_1790840336340.jpg',
+  '/images/wedding_bride_veil_1790901501919.jpg',
+  '/images/editorial_groom_portrait_1790915490996.jpg',
+  '/images/wedding_dance_lights_1790901533590.jpg',
+  '/images/wedding_vows_bouquet_1790901516667.jpg',
+  '/images/wedding_shoes_jewelry_1790901548736.jpg',
+  '/images/editorial_venue_rings_1790838653826.jpg',
+  '/images/wedding_couple_portrait_1790833906470.jpg',
+  '/images/wedding_table_botanical_1790833955186.jpg',
+  '/images/film_vintage_couple_1791034007642.jpg',
+  '/images/brand_story_botanical_1790831303860.jpg',
+  '/images/art_deco_venue_details_1790840351864.jpg',
+  '/images/wedding_bride_portrait_1790833939171.jpg',
+  '/images/wedding_couple_portrait_1790833906470.jpg',
+  '/images/wedding_table_botanical_1790833955186.jpg'
 ];
 
 export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
@@ -847,7 +847,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           {/* Foto hero mempelai */}
           <div className="relative">
             <img
-              src={customData?.mediaSlots?.heroImage || 'src/assets/images/editorial_couple_portrait_1790838636662.jpg'}
+              src={customData?.mediaSlots?.heroImage || '/images/editorial_couple_portrait_1790838636662.jpg'}
               alt={`Foto ${brideName} & ${groomName}`}
               className="w-full aspect-[3/4] object-cover grayscale-[20%] sepia-[15%]"
             />
@@ -860,7 +860,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           {/* Potret wanita */}
           <div className="relative overflow-hidden">
             <img
-              src={customData?.mediaSlots?.bridePortrait || 'src/assets/images/wedding_bride_veil_1790901501919.jpg'}
+              src={customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_veil_1790901501919.jpg'}
               alt={`Potret ${brideName}`}
               className="w-full aspect-square object-cover grayscale-[30%]"
             />
@@ -870,7 +870,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           {/* Potret pria */}
           <div className="relative overflow-hidden">
             <img
-              src={customData?.mediaSlots?.groomPortrait || 'src/assets/images/editorial_groom_portrait_1790915490996.jpg'}
+              src={customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg'}
               alt={`Potret ${groomName}`}
               className="w-full aspect-square object-cover grayscale-[30%]"
             />
@@ -967,7 +967,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
               {/* Polaroid Photo */}
               <div className="reel-polaroid w-[min(76vw,320px)] mx-auto mt-6 -rotate-2">
                 <img 
-                  src="src/assets/images/editorial_couple_portrait_1790838636662.jpg" 
+                  src="/images/editorial_couple_portrait_1790838636662.jpg" 
                   alt="Foto pasangan mempelai Fajar &amp; Larasati" 
                   className="aspect-4/5"
                 />
@@ -1026,7 +1026,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
               <div className="flex flex-col items-center text-center reel-reveal">
                 <div className="reel-polaroid w-[200px] -rotate-2 hover:rotate-0 transition-transform duration-300">
                   <img 
-                    src={customData?.mediaSlots?.bridePortrait || 'src/assets/images/wedding_vows_bouquet_1790901516667.jpg'}
+                    src={customData?.mediaSlots?.bridePortrait || '/images/wedding_vows_bouquet_1790901516667.jpg'}
                     alt={`Foto mempelai wanita ${brideFullName}`}
                     className="aspect-3/4 object-cover"
                   />
@@ -1058,7 +1058,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
               <div className="flex flex-col items-center text-center reel-reveal">
                 <div className="reel-polaroid w-[200px] rotate-2 hover:rotate-0 transition-transform duration-300">
                   <img 
-                    src={customData?.mediaSlots?.groomPortrait || 'src/assets/images/editorial_groom_portrait_1790915490996.jpg'}
+                    src={customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg'}
                     alt={`Foto mempelai pria ${groomFullName}`}
                     className="aspect-3/4 object-cover"
                   />
@@ -1579,7 +1579,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           <div className="absolute bottom-0 left-0 right-0 h-[10%] bg-black z-10 pointer-events-none" />
 
           <img 
-            src="src/assets/images/wedding_dance_lights_1790901533590.jpg" 
+            src="/images/wedding_dance_lights_1790901533590.jpg" 
             alt="Penutup rol film" 
             className="absolute inset-0 w-full h-full object-cover opacity-20 grayscale"
           />
