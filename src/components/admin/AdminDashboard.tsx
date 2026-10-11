@@ -29,9 +29,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [templateFilter, setTemplateFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortField>('date_desc');
 
-  const [viewState, setViewState] = useState<'list' | 'create' | 'edit'>('list');
+  const [viewState, setViewState] = useState<'list' | 'create' | 'edit' | 'portfolio'>('list');
   const [editingOrder, setEditingOrder] = useState<ClientInvitationData | null>(null);
   const [autoOpenAiSetup, setAutoOpenAiSetup] = useState(false);
+
+  const refreshOrders = async () => {
+    await AdminStore.initFromSupabase();
+    setOrders(AdminStore.getAll());
+  };
 
   const [guestLinkOrder, setGuestLinkOrder] = useState<ClientInvitationData | null>(null);
 

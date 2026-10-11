@@ -56,8 +56,7 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
         {/* Showcase Portfolio Real Client Section */}
         {publicPortfolios.length > 0 && (
           <div className="space-y-6 pt-4 text-left">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#BD9A5F]" />
+            <div>
               <h3 className="text-xl sm:text-2xl font-serif text-[#2C2E28]">
                 Portofolio Undangan Klien
               </h3>
@@ -82,11 +81,6 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
                     />
-                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#BD9A5F] text-white text-[10px] font-semibold tracking-wider uppercase shadow-xs flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                    
-                    </div>
-
                     <div className="absolute inset-0 bg-[#2C2E28]/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 text-[#414A35] text-xs font-medium shadow-sm">
                         <Eye className="w-3.5 h-3.5" />
