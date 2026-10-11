@@ -1,20 +1,35 @@
-import React, { useState } from 'react';
-import { ArrowUpRight, Eye, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowUpRight, Eye, MessageCircle, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { InvitationItem } from '../types';
 import { TEMPLATES } from '../data/catalog';
+import { PortfolioStore } from '../admin/portfolioStore';
+import { PortfolioItemData } from '../types/portfolio';
 
 interface TemplateCollectionProps {
   onPreviewTemplate: (item: InvitationItem) => void;
   onOrderViaWhatsApp: (item: InvitationItem) => void;
   onOpenDedicatedDemo: (templateId: string) => void;
+  onPreviewPortfolio?: (item: PortfolioItemData) => void;
 }
 
 export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
   onPreviewTemplate,
   onOrderViaWhatsApp,
   onOpenDedicatedDemo,
+  onPreviewPortfolio
 }) => {
   const [showAll, setShowAll] = useState(false);
+  const [publicPortfolios, setPublicPortfolios] = useState<PortfolioItemData[]>([]);
+
+  useEffect(() => {
+    PortfolioStore.initFromSupabase().then(() => {
+      setPublicPortfolios(PortfolioStore.getPublicItems());
+    });
+    const unsubscribe = PortfolioStore.subscribe(() => {
+      setPublicPortfolios(PortfolioStore.getPublicItems());
+    });
+    return unsubscribe;
+  }, []);
 
   // The primary 7 templates converted with interactive demos
   const primaryTemplates = TEMPLATES.slice(0, 7);
@@ -38,7 +53,83 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
           </p>
         </div>
 
-        {/* Balanced Grid of Template Cards */}
+        {/* Showcase Portfolio Real Client Section */}
+        {publicPortfolios.length > 0 && (
+          <div className="space-y-6 pt-4 text-left">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#BD9A5F]" />
+              <h3 className="text-xl sm:text-2xl font-serif text-[#2C2E28]">
+                Portofolio Undangan Klien
+              </h3>
+            </div>
+            <p className="text-sm text-[#55594F] font-light max-w-2xl">
+              Hasil karya undangan pernikahan digital dari pasangan yang telah mempercayakan momen bahagia mereka kepada Sekarsiti Studio.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {publicPortfolios.map((portfolio) => (
+                <article
+                  key={portfolio.id}
+                  className="group flex flex-col justify-between bg-white rounded-2xl border border-[#BD9A5F]/40 ring-1 ring-[#BD9A5F]/20 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300"
+                >
+                  <div
+                    onClick={() => onPreviewPortfolio && onPreviewPortfolio(portfolio)}
+                    className="relative aspect-4/3 overflow-hidden bg-[#EFECE4] cursor-pointer"
+                  >
+                    <img
+                      src={portfolio.coverImage || portfolio.heroImage}
+                      alt={`Portofolio ${portfolio.title}`}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#BD9A5F] text-white text-[10px] font-semibold tracking-wider uppercase shadow-xs flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      <span>Klien Real</span>
+                    </div>
+
+                    <div className="absolute inset-0 bg-[#2C2E28]/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 text-[#414A35] text-xs font-medium shadow-sm">
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Buka Undangan Portofolio</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4 text-left">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs text-[#7A8B74]">
+                        <span className="font-sans font-medium uppercase tracking-wider">{portfolio.templateId}</span>
+                        <span className="font-serif italic">{portfolio.city || 'Indonesia'}</span>
+                      </div>
+                      <h4
+                        onClick={() => onPreviewPortfolio && onPreviewPortfolio(portfolio)}
+                        className="text-xl font-serif font-semibold text-[#2C2E28] group-hover:text-[#414A35] transition-colors cursor-pointer"
+                      >
+                        {portfolio.title}
+                      </h4>
+                      <p className="text-xs text-[#6B6F63] font-light line-clamp-2">
+                        "{portfolio.quoteText}"
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-[#F2EFE8] flex items-center justify-between">
+                      <span className="text-xs text-[#7A8B74]">
+                        {portfolio.eventDate}
+                      </span>
+                      <button
+                        onClick={() => onPreviewPortfolio && onPreviewPortfolio(portfolio)}
+                        className="inline-flex items-center gap-1 text-xs text-[#1B2A22] font-semibold py-1 px-3 rounded-full bg-[#FAF7F2] hover:bg-[#EBE6DD] border border-[#BD9A5F]/40 transition-colors cursor-pointer"
+                      >
+                        <span>Lihat Demo</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 text-[#BD9A5F]" />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {displayedTemplates.map((template) => (
             <article

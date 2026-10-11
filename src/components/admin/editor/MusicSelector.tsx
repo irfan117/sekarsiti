@@ -5,6 +5,7 @@ import {
   fetchMusicTracks,
   uploadMusicToCloudinary,
   addMusicTrack,
+  deleteMusicTrack,
   DEFAULT_MUSIC_TRACKS
 } from '../../../services/musicService';
 
@@ -22,6 +23,7 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
   const [tracks, setTracks] = useState<MusicTrack[]>(DEFAULT_MUSIC_TRACKS);
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeletingTrackId, setIsDeletingTrackId] = useState<string | null>(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newArtist, setNewArtist] = useState('');
@@ -67,7 +69,8 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
         title,
         artist,
         audio_url: audioUrl,
-        genre: 'Custom Wedding'
+        genre: 'Custom Wedding',
+        source: 'custom',
       });
 
       setTracks(prev => [newTrack, ...prev]);
@@ -81,6 +84,29 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDeleteTrack = async (track: MusicTrack) => {
+    if (!track.id) return;
+
+    const shouldDelete = window.confirm(`Hapus musik "${track.title}" dari daftar katalog?`);
+    if (!shouldDelete) return;
+
+    setIsDeletingTrackId(track.id);
+
+    try {
+      await deleteMusicTrack(track.id);
+      setTracks(prev => prev.filter(item => item.id !== track.id));
+
+      if (currentAudioUrl === track.audio_url) {
+        onSelect('', '');
+      }
+    } catch (err: any) {
+      console.error('Gagal menghapus musik:', err);
+      setUploadError(err?.message || 'Gagal menghapus musik dari katalog.');
+    } finally {
+      setIsDeletingTrackId(null);
     }
   };
 
@@ -210,24 +236,35 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => onSelect(`${track.title} - ${track.artist}`, track.audio_url)}
-                className={`py-1 px-2.5 rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
-                  isSelected
-                    ? 'bg-[#C5A880] text-[#181816]'
-                    : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
-                }`}
-              >
-                {isSelected ? (
-                  <>
-                    <Check className="w-3 h-3" />
-                    <span>Terpasang</span>
-                  </>
-                ) : (
-                  <span>Pasang</span>
-                )}
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteTrack(track)}
+                  disabled={isDeletingTrackId === track.id}
+                  className="py-1 px-2 rounded text-[10px] font-semibold border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 cursor-pointer"
+                >
+                  {isDeletingTrackId === track.id ? 'Menghapus...' : 'Hapus'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onSelect(`${track.title} - ${track.artist}`, track.audio_url)}
+                  className={`py-1 px-2.5 rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
+                    isSelected
+                      ? 'bg-[#C5A880] text-[#181816]'
+                      : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                  }`}
+                >
+                  {isSelected ? (
+                    <>
+                      <Check className="w-3 h-3" />
+                      <span>Terpasang</span>
+                    </>
+                  ) : (
+                    <span>Pasang</span>
+                  )}
+                </button>
+              </div>
             </div>
           );
         })}

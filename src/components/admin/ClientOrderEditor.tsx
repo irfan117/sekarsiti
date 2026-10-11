@@ -87,6 +87,7 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
       accountNumber: templateDefaults.accountNumber || '8271029384',
       accountHolder: templateDefaults.accountHolder || 'Kirana Ayu Lestari',
       songTitle: templateDefaults.songTitle || 'Until I Found You - Stephen Sanchez',
+      audioUrl: templateDefaults.audioUrl || '',
       mediaSlots: {
         heroImage: '/images/editorial_couple_portrait_1790838636662.jpg',
         bridePortrait: '/images/wedding_bride_veil_1790901501919.jpg',
@@ -220,9 +221,13 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
 
       const { placedMedia } = smartPlaceAssets(currentSlots, newTemplateId, pool);
 
+      const nextTemplate = TEMPLATE_REGISTRY[newTemplateId];
+
       return {
         ...prev,
         templateId: newTemplateId,
+        songTitle: nextTemplate?.defaultData?.songTitle || prev.songTitle || 'Until I Found You - Stephen Sanchez',
+        audioUrl: nextTemplate?.defaultData?.audioUrl || prev.audioUrl || '',
         mediaSlots: {
           ...prev.mediaSlots,
           ...placedMedia,
@@ -491,6 +496,7 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
         {activeTab === 'gift' && (
           <GiftMusicSection
             formData={formData}
+            selectedTemplateId={selectedTemplateId}
             onChange={handleFieldChange}
           />
         )}

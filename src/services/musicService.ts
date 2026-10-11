@@ -2,6 +2,7 @@
  * Layanan untuk mengelola Pustaka Musik di Supabase & Upload Cloudinary/Storage
  */
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { convertAudioFileToWebm, uploadAudioToCloudinary } from '../utils/cloudinaryUpload';
 
 export interface MusicTrack {
   id: string;
@@ -10,6 +11,7 @@ export interface MusicTrack {
   audio_url: string;
   duration_seconds?: number;
   genre?: string;
+  source?: 'admin' | 'custom';
   created_at?: string;
 }
 
@@ -61,31 +63,8 @@ export async function fetchMusicTracks(): Promise<MusicTrack[]> {
 }
 
 export async function uploadMusicToCloudinary(file: File): Promise<string> {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-  if (!cloudName || !uploadPreset) {
-    throw new Error('Cloudinary belum dikonfigurasi di .env');
-  }
-
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', uploadPreset);
-  // Di Cloudinary, upload file audio masuk ke resource_type 'video' atau 'auto'
-  formData.append('resource_type', 'auto');
-
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || 'Gagal mengunggah file musik ke Cloudinary');
-  }
-
-  const data = await res.json();
-  return data.secure_url;
+  const convertedFile = await convertAudioFileToWebm(file);
+  return uploadAudioToCloudinary(convertedFile);
 }
 
 export async function addMusicTrack(track: Omit<MusicTrack, 'id' | 'created_at'>): Promise<MusicTrack> {
@@ -97,6 +76,7 @@ export async function addMusicTrack(track: Omit<MusicTrack, 'id' | 'created_at'>
         artist: track.artist,
         audio_url: track.audio_url,
         genre: track.genre || 'Romantic',
+        source: track.source || 'admin',
       })
       .select()
       .single();
@@ -109,6 +89,25 @@ export async function addMusicTrack(track: Omit<MusicTrack, 'id' | 'created_at'>
 
   return {
     id: `local-${Date.now()}`,
+    source: track.source || 'admin',
     ...track,
   };
+}
+
+export async function deleteMusicTrack(id: string): Promise<void> {
+  if (!id) {
+    return;
+  }
+
+  if (isSupabaseConfigured) {
+    const { error } = await supabase
+      .from('music_tracks')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw error;
+    }
+    return;
+  }
 }

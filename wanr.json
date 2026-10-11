@@ -1,0 +1,366 @@
+[
+  {
+    "name": "function_search_path_mutable",
+    "title": "Function Search Path Mutable",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects functions where the search_path parameter is not set.",
+    "detail": "Function \\`public.verify_client_portal\\` has a role mutable search_path",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+    "metadata": {
+      "schema": "public",
+      "name": "verify_client_portal",
+      "type": "function"
+    },
+    "cache_key": "function_search_path_mutable_public_verify_client_portal_fb9958a157d3afe9076a0c5ed5a9de96",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "function_search_path_mutable",
+    "title": "Function Search Path Mutable",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects functions where the search_path parameter is not set.",
+    "detail": "Function \\`public.handle_new_user\\` has a role mutable search_path",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+    "metadata": {
+      "schema": "public",
+      "name": "handle_new_user",
+      "type": "function"
+    },
+    "cache_key": "function_search_path_mutable_public_handle_new_user_e4d76f09a224568bd9ebbc0fdd07294b",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "rls_policy_always_true",
+    "title": "RLS Policy Always True",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.",
+    "detail": "Table `public.guest_links` has an RLS policy `Public can insert/update guest links` for `ALL` that allows unrestricted access (both USING and WITH CHECK are always true). This effectively bypasses row-level security for -.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy",
+    "metadata": {
+      "schema": "public",
+      "name": "guest_links",
+      "type": "table",
+      "qual": "true",
+      "roles": [
+        "-"
+      ],
+      "command": "ALL",
+      "with_check": "true",
+      "policy_name": "Public can insert/update guest links",
+      "permissive_using": true,
+      "permissive_with_check": true
+    },
+    "cache_key": "rls_policy_always_true_public_guest_links_Public can insert/update guest links",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "rls_policy_always_true",
+    "title": "RLS Policy Always True",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.",
+    "detail": "Table `public.guestbook_entries` has an RLS policy `Public can insert guestbook` for `INSERT` that allows unrestricted access (WITH CHECK clause is always true). This effectively bypasses row-level security for -.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy",
+    "metadata": {
+      "schema": "public",
+      "name": "guestbook_entries",
+      "type": "table",
+      "qual": null,
+      "roles": [
+        "-"
+      ],
+      "command": "INSERT",
+      "with_check": "true",
+      "policy_name": "Public can insert guestbook",
+      "permissive_using": false,
+      "permissive_with_check": true
+    },
+    "cache_key": "rls_policy_always_true_public_guestbook_entries_Public can insert guestbook",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "rls_policy_always_true",
+    "title": "RLS Policy Always True",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.",
+    "detail": "Table `public.invitations` has an RLS policy `Allow anon and auth full access invitations` for `ALL` that allows unrestricted access (both USING and WITH CHECK are always true). This effectively bypasses row-level security for anon, authenticated.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy",
+    "metadata": {
+      "schema": "public",
+      "name": "invitations",
+      "type": "table",
+      "qual": "true",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "command": "ALL",
+      "with_check": "true",
+      "policy_name": "Allow anon and auth full access invitations",
+      "permissive_using": true,
+      "permissive_with_check": true
+    },
+    "cache_key": "rls_policy_always_true_public_invitations_Allow anon and auth full access invitations",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "rls_policy_always_true",
+    "title": "RLS Policy Always True",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.",
+    "detail": "Table `public.music_tracks` has an RLS policy `Authenticated users can delete music library` for `DELETE` that allows unrestricted access (USING clause is always true). This effectively bypasses row-level security for authenticated.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy",
+    "metadata": {
+      "schema": "public",
+      "name": "music_tracks",
+      "type": "table",
+      "qual": "true",
+      "roles": [
+        "authenticated"
+      ],
+      "command": "DELETE",
+      "with_check": null,
+      "policy_name": "Authenticated users can delete music library",
+      "permissive_using": true,
+      "permissive_with_check": false
+    },
+    "cache_key": "rls_policy_always_true_public_music_tracks_Authenticated users can delete music library",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "rls_policy_always_true",
+    "title": "RLS Policy Always True",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.",
+    "detail": "Table `public.music_tracks` has an RLS policy `Authenticated users can insert music library` for `INSERT` that allows unrestricted access (WITH CHECK clause is always true). This effectively bypasses row-level security for authenticated.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy",
+    "metadata": {
+      "schema": "public",
+      "name": "music_tracks",
+      "type": "table",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "command": "INSERT",
+      "with_check": "true",
+      "policy_name": "Authenticated users can insert music library",
+      "permissive_using": false,
+      "permissive_with_check": true
+    },
+    "cache_key": "rls_policy_always_true_public_music_tracks_Authenticated users can insert music library",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "rls_policy_always_true",
+    "title": "RLS Policy Always True",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.",
+    "detail": "Table `public.music_tracks` has an RLS policy `Authenticated users can update music library` for `UPDATE` that allows unrestricted access (both USING and WITH CHECK are always true). This effectively bypasses row-level security for authenticated.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy",
+    "metadata": {
+      "schema": "public",
+      "name": "music_tracks",
+      "type": "table",
+      "qual": "true",
+      "roles": [
+        "authenticated"
+      ],
+      "command": "UPDATE",
+      "with_check": "true",
+      "policy_name": "Authenticated users can update music library",
+      "permissive_using": true,
+      "permissive_with_check": true
+    },
+    "cache_key": "rls_policy_always_true_public_music_tracks_Authenticated users can update music library",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "rls_policy_always_true",
+    "title": "RLS Policy Always True",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.",
+    "detail": "Table `public.portfolio_items` has an RLS policy `Allow write operations for portfolio items` for `ALL` that allows unrestricted access (both USING and WITH CHECK are always true). This effectively bypasses row-level security for -.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy",
+    "metadata": {
+      "schema": "public",
+      "name": "portfolio_items",
+      "type": "table",
+      "qual": "true",
+      "roles": [
+        "-"
+      ],
+      "command": "ALL",
+      "with_check": "true",
+      "policy_name": "Allow write operations for portfolio items",
+      "permissive_using": true,
+      "permissive_with_check": true
+    },
+    "cache_key": "rls_policy_always_true_public_portfolio_items_Allow write operations for portfolio items",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "rls_policy_always_true",
+    "title": "RLS Policy Always True",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.",
+    "detail": "Table `public.rsvp_entries` has an RLS policy `Public can insert rsvp` for `INSERT` that allows unrestricted access (WITH CHECK clause is always true). This effectively bypasses row-level security for -.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy",
+    "metadata": {
+      "schema": "public",
+      "name": "rsvp_entries",
+      "type": "table",
+      "qual": null,
+      "roles": [
+        "-"
+      ],
+      "command": "INSERT",
+      "with_check": "true",
+      "policy_name": "Public can insert rsvp",
+      "permissive_using": false,
+      "permissive_with_check": true
+    },
+    "cache_key": "rls_policy_always_true_public_rsvp_entries_Public can insert rsvp",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "anon_security_definer_function_executable",
+    "title": "Public Can Execute SECURITY DEFINER Function",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects `SECURITY DEFINER` functions that are callable without signing in. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if it is not meant to be public.",
+    "detail": "Function `public.handle_new_user()` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/handle_new_user`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable",
+    "metadata": {
+      "schema": "public",
+      "name": "handle_new_user",
+      "language": "plpgsql",
+      "arguments": "",
+      "security_definer": true
+    },
+    "cache_key": "anon_security_definer_function_executable_public_handle_new_user_",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "anon_security_definer_function_executable",
+    "title": "Public Can Execute SECURITY DEFINER Function",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects `SECURITY DEFINER` functions that are callable without signing in. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if it is not meant to be public.",
+    "detail": "Function `public.verify_client_portal(p_code text, p_pin text)` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/verify_client_portal`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable",
+    "metadata": {
+      "schema": "public",
+      "name": "verify_client_portal",
+      "language": "plpgsql",
+      "arguments": "p_code text, p_pin text",
+      "security_definer": true
+    },
+    "cache_key": "anon_security_definer_function_executable_public_verify_client_portal_p_code text, p_pin text",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "authenticated_security_definer_function_executable",
+    "title": "Signed-In Users Can Execute SECURITY DEFINER Function",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects `SECURITY DEFINER` functions that are callable by signed-in users. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if signed-in users should not call it.",
+    "detail": "Function `public.handle_new_user()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/handle_new_user`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable",
+    "metadata": {
+      "schema": "public",
+      "name": "handle_new_user",
+      "language": "plpgsql",
+      "arguments": "",
+      "security_definer": true
+    },
+    "cache_key": "authenticated_security_definer_function_executable_public_handle_new_user_",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "authenticated_security_definer_function_executable",
+    "title": "Signed-In Users Can Execute SECURITY DEFINER Function",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Detects `SECURITY DEFINER` functions that are callable by signed-in users. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if signed-in users should not call it.",
+    "detail": "Function `public.verify_client_portal(p_code text, p_pin text)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/verify_client_portal`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+    "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable",
+    "metadata": {
+      "schema": "public",
+      "name": "verify_client_portal",
+      "language": "plpgsql",
+      "arguments": "p_code text, p_pin text",
+      "security_definer": true
+    },
+    "cache_key": "authenticated_security_definer_function_executable_public_verify_client_portal_p_code text, p_pin text",
+    "observed_at": "2026-10-11T04:59:54.406Z"
+  },
+  {
+    "name": "auth_leaked_password_protection",
+    "title": "Leaked Password Protection Disabled",
+    "level": "WARN",
+    "facing": "EXTERNAL",
+    "categories": [
+      "SECURITY"
+    ],
+    "description": "Leaked password protection is currently disabled.",
+    "detail": "Supabase Auth prevents the use of compromised passwords by checking against HaveIBeenPwned.org. Enable this feature to enhance security.",
+    "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection",
+    "metadata": {
+      "entity": "Auth",
+      "type": "auth"
+    },
+    "cache_key": "auth_leaked_password_protection"
+  }
+]

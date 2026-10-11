@@ -377,6 +377,47 @@ export default function App() {
           onPreviewTemplate={setPreviewTemplate}
           onOrderViaWhatsApp={handleOrderFromCatalog}
           onOpenDedicatedDemo={handleOpenDedicatedDemo}
+          onPreviewPortfolio={(portfolioItem) => {
+            const dummyInv: ClientInvitationData = {
+              id: portfolioItem.sourceInvitationId || portfolioItem.id,
+              clientName: portfolioItem.title,
+              clientPhone: '',
+              templateId: portfolioItem.templateId,
+              status: 'published',
+              createdAt: portfolioItem.createdAt,
+              updatedAt: portfolioItem.updatedAt,
+              slug: portfolioItem.slug,
+              brideName: portfolioItem.brideName,
+              brideFullName: portfolioItem.brideName,
+              brideParents: 'Orang Tua Mempelai Wanita',
+              groomName: portfolioItem.groomName,
+              groomFullName: portfolioItem.groomName,
+              groomParents: 'Orang Tua Mempelai Pria',
+              eventDateFormatted: portfolioItem.eventDate,
+              countdownIsoDate: '2026-12-31T08:00:00',
+              akadTime: '08:00 - 10:00 WIB',
+              akadVenue: 'Gedung / Masjid Utama',
+              resepsiTime: '11:00 - 14:00 WIB',
+              resepsiVenue: 'Grand Ballroom',
+              city: portfolioItem.city,
+              mapsUrl: 'https://maps.google.com',
+              quoteText: portfolioItem.quoteText,
+              quoteSource: portfolioItem.quoteSource,
+              bankName: 'BCA',
+              accountNumber: '1234567890',
+              accountHolder: `${portfolioItem.brideName} / ${portfolioItem.groomName}`,
+              songTitle: portfolioItem.songTitle,
+              audioUrl: portfolioItem.audioUrl,
+              mediaSlots: {
+                heroImage: portfolioItem.heroImage || portfolioItem.coverImage,
+                bridePortrait: portfolioItem.coverImage,
+                groomPortrait: portfolioItem.coverImage,
+                galleryImages: portfolioItem.galleryImages
+              }
+            };
+            setClientPreviewData(dummyInv);
+            setCurrentView(resolveDemoViewFromId(portfolioItem.templateId));
+          }}
         />
         <HowItWorks />
         <BrandStory />

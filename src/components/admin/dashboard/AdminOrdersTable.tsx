@@ -9,7 +9,8 @@ import {
   Send,
   Edit2,
   Copy,
-  Trash2
+  Trash2,
+  Sparkles
 } from 'lucide-react';
 import { ClientInvitationData, OrderStatus } from '../../../types/clientInvitation';
 import { TEMPLATE_REGISTRY } from '../../../admin/templateRegistry';
@@ -34,6 +35,7 @@ interface AdminOrdersTableProps {
   onEditOrder: (order: ClientInvitationData) => void;
   onDuplicateOrder: (id: string) => void;
   onDeleteOrder: (id: string, clientName: string) => void;
+  onCreatePortfolio?: (order: ClientInvitationData) => void;
 }
 
 export const AdminOrdersTable: React.FC<AdminOrdersTableProps> = ({
@@ -53,7 +55,8 @@ export const AdminOrdersTable: React.FC<AdminOrdersTableProps> = ({
   onOpenGuestLinkModal,
   onEditOrder,
   onDuplicateOrder,
-  onDeleteOrder
+  onDeleteOrder,
+  onCreatePortfolio
 }) => {
   return (
     <div className="space-y-4">
@@ -245,6 +248,17 @@ export const AdminOrdersTable: React.FC<AdminOrdersTableProps> = ({
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
+
+                        {order.status === 'published' && onCreatePortfolio && (
+                          <button
+                            type="button"
+                            onClick={() => onCreatePortfolio(order)}
+                            className="p-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-600 hover:text-white transition-colors cursor-pointer border border-emerald-200"
+                            title="Jadikan Portfolio Showcase Katalog"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                          </button>
+                        )}
 
                         <button
                           type="button"

@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, CheckCircle2, FileSpreadsheet } from 'lucide-react';
 import { ClientInvitationData, OrderStatus } from '../../types/clientInvitation';
+import { PortfolioItemData } from '../../types/portfolio';
 import { AdminStore } from '../../admin/adminStore';
+import { PortfolioStore } from '../../admin/portfolioStore';
 import { safeCopyToClipboard } from '../../utils/clipboardUtils';
 import { ClientOrderEditor } from './ClientOrderEditor';
 import { GuestLinkModal } from './GuestLinkModal';
 import { AdminSidebar } from './dashboard/AdminSidebar';
 import { AdminStatsCards } from './dashboard/AdminStatsCards';
 import { AdminOrdersTable, SortField } from './dashboard/AdminOrdersTable';
+import { AdminPortfolioView } from './AdminPortfolioView';
 
 interface AdminDashboardProps {
   onBackToLanding: () => void;
@@ -64,8 +67,15 @@ Di dalam Portal Mempelai, Anda juga dapat mengunduh Template Excel & mengimpor d
     showToast(`Pesan akses & tautan undangan untuk ${order.clientName} berhasil disalin!`);
   };
 
-  const refreshOrders = () => {
-    setOrders(AdminStore.getAll());
+  const handleCreatePortfolio = async (order: ClientInvitationData) => {
+    try {
+      const newItem = await PortfolioStore.createFromInvitation(order);
+      showToast(`Undangan ${order.clientName} berhasil dijadikan item Showcase Portfolio! ✨`);
+      setViewState('portfolio');
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menjadikan undangan sebagai portfolio.');
+    }
   };
 
   useEffect(() => {
@@ -200,6 +210,7 @@ Di dalam Portal Mempelai, Anda juga dapat mengunduh Template Excel & mengimpor d
         ordersCount={orders.length}
         stats={stats}
         onSelectListView={() => setViewState('list')}
+        onSelectPortfolioView={() => setViewState('portfolio')}
         onCreateNew={handleCreateNew}
         onOpenClientPortal={() => onOpenClientPortal && onOpenClientPortal()}
         onChangeStatusFilter={(status) => {
@@ -222,7 +233,11 @@ Di dalam Portal Mempelai, Anda juga dapat mengunduh Template Excel & mengimpor d
               <>
                 <span>/</span>
                 <span className="font-semibold text-stone-900">
-                  {viewState === 'create' ? 'Buat Undangan Baru' : 'Sunting Undangan'}
+                  {viewState === 'create'
+                    ? 'Buat Undangan Baru'
+                    : viewState === 'edit'
+                    ? 'Sunting Undangan'
+                    : 'Showcase Portfolio'}
                 </span>
               </>
             )}
@@ -277,8 +292,53 @@ Di dalam Portal Mempelai, Anda juga dapat mengunduh Template Excel & mengimpor d
                 onEditOrder={handleEdit}
                 onDuplicateOrder={handleDuplicate}
                 onDeleteOrder={handleDelete}
+                onCreatePortfolio={handleCreatePortfolio}
               />
             </div>
+          ) : viewState === 'portfolio' ? (
+            <AdminPortfolioView
+              onPreviewPortfolio={(portfolioItem) => {
+                // Konversi portfolioItem ke format ClientInvitationData untuk pratinjau
+                const dummyInv: ClientInvitationData = {
+                  id: portfolioItem.sourceInvitationId || portfolioItem.id,
+                  clientName: portfolioItem.title,
+                  clientPhone: '',
+                  templateId: portfolioItem.templateId,
+                  status: 'published',
+                  createdAt: portfolioItem.createdAt,
+                  updatedAt: portfolioItem.updatedAt,
+                  slug: portfolioItem.slug,
+                  brideName: portfolioItem.brideName,
+                  brideFullName: portfolioItem.brideName,
+                  brideParents: 'Orang Tua Mempelai Wanita',
+                  groomName: portfolioItem.groomName,
+                  groomFullName: portfolioItem.groomName,
+                  groomParents: 'Orang Tua Mempelai Pria',
+                  eventDateFormatted: portfolioItem.eventDate,
+                  countdownIsoDate: '2026-12-31T08:00:00',
+                  akadTime: '08:00 - 10:00 WIB',
+                  akadVenue: 'Gedung / Masjid Utama',
+                  resepsiTime: '11:00 - 14:00 WIB',
+                  resepsiVenue: 'Grand Ballroom',
+                  city: portfolioItem.city,
+                  mapsUrl: 'https://maps.google.com',
+                  quoteText: portfolioItem.quoteText,
+                  quoteSource: portfolioItem.quoteSource,
+                  bankName: 'BCA',
+                  accountNumber: '1234567890',
+                  accountHolder: `${portfolioItem.brideName} / ${portfolioItem.groomName}`,
+                  songTitle: portfolioItem.songTitle,
+                  audioUrl: portfolioItem.audioUrl,
+                  mediaSlots: {
+                    heroImage: portfolioItem.heroImage || portfolioItem.coverImage,
+                    bridePortrait: portfolioItem.coverImage,
+                    groomPortrait: portfolioItem.coverImage,
+                    galleryImages: portfolioItem.galleryImages
+                  }
+                };
+                onPreviewClientInvitation(dummyInv);
+              }}
+            />
           ) : (
             <div className="bg-white p-8 rounded-2xl border border-stone-200 shadow-2xs">
               <ClientOrderEditor

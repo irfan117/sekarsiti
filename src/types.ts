@@ -27,6 +27,7 @@ export interface InvitationItem {
     location: string;
     city: string;
     songTitle: string;
+    audioUrl?: string;
     themeColor: string; // Tailwind color class or hex
     bankName: string;
     accountNumber: string;

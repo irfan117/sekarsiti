@@ -85,7 +85,8 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       bankName: 'BCA',
       accountNumber: '8271029384',
       accountHolder: 'Kirana Ayu Lestari',
-      songTitle: 'Until I Found You - Stephen Sanchez (Violin Solo)'
+      songTitle: 'Until I Found You - Stephen Sanchez (Violin Solo)',
+      audioUrl: 'https://actions.google.com/sounds/v1/water/gentle_stream_spring.ogg'
     }
   },
 
@@ -156,7 +157,8 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       secondaryBankName: 'Bank Mandiri',
       secondaryAccountNumber: '140001928374',
       secondaryAccountHolder: 'Adhitya Nugraha',
-      songTitle: 'Midnight Waltz - Gatsby Evening Strings'
+      songTitle: 'Midnight Waltz - Gatsby Evening Strings',
+      audioUrl: 'https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg'
     }
   },
 
@@ -218,6 +220,7 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       bankName: 'BCA',
       accountNumber: '8801234567',
       accountHolder: 'Damar Aji Wibisono',
+      audioUrl: 'https://actions.google.com/sounds/v1/relaxing/relaxing_waves.ogg',
       songTitle: 'Until I Found You - Acoustic Strings'
     }
   },

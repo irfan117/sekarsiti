@@ -6,7 +6,8 @@
 
 -- 1. VIEW PUBLIK AMAN (PUBLIC INVITATION VIEW)
 -- Menyembunyikan pin_code, access_code, client_phone, client_email dari tamu umum!
-CREATE OR REPLACE VIEW public.public_invitations AS
+-- WITH (security_invoker = true) memastikan RLS dievaluasi berdasarkan role pengakses (anon/authenticated)
+CREATE OR REPLACE VIEW public.public_invitations WITH (security_invoker = true) AS
 SELECT 
   id,
   slug,

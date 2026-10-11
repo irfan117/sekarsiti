@@ -419,7 +419,12 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
         {activeTab === 'share' && <PortalShareTab client={currentClient} />}
         {activeTab === 'rsvp' && <PortalRsvpTab client={currentClient} />}
         {activeTab === 'wishes' && <PortalWishesTab client={currentClient} />}
-        {activeTab === 'info' && <PortalInfoTab client={currentClient} />}
+        {activeTab === 'info' && (
+          <PortalInfoTab
+            client={currentClient}
+            onClientUpdated={(updatedClient) => setCurrentClient(updatedClient)}
+          />
+        )}
       </main>
     </div>
   );

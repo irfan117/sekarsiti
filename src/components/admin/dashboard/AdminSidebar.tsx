@@ -8,19 +8,21 @@ import {
   Upload,
   RefreshCw,
   ArrowLeft,
-  LogOut
+  LogOut,
+  Sparkles
 } from 'lucide-react';
 import { OrderStatus } from '../../../types/clientInvitation';
 import { AdminStoreStats } from '../../../admin/adminStore';
 import { useAuth } from '../../../context/AuthContext';
 
 interface AdminSidebarProps {
-  viewState: 'list' | 'create' | 'edit';
+  viewState: 'list' | 'create' | 'edit' | 'portfolio';
   autoOpenAiSetup: boolean;
   statusFilter: 'all' | OrderStatus;
   ordersCount: number;
   stats: AdminStoreStats;
   onSelectListView: () => void;
+  onSelectPortfolioView: () => void;
   onCreateNew: (openGFormAi?: boolean) => void;
   onOpenClientPortal?: () => void;
   onChangeStatusFilter: (status: 'all' | OrderStatus) => void;
@@ -37,6 +39,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   ordersCount,
   stats,
   onSelectListView,
+  onSelectPortfolioView,
   onCreateNew,
   onOpenClientPortal,
   onChangeStatusFilter,
@@ -82,6 +85,18 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           <span className="font-mono tabular-nums text-[10px] text-stone-300">
             {ordersCount}
           </span>
+        </button>
+
+        <button
+          onClick={onSelectPortfolioView}
+          className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors cursor-pointer ${
+            viewState === 'portfolio'
+              ? 'bg-[#22211E] text-[#C5A880] font-semibold'
+              : 'text-stone-400 hover:text-white hover:bg-[#1A1918]'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-[#C5A880]" />
+          <span>Showcase Portfolio</span>
         </button>
 
         <button

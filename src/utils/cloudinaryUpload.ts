@@ -8,13 +8,19 @@ export const isCloudinaryConfigured = Boolean(
   import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
 );
 
-export async function uploadToCloudinary(file: File): Promise<string> {
+function getCloudinaryUploadConfig() {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   if (!cloudName || !uploadPreset) {
     throw new Error('Cloudinary belum dikonfigurasi. Harap isi VITE_CLOUDINARY_CLOUD_NAME dan VITE_CLOUDINARY_UPLOAD_PRESET di file .env');
   }
+
+  return { cloudName, uploadPreset };
+}
+
+export async function uploadToCloudinary(file: File): Promise<string> {
+  const { cloudName, uploadPreset } = getCloudinaryUploadConfig();
 
   const formData = new FormData();
   formData.append('file', file);
@@ -32,6 +38,82 @@ export async function uploadToCloudinary(file: File): Promise<string> {
 
   const data = await response.json();
   return data.secure_url as string;
+}
+
+export async function uploadAudioToCloudinary(file: File): Promise<string> {
+  const { cloudName, uploadPreset } = getCloudinaryUploadConfig();
+  const normalizedFile = file.type === 'audio/mpeg' || file.type === 'audio/mp3' ? file : new File([file], file.name, { type: file.type || 'audio/webm' });
+
+  const formData = new FormData();
+  formData.append('file', normalizedFile);
+  formData.append('upload_preset', uploadPreset);
+  formData.append('resource_type', 'video');
+
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData?.error?.message || 'Gagal mengunggah file musik ke Cloudinary.');
+  }
+
+  const data = await response.json();
+  return data.secure_url as string;
+}
+
+function getSupportedWebmMimeType(): string {
+  const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
+  return mimeTypes.find(type => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(type)) || 'audio/webm';
+}
+
+export async function convertAudioFileToWebm(file: File): Promise<File> {
+  if (!file || !file.type.startsWith('audio/')) {
+    throw new Error('File yang dipilih bukan format audio.');
+  }
+
+  const isAlreadyWebm = file.type === 'audio/webm' || file.name.toLowerCase().endsWith('.webm');
+  if (isAlreadyWebm || typeof window === 'undefined' || typeof MediaRecorder === 'undefined' || !('AudioContext' in window)) {
+    return file;
+  }
+
+  const audioContext = new window.AudioContext();
+  try {
+    const buffer = await audioContext.decodeAudioData(await file.arrayBuffer());
+    const source = audioContext.createBufferSource();
+    const destination = audioContext.createMediaStreamDestination();
+    const mimeType = getSupportedWebmMimeType();
+    const recorder = new MediaRecorder(destination.stream, mimeType.includes('webm') ? { mimeType } : undefined);
+    const chunks: BlobPart[] = [];
+
+    await new Promise<void>((resolve, reject) => {
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      recorder.onerror = (event) => reject(new Error((event as any)?.error?.name || 'Gagal merekam audio untuk konversi WebM.'));
+      recorder.onstop = () => resolve();
+
+      source.buffer = buffer;
+      source.connect(destination);
+      source.connect(audioContext.destination);
+      source.onended = () => {
+        recorder.stop();
+      };
+
+      recorder.start();
+      source.start(0);
+    });
+
+    const outputBlob = new Blob(chunks, { type: 'audio/webm' });
+    const baseName = file.name.replace(/\.[^/.]+$/, '') || 'lagu-custom';
+    return new File([outputBlob], `${baseName}.webm`, { type: 'audio/webm' });
+  } finally {
+    await audioContext.close().catch(() => undefined);
+  }
 }
 
 /**

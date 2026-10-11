@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
   Disc3, 
@@ -53,6 +53,7 @@ export const MobilePreviewModal: React.FC<MobilePreviewModalProps> = ({
     }
   ]);
   const [rsvpSubmitted, setRsvpSubmitted] = useState(false);
+  const demoAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Countdown timer simulation
   const [timeLeft, setTimeLeft] = useState({
@@ -99,6 +100,35 @@ export const MobilePreviewModal: React.FC<MobilePreviewModalProps> = ({
     setRsvpMessage('');
     setTimeout(() => setRsvpSubmitted(false), 4000);
   };
+
+  const handleDemoAudioToggle = () => {
+    const demoAudioUrl = item?.demoData?.audioUrl;
+    if (!demoAudioUrl) return;
+
+    if (!demoAudioRef.current) {
+      demoAudioRef.current = new Audio(demoAudioUrl);
+      demoAudioRef.current.loop = true;
+      demoAudioRef.current.volume = 0.35;
+    }
+
+    if (isPlayingAudio) {
+      demoAudioRef.current.pause();
+      setIsPlayingAudio(false);
+      return;
+    }
+
+    demoAudioRef.current.play().catch(() => {
+      setIsPlayingAudio(false);
+    });
+    setIsPlayingAudio(true);
+  };
+
+  useEffect(() => {
+    return () => {
+      demoAudioRef.current?.pause();
+      demoAudioRef.current = null;
+    };
+  }, []);
 
   if (!item) return null;
 
@@ -302,12 +332,22 @@ export const MobilePreviewModal: React.FC<MobilePreviewModalProps> = ({
                 </div>
 
                 {/* Music Indicator */}
-                <div className="p-2.5 rounded-lg bg-white border border-[#EBE6DD] text-left flex items-center justify-between text-[11px]">
-                  <div className="flex items-center gap-2 truncate">
+                <div className="p-2.5 rounded-lg bg-white border border-[#EBE6DD] text-left flex items-center justify-between gap-2 text-[11px]">
+                  <div className="flex items-center gap-2 truncate min-w-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#7A8B74] animate-pulse shrink-0" />
                     <span className="text-[#55594F] truncate font-light">{item.demoData.songTitle}</span>
                   </div>
-                  <span className="text-[9px] text-[#8E9385] shrink-0">Musik latar</span>
+                  {item.demoData.audioUrl ? (
+                    <button
+                      type="button"
+                      onClick={handleDemoAudioToggle}
+                      className="text-[9px] text-[#414A35] shrink-0 underline cursor-pointer"
+                    >
+                      {isPlayingAudio ? 'Jeda' : 'Putar'}
+                    </button>
+                  ) : (
+                    <span className="text-[9px] text-[#8E9385] shrink-0">Musik latar</span>
+                  )}
                 </div>
 
                 {/* Countdown Timer */}
