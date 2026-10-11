@@ -1070,7 +1070,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
       {/* ============================================================
           MAIN CENTRAL STAGE (480px Notebook Width)
           ============================================================ */}
-      <div className="stage pt-12" id="stage">
+      <div className={`stage ${customData ? 'pt-0' : 'pt-12'}`} id="stage">
         <main>
 
           {/* ============ 1. SAMPUL JURNAL (3D BOOK SWING OPEN) ============ */}

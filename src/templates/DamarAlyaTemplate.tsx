@@ -769,7 +769,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
       {/* ============================================================
           EXACT APP-SHELL: STAGE (LEFT) & DEVICE FRAME (RIGHT)
           ============================================================ */}
-      <div className="app-shell pt-12">
+      <div className={`app-shell ${customData ? 'pt-0' : 'pt-12'}`}>
 
         {/* STAGE: panel kiri khusus desktop — foto berganti (crossfade) mengikuti section aktif */}
         <aside className="stage" aria-hidden="true">

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Upload, Music, Image as ImageIcon, Sparkles, Check } from 'lucide-react';
 import { PortfolioItemData } from '../../types/portfolio';
 import { TEMPLATE_REGISTRY } from '../../admin/templateRegistry';
-import { uploadMusicToCloudinary } from '../../services/musicService';
+import { uploadMusicToCloudinary, fetchMusicTracks, MusicTrack, DEFAULT_MUSIC_TRACKS } from '../../services/musicService';
+import { MusicSelector } from './editor/MusicSelector';
 
 interface PortfolioItemEditorModalProps {
   item: PortfolioItemData;
@@ -16,11 +17,39 @@ export const PortfolioItemEditorModal: React.FC<PortfolioItemEditorModalProps> =
   onSave
 }) => {
   const [formData, setFormData] = useState<PortfolioItemData>({ ...item });
+  const [musicTracks, setMusicTracks] = useState<MusicTrack[]>(DEFAULT_MUSIC_TRACKS);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    fetchMusicTracks().then(tracks => {
+      if (tracks && tracks.length > 0) {
+        setMusicTracks(tracks);
+      }
+    });
+  }, []);
+
   const handleChange = (field: keyof PortfolioItemData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSelectTrack = (trackId: string) => {
+    const selected = musicTracks.find(t => t.id === trackId);
+    if (selected) {
+      setFormData(prev => ({
+        ...prev,
+        songTitle: `${selected.title} - ${selected.artist}`,
+        audioUrl: selected.audio_url
+      }));
+    }
+  };
+
+  const handleAudioSelect = (songTitle: string, audioUrl: string) => {
+    setFormData(prev => ({
+      ...prev,
+      songTitle,
+      audioUrl
+    }));
   };
 
   const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,6 +96,7 @@ export const PortfolioItemEditorModal: React.FC<PortfolioItemEditorModalProps> =
             Edit Item Showcase Portfolio
           </h3>
         </div>
+
         <p className="text-xs text-stone-500 mb-6">
           Perubahan aset di sini bersifat independen dan <span className="font-semibold text-emerald-700">tidak merusak/mengubah</span> data undangan asli milik klien.
         </p>
@@ -156,82 +186,63 @@ export const PortfolioItemEditorModal: React.FC<PortfolioItemEditorModalProps> =
 
           <div className="border-t border-stone-100 pt-4">
             <label className="block font-medium text-stone-800 mb-2 flex items-center gap-1.5">
-              <ImageIcon className="w-4 h-4 text-[#C5A880]" />
-              <span>Aset Visual & Foto Utama</span>
-            </label>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-[11px] text-stone-600 mb-1">
-                  URL Cover/Thumbnail Sampul Katalog
-                </label>
-                <input
-                  type="text"
-                  value={formData.coverImage}
-                  onChange={e => handleChange('coverImage', e.target.value)}
-                  className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#C5A880] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] text-stone-600 mb-1">
-                  URL Foto Hero Utama
-                </label>
-                <input
-                  type="text"
-                  value={formData.heroImage}
-                  onChange={e => handleChange('heroImage', e.target.value)}
-                  className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-[#C5A880] focus:outline-none"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-stone-100 pt-4">
-            <label className="block font-medium text-stone-800 mb-2 flex items-center gap-1.5">
               <Music className="w-4 h-4 text-[#C5A880]" />
-              <span>Musik & Lagu Demo Showcase</span>
+              <span>Aset Musik & Lagu Demo</span>
             </label>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[11px] text-stone-600 mb-1">
-                  Judul Musik Demo
-                </label>
-                <input
-                  type="text"
-                  value={formData.songTitle}
-                  onChange={e => handleChange('songTitle', e.target.value)}
-                  className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg text-xs focus:ring-1 focus:ring-[#C5A880] focus:outline-none"
-                />
+            <div className="space-y-3">
+              <MusicSelector
+                currentSongTitle={formData.songTitle}
+                currentAudioUrl={formData.audioUrl}
+                onSelect={handleAudioSelect}
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] text-stone-600 mb-1">
+                    Pilih Lagu dari Daftar Musik Admin
+                  </label>
+                  <select
+                    value={musicTracks.find(t => t.audio_url === formData.audioUrl)?.id || ''}
+                    onChange={e => handleSelectTrack(e.target.value)}
+                    className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg text-xs focus:ring-1 focus:ring-[#C5A880] focus:outline-none"
+                  >
+                    <option value="">-- Pilih dari Daftar Musik --</option>
+                    {musicTracks.map(t => (
+                      <option key={t.id} value={t.id}>
+                        {t.title} - {t.artist}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-stone-600 mb-1">
+                    Upload Musik Baru (MP3/WebM)
+                  </label>
+                  <label className="flex items-center justify-center gap-2 p-2 bg-stone-100 hover:bg-stone-200 rounded-lg border border-dashed border-stone-300 cursor-pointer text-stone-700 transition-colors">
+                    <Upload className="w-3.5 h-3.5 text-[#C5A880]" />
+                    <span>{isUploading ? 'Mengunggah...' : 'Pilih File Lagu'}</span>
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleAudioUpload}
+                      disabled={isUploading}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-[11px] text-stone-600 mb-1">
-                  Upload Musik Baru (MP3/WebM)
-                </label>
-                <label className="flex items-center justify-center gap-2 p-2 bg-stone-100 hover:bg-stone-200 rounded-lg border border-dashed border-stone-300 cursor-pointer text-stone-700 transition-colors">
-                  <Upload className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>{isUploading ? 'Mengunggah...' : 'Pilih File Lagu'}</span>
-                  <input
-                    type="file"
-                    accept="audio/*"
-                    onChange={handleAudioUpload}
-                    disabled={isUploading}
-                    className="hidden"
-                  />
-                </label>
-              </div>
+              {uploadMessage && (
+                <p className="text-[11px] text-emerald-700 mt-1">{uploadMessage}</p>
+              )}
+
+              {formData.audioUrl && (
+                <p className="text-[10px] text-stone-500 font-mono mt-1 truncate">
+                  Audio URL: {formData.audioUrl}
+                </p>
+              )}
             </div>
-
-            {uploadMessage && (
-              <p className="text-[11px] text-emerald-700 mt-1">{uploadMessage}</p>
-            )}
-
-            {formData.audioUrl && (
-              <p className="text-[10px] text-stone-500 font-mono mt-1 truncate">
-                Audio URL: {formData.audioUrl}
-              </p>
-            )}
           </div>
 
           <div className="border-t border-stone-100 pt-4">

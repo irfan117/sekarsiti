@@ -1148,7 +1148,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           CENTRAL STAGE (Mobile & Reading Column: Warm Architectural Paper)
           Open whitespace, NO rounded border box frames ("frame kotak")!
           ============================================================ */}
-      <div className="relative z-20 max-w-[520px] mx-auto bg-[#FAF7F2] shadow-[0_0_100px_rgba(0,0,0,0.8)] min-h-screen pt-12">
+      <div className={`relative z-20 max-w-[520px] mx-auto bg-[#FAF7F2] shadow-[0_0_100px_rgba(0,0,0,0.8)] min-h-screen ${customData ? 'pt-0' : 'pt-12'}`}>
         
         {/* ============================================================
             SECTION 1: VIDEO HERO

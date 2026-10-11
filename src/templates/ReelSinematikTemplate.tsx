@@ -910,7 +910,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
       {/* ============================================================
           MAIN BODY SECTIONS — center column (padded by sidebars on desktop)
           ============================================================ */}
-      <main className="pt-12 lg:ml-[188px] lg:mr-[188px]">
+      <main className={`${customData ? 'pt-0' : 'pt-12'} lg:ml-[188px] lg:mr-[188px]`}>
 
         {/* ============ SECTION 1 (STATIS): HERO KOLASE 16 TILES ============ */}
         <section 

@@ -712,7 +712,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           CENTRAL STAGE (Mobile-simulated 480px Column)
           Art Deco Evening Warm Ivory (#EDE3C8)
           ============================================================ */}
-      <div className="relative z-20 max-w-[480px] w-full mx-auto bg-[#EDE3C8] shadow-[0_0_80px_rgba(0,0,0,0.7)] overflow-hidden min-h-screen pt-12">
+      <div className={`relative z-20 max-w-[480px] w-full mx-auto bg-[#EDE3C8] shadow-[0_0_80px_rgba(0,0,0,0.7)] overflow-hidden min-h-screen ${customData ? 'pt-0' : 'pt-12'}`}>
         
         {/* ============================================================
             SECTION 1: VIDEO HERO & NAMA MEMPELAI (DENGAN EFEK PARALAKS)

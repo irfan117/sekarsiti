@@ -577,7 +577,7 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
   return (
     <div
       ref={rootRef}
-      className={`atlas-cinta-root min-h-screen pt-[44px] ${
+      className={`atlas-cinta-root min-h-screen ${customData ? 'pt-0' : 'pt-[44px]'} ${
         isGateOpened ? 'is-open' : 'max-h-screen overflow-hidden'
       }`}
     >
