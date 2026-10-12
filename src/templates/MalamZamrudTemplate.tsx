@@ -165,6 +165,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
   const accountNumber = customData?.accountNumber || '1234567890';
   const accountHolder = customData?.accountHolder || 'Kirana Ayu Lestari';
   const songTitle = customData?.songTitle || 'Until I Found You - Stephen Sanchez';
+  const audioUrl = customData?.audioUrl || '';
 
   // Opening state: isOpeningFlap controls 3D flap fold, isOpened lifts envelope, isCoverDismissed removes gate
   const [isOpeningFlap, setIsOpeningFlap] = useState(false);
@@ -176,7 +177,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
 
   // Modular Hooks: Guest personalization, Audio, Clipboard, Countdown, Guestbook, RSVP
   const { guestName, hideGuestName } = useGuestRecipient('Bpk. Hendra Wijaya & Keluarga');
-  const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } = useAudioController(songTitle);
+  const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } = useAudioController(songTitle, audioUrl);
   const { copyText, isCopied } = useClipboardCopy(2500);
   const timeLeft = useCountdown(countdownIsoDate);
 
@@ -413,7 +414,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           {showAudioToast && (
             <div className="hidden sm:flex items-center gap-2 py-1.5 px-3.5 bg-[#12151A]/90 backdrop-blur-md border border-[#C6A356]/40 text-[#FBF3E4] rounded-full text-xs shadow-xl animate-fade-in">
               <span className="w-1.5 h-1.5 rounded-full bg-[#C6A356] animate-pulse" />
-              <span>{isPlayingAudio ? 'Musik: Midnight Waltz (Gatsby Strings)' : 'Musik dijeda'}</span>
+              <span>{isPlayingAudio ? `Musik: ${songTitle}` : 'Musik dijeda'}</span>
             </div>
           )}
 
@@ -482,7 +483,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         {/* Left Art Deco Top Header Badge */}
         <div className="absolute top-14 left-6 z-20 pointer-events-none p-3 rounded-xl bg-[#12151A]/90 backdrop-blur-md border border-[#C6A356]/35 shadow-xl">
           <p className="text-[8px] tracking-[0.35em] uppercase text-[#C6A356] font-semibold">
-            KIRANA &amp; ADHITYA
+            {brideName.toUpperCase()} &amp; {groomName.toUpperCase()}
           </p>
           <p className="font-['Marcellus',serif] text-xs text-[#FBF3E4]">
             Momen &amp; Mempelai
@@ -495,7 +496,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             MALAM ZAMRUD · ART DECO
           </p>
           <p className="font-['Marcellus',serif] text-xs text-[#FBF3E4]">
-            Kirana Ayu &amp; Adhitya Nugraha
+            {brideName} &amp; {groomName}
           </p>
         </div>
       </aside>

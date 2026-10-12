@@ -126,6 +126,7 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
   const accountHolder = customData?.accountHolder || 'Wulan Citra Maheswari';
   const songTitle =
     customData?.songTitle || 'Atlas Perjalanan Senja - Acoustic Folk Guitar';
+  const audioUrl = customData?.audioUrl || '';
 
   // Media Slots
   const rawGallery =
@@ -182,7 +183,7 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
     'Bapak/Ibu/Saudara/i Tamu Undangan'
   );
   const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } =
-    useAudioController(songTitle);
+    useAudioController(songTitle, audioUrl);
   const { copyText, isCopied } = useClipboardCopy(1800);
   const cd = useCountdown(countdownIsoDate);
 

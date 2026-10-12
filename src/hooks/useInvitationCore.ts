@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { safeCopyToClipboard } from '../utils/clipboardUtils';
+import { sanitizeAudioUrl } from '../utils/audioUrl';
 
 // 1. REUSABLE COUNTDOWN TIMER LOGIC
 export function useCountdown(targetIsoDate: string) {
@@ -74,24 +75,89 @@ export function useGuestRecipient(defaultName = 'Bpk. Hendra Wijaya & Keluarga')
   };
 }
 
-// 3. REUSABLE AUDIO CONTROLLER
-export function useAudioController(defaultSongTitle = 'Until I Found You - Stephen Sanchez') {
+// 3. REUSABLE AUDIO CONTROLLER — plays real audio from audioUrl (Cloudinary / catalog)
+export function useAudioController(
+  defaultSongTitle = 'Until I Found You - Stephen Sanchez',
+  audioUrl?: string
+) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [showAudioToast, setShowAudioToast] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playableUrl = sanitizeAudioUrl(audioUrl);
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+    audioRef.current.pause();
+    audioRef.current = null;
+    setIsPlayingAudio(false);
+  }, [playableUrl]);
+
+  const ensureAudio = (): HTMLAudioElement | null => {
+    if (!playableUrl || typeof window === 'undefined') return null;
+
+    if (!audioRef.current) {
+      const audio = new Audio(playableUrl);
+      audio.loop = true;
+      audio.preload = 'auto';
+      audio.volume = 0.4;
+      audio.addEventListener('ended', () => setIsPlayingAudio(false));
+      audio.addEventListener('error', () => setIsPlayingAudio(false));
+      audioRef.current = audio;
+    }
+
+    return audioRef.current;
+  };
+
+  const showToast = (ms = 3000) => {
+    setShowAudioToast(true);
+    setTimeout(() => setShowAudioToast(false), ms);
+  };
 
   const toggleAudio = () => {
-    setIsPlayingAudio(prev => !prev);
-    setShowAudioToast(true);
-    setTimeout(() => setShowAudioToast(false), 3000);
+    const audio = ensureAudio();
+    if (!audio) {
+      showToast();
+      return;
+    }
+
+    if (!audio.paused) {
+      audio.pause();
+      setIsPlayingAudio(false);
+      showToast();
+      return;
+    }
+
+    audio
+      .play()
+      .then(() => {
+        setIsPlayingAudio(true);
+        showToast();
+      })
+      .catch(() => setIsPlayingAudio(false));
   };
 
   const startAudio = () => {
-    setIsPlayingAudio(true);
-    setShowAudioToast(true);
-    setTimeout(() => setShowAudioToast(false), 4000);
+    const audio = ensureAudio();
+    if (!audio) return;
+
+    audio
+      .play()
+      .then(() => {
+        setIsPlayingAudio(true);
+        showToast(4000);
+      })
+      .catch(() => setIsPlayingAudio(false));
   };
 
   const stopAudio = () => {
+    audioRef.current?.pause();
     setIsPlayingAudio(false);
   };
 
@@ -101,7 +167,8 @@ export function useAudioController(defaultSongTitle = 'Until I Found You - Steph
     toggleAudio,
     startAudio,
     stopAudio,
-    songTitle: defaultSongTitle
+    songTitle: defaultSongTitle,
+    hasAudio: Boolean(playableUrl)
   };
 }
 

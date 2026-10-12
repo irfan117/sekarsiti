@@ -99,7 +99,7 @@ export const AdminOrdersTable: React.FC<AdminOrdersTableProps> = ({
             <option value="all">Semua Template Desain</option>
             <option value="ruang-rasa">Seri Editorial (Ruang Rasa)</option>
             <option value="malam-zamrud">Malam Zamrud (Art Deco)</option>
-            <option value="setangkai">Damar &amp; Alya (Sage)</option>
+            <option value="setangkai">Kertas Sage</option>
             <option value="suasana">Jurnal Dua Hati (Buku)</option>
             <option value="lembayung">Reel Sinematik 35mm</option>
           </select>

@@ -2,6 +2,9 @@ import { PortfolioItemData } from '../types/portfolio';
 import { ClientInvitationData } from '../types/clientInvitation';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { TEMPLATES } from '../data/catalog';
+import { readPersistedJson, writePersistedJson } from '../utils/persistedStore';
+
+const PORTFOLIO_STORAGE_KEY = 'sekarsiti_portfolio_items_v1';
 
 type PortfolioListener = () => void;
 
@@ -28,7 +31,10 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItemData[] = TEMPLATES.map((tpl, 
   updatedAt: new Date().toISOString()
 }));
 
-let memoryPortfolio: PortfolioItemData[] = [...INITIAL_PORTFOLIO_ITEMS];
+let memoryPortfolio: PortfolioItemData[] = readPersistedJson<PortfolioItemData[]>(
+  PORTFOLIO_STORAGE_KEY,
+  [...INITIAL_PORTFOLIO_ITEMS]
+);
 let isLoadedFromSupabase = false;
 
 export class PortfolioStore {
@@ -51,7 +57,11 @@ export class PortfolioStore {
     });
   }
 
-  static async initFromSupabase(): Promise<PortfolioItemData[]> {
+  static async initFromSupabase(force = false): Promise<PortfolioItemData[]> {
+    if (isLoadedFromSupabase && !force) {
+      return memoryPortfolio;
+    }
+
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase
@@ -71,7 +81,10 @@ export class PortfolioStore {
               heroImage: item.hero_image || '',
               galleryImages: Array.isArray(item.gallery_images) ? item.gallery_images : [],
               songTitle: item.song_title || '',
-              audioUrl: item.audio_url || '',
+              audioUrl:
+                item.audio_url && !String(item.audio_url).includes('actions.google.com/sounds')
+                  ? item.audio_url
+                  : '',
               quoteText: item.quote_text || '',
               quoteSource: item.quote_source || '',
               brideName: item.bride_name || '',
@@ -93,6 +106,12 @@ export class PortfolioStore {
       }
     }
     return memoryPortfolio;
+  }
+
+  private static persistToStorage(data: PortfolioItemData[]): void {
+    memoryPortfolio = data;
+    writePersistedJson(PORTFOLIO_STORAGE_KEY, data);
+    this.notify();
   }
 
   static getAll(): PortfolioItemData[] {
@@ -145,6 +164,7 @@ export class PortfolioStore {
     };
 
     memoryPortfolio = [newItem, ...memoryPortfolio];
+    writePersistedJson(PORTFOLIO_STORAGE_KEY, memoryPortfolio);
     this.notify();
 
     if (isSupabaseConfigured) {
@@ -188,6 +208,7 @@ export class PortfolioStore {
     };
 
     memoryPortfolio[idx] = updatedItem;
+    writePersistedJson(PORTFOLIO_STORAGE_KEY, memoryPortfolio);
     this.notify();
 
     if (isSupabaseConfigured) {
@@ -242,6 +263,7 @@ export class PortfolioStore {
 
   static async delete(id: string): Promise<boolean> {
     memoryPortfolio = memoryPortfolio.filter(p => p.id !== id);
+    writePersistedJson(PORTFOLIO_STORAGE_KEY, memoryPortfolio);
     this.notify();
 
     if (isSupabaseConfigured) {

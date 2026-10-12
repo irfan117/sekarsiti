@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Music, Image as ImageIcon, Sparkles, Check } from 'lucide-react';
+import { X, Music, Sparkles, Check } from 'lucide-react';
 import { PortfolioItemData } from '../../types/portfolio';
-import { TEMPLATE_REGISTRY } from '../../admin/templateRegistry';
-import { uploadMusicToCloudinary, fetchMusicTracks, MusicTrack, DEFAULT_MUSIC_TRACKS } from '../../services/musicService';
+import { fetchMusicTracks, MusicTrack } from '../../services/musicService';
 import { MusicSelector } from './editor/MusicSelector';
 
 interface PortfolioItemEditorModalProps {
@@ -17,15 +16,11 @@ export const PortfolioItemEditorModal: React.FC<PortfolioItemEditorModalProps> =
   onSave
 }) => {
   const [formData, setFormData] = useState<PortfolioItemData>({ ...item });
-  const [musicTracks, setMusicTracks] = useState<MusicTrack[]>(DEFAULT_MUSIC_TRACKS);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const [musicTracks, setMusicTracks] = useState<MusicTrack[]>([]);
 
   useEffect(() => {
-    fetchMusicTracks().then(tracks => {
-      if (tracks && tracks.length > 0) {
-        setMusicTracks(tracks);
-      }
+    fetchMusicTracks().then((tracks) => {
+      setMusicTracks(tracks || []);
     });
   }, []);
 
@@ -50,29 +45,6 @@ export const PortfolioItemEditorModal: React.FC<PortfolioItemEditorModalProps> =
       songTitle,
       audioUrl
     }));
-  };
-
-  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      setUploadMessage('Mengunggah & mengonversi audio...');
-      const uploadedUrl = await uploadMusicToCloudinary(file);
-      setFormData(prev => ({
-        ...prev,
-        audioUrl: uploadedUrl,
-        songTitle: file.name.replace(/\.[^/.]+$/, '')
-      }));
-      setUploadMessage('Audio berhasil diunggah!');
-      setTimeout(() => setUploadMessage(null), 3000);
-    } catch (err) {
-      console.error(err);
-      alert('Gagal mengunggah audio. Pastikan format file valid.');
-    } finally {
-      setIsUploading(false);
-    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -196,10 +168,11 @@ export const PortfolioItemEditorModal: React.FC<PortfolioItemEditorModalProps> =
                 currentAudioUrl={formData.audioUrl}
                 onSelect={handleAudioSelect}
               />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+              {musicTracks.length > 0 && (
                 <div>
                   <label className="block text-[11px] text-stone-600 mb-1">
-                    Pilih Lagu dari Daftar Musik Admin
+                    Pintasan daftar musik admin
                   </label>
                   <select
                     value={musicTracks.find(t => t.audio_url === formData.audioUrl)?.id || ''}
@@ -214,27 +187,6 @@ export const PortfolioItemEditorModal: React.FC<PortfolioItemEditorModalProps> =
                     ))}
                   </select>
                 </div>
-
-                <div>
-                  <label className="block text-[11px] text-stone-600 mb-1">
-                    Upload Musik Baru (MP3/WebM)
-                  </label>
-                  <label className="flex items-center justify-center gap-2 p-2 bg-stone-100 hover:bg-stone-200 rounded-lg border border-dashed border-stone-300 cursor-pointer text-stone-700 transition-colors">
-                    <Upload className="w-3.5 h-3.5 text-[#C5A880]" />
-                    <span>{isUploading ? 'Mengunggah...' : 'Pilih File Lagu'}</span>
-                    <input
-                      type="file"
-                      accept="audio/*"
-                      onChange={handleAudioUpload}
-                      disabled={isUploading}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              </div>
-
-              {uploadMessage && (
-                <p className="text-[11px] text-emerald-700 mt-1">{uploadMessage}</p>
               )}
 
               {formData.audioUrl && (

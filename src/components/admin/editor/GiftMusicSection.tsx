@@ -3,7 +3,7 @@ import { ClientInvitationData } from '../../../types/clientInvitation';
 import { CreditCard, Quote, Music, Upload, Loader2 } from 'lucide-react';
 import { MusicSelector } from './MusicSelector';
 import { TEMPLATE_REGISTRY } from '../../../admin/templateRegistry';
-import { uploadMusicToCloudinary } from '../../../services/musicService';
+import { uploadMusicToCloudinary, addMusicTrack } from '../../../services/musicService';
 
 interface GiftMusicSectionProps {
   formData: ClientInvitationData;
@@ -57,6 +57,15 @@ export const GiftMusicSection: React.FC<GiftMusicSectionProps> = ({
     try {
       const uploadedUrl = await uploadMusicToCloudinary(file);
       const safeTitle = demoSongTitle.trim() || file.name.replace(/\.[^/.]+$/, '') || 'Demo Template Music';
+
+      // Juga masukkan ke katalog agar bisa dipilih ulang di undangan lain
+      await addMusicTrack({
+        title: safeTitle,
+        artist: 'Demo Template',
+        audio_url: uploadedUrl,
+        genre: 'Template Demo',
+        source: 'admin',
+      }).catch((err) => console.warn('Gagal menambah ke katalog musik:', err));
 
       TEMPLATE_REGISTRY[selectedTemplateId].defaultData = {
         ...TEMPLATE_REGISTRY[selectedTemplateId].defaultData,

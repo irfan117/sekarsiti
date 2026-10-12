@@ -103,9 +103,15 @@ export const MobilePreviewModal: React.FC<MobilePreviewModalProps> = ({
 
   const handleDemoAudioToggle = () => {
     const demoAudioUrl = item?.demoData?.audioUrl;
-    if (!demoAudioUrl) return;
+    const isBroken =
+      !demoAudioUrl || demoAudioUrl.includes('actions.google.com/sounds');
+    if (isBroken) {
+      setIsPlayingAudio(false);
+      return;
+    }
 
-    if (!demoAudioRef.current) {
+    if (!demoAudioRef.current || demoAudioRef.current.src !== demoAudioUrl) {
+      demoAudioRef.current?.pause();
       demoAudioRef.current = new Audio(demoAudioUrl);
       demoAudioRef.current.loop = true;
       demoAudioRef.current.volume = 0.35;

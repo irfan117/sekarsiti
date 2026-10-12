@@ -8,6 +8,9 @@ import {
   downloadGuestbookCsv
 } from './exportUtils';
 import { buildInvitationUrl } from '../utils/subdomainUtils';
+import { readPersistedJson, writePersistedJson } from '../utils/persistedStore';
+
+const ADMIN_ORDERS_STORAGE_KEY = 'sekarsiti_admin_orders_v1';
 
 export interface AdminStoreStats {
   total: number;
@@ -20,8 +23,11 @@ export interface AdminStoreStats {
 
 type StoreListener = () => void;
 
-// In-memory cache for fast UI updates
-let memoryOrders: ClientInvitationData[] = [...INITIAL_SEED_ORDERS];
+// In-memory cache for fast UI updates, with browser persistence as fallback.
+let memoryOrders: ClientInvitationData[] = readPersistedJson<ClientInvitationData[]>(
+  ADMIN_ORDERS_STORAGE_KEY,
+  [...INITIAL_SEED_ORDERS]
+);
 let isLoadedFromSupabase = false;
 
 export class AdminStore {
@@ -45,7 +51,11 @@ export class AdminStore {
   }
 
   // Load awal dari Supabase
-  static async initFromSupabase(): Promise<ClientInvitationData[]> {
+  static async initFromSupabase(force = false): Promise<ClientInvitationData[]> {
+    if (isLoadedFromSupabase && !force) {
+      return memoryOrders;
+    }
+
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase
@@ -90,7 +100,10 @@ export class AdminStore {
               secondaryAccountNumber: item.secondary_account_number || '',
               secondaryAccountHolder: item.secondary_account_holder || '',
               songTitle: item.song_title || '',
-              audioUrl: item.audio_url || '',
+              audioUrl:
+                item.audio_url && !String(item.audio_url).includes('actions.google.com/sounds')
+                  ? item.audio_url
+                  : '',
               mediaSlots: item.media_slots || {},
               accessCode: item.access_code || item.slug || item.id,
               pinCode: item.pin_code || '1234',
@@ -99,6 +112,7 @@ export class AdminStore {
               rsvpList: item.rsvp_list || []
             }));
             memoryOrders = mapped;
+            writePersistedJson(ADMIN_ORDERS_STORAGE_KEY, mapped);
             isLoadedFromSupabase = true;
             this.notify();
             return mapped;
@@ -115,6 +129,12 @@ export class AdminStore {
         console.warn('Supabase fetch error, fallback to memory dummy:', err);
       }
     }
+
+    const persistedOrders = readPersistedJson<ClientInvitationData[]>(ADMIN_ORDERS_STORAGE_KEY, memoryOrders);
+    if (persistedOrders.length > 0) {
+      memoryOrders = persistedOrders;
+      return memoryOrders;
+    }
     return memoryOrders;
   }
 
@@ -124,6 +144,7 @@ export class AdminStore {
 
   private static saveStore(data: ClientInvitationData[]): void {
     memoryOrders = data;
+    writePersistedJson(ADMIN_ORDERS_STORAGE_KEY, data);
     this.notify();
   }
 
@@ -347,7 +368,10 @@ export class AdminStore {
             secondaryAccountNumber: item.secondary_account_number || '',
             secondaryAccountHolder: item.secondary_account_holder || '',
             songTitle: item.song_title || '',
-            audioUrl: item.audio_url || '',
+            audioUrl:
+              item.audio_url && !String(item.audio_url).includes('actions.google.com/sounds')
+                ? item.audio_url
+                : '',
             mediaSlots: item.media_slots || {},
             accessCode: item.access_code || item.slug || item.id,
             pinCode: item.pin_code || cleanPin,

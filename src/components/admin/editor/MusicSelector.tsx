@@ -6,21 +6,25 @@ import {
   uploadMusicToCloudinary,
   addMusicTrack,
   deleteMusicTrack,
-  DEFAULT_MUSIC_TRACKS
+  isPlayableAudioUrl,
 } from '../../../services/musicService';
+import { isCloudinaryConfigured } from '../../../utils/cloudinaryUpload';
 
 interface MusicSelectorProps {
   currentSongTitle: string;
   currentAudioUrl?: string;
   onSelect: (songTitle: string, audioUrl: string) => void;
+  /** When false, uploaded tracks are only applied to the invitation (not added to catalog). Default true. */
+  addUploadsToCatalog?: boolean;
 }
 
 export const MusicSelector: React.FC<MusicSelectorProps> = ({
   currentSongTitle,
   currentAudioUrl,
-  onSelect
+  onSelect,
+  addUploadsToCatalog = true,
 }) => {
-  const [tracks, setTracks] = useState<MusicTrack[]>(DEFAULT_MUSIC_TRACKS);
+  const [tracks, setTracks] = useState<MusicTrack[]>([]);
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeletingTrackId, setIsDeletingTrackId] = useState<string | null>(null);
@@ -33,29 +37,58 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    fetchMusicTracks().then(data => {
-      if (data && data.length > 0) setTracks(data);
-    });
+    fetchMusicTracks()
+      .then((data) => {
+        setTracks((data || []).filter((track) => isPlayableAudioUrl(track.audio_url)));
+      })
+      .catch(() => setTracks([]));
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
   }, []);
 
   const togglePlayPreview = (track: MusicTrack) => {
+    if (!isPlayableAudioUrl(track.audio_url)) {
+      setUploadError('URL audio tidak valid. Hapus track ini dan upload ulang.');
+      return;
+    }
+
     if (playingTrackId === track.id) {
       audioRef.current?.pause();
       setPlayingTrackId(null);
-    } else {
-      if (!audioRef.current) {
-        audioRef.current = new Audio();
-      }
-      audioRef.current.src = track.audio_url;
-      audioRef.current.play().catch(e => console.warn('Preview play blocked', e));
-      setPlayingTrackId(track.id);
-      audioRef.current.onended = () => setPlayingTrackId(null);
+      return;
     }
+
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+    }
+
+    audioRef.current.src = track.audio_url;
+    audioRef.current
+      .play()
+      .then(() => setPlayingTrackId(track.id))
+      .catch((e) => {
+        console.warn('Preview play blocked', e);
+        setUploadError('Browser memblokir pratinjau audio. Coba klik lagi atau pilih file lain.');
+      });
+    audioRef.current.onended = () => setPlayingTrackId(null);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!isCloudinaryConfigured) {
+      setUploadError(
+        'Cloudinary belum dikonfigurasi. Isi VITE_CLOUDINARY_CLOUD_NAME dan VITE_CLOUDINARY_UPLOAD_PRESET di .env'
+      );
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
 
     setIsUploading(true);
     setUploadError(null);
@@ -65,16 +98,21 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
       const title = newTitle.trim() || file.name.replace(/\.[^/.]+$/, '');
       const artist = newArtist.trim() || 'Custom Upload';
 
-      const newTrack = await addMusicTrack({
-        title,
-        artist,
-        audio_url: audioUrl,
-        genre: 'Custom Wedding',
-        source: 'custom',
-      });
+      if (addUploadsToCatalog) {
+        const newTrack = await addMusicTrack({
+          title,
+          artist,
+          audio_url: audioUrl,
+          genre: 'Custom Wedding',
+          source: 'admin',
+        });
 
-      setTracks(prev => [newTrack, ...prev]);
-      onSelect(`${newTrack.title} - ${newTrack.artist}`, newTrack.audio_url);
+        setTracks((prev) => [newTrack, ...prev.filter((t) => t.id !== newTrack.id)]);
+        onSelect(`${newTrack.title} - ${newTrack.artist}`, newTrack.audio_url);
+      } else {
+        onSelect(`${title} - ${artist}`, audioUrl);
+      }
+
       setShowUploadForm(false);
       setNewTitle('');
       setNewArtist('');
@@ -97,7 +135,7 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
 
     try {
       await deleteMusicTrack(track.id);
-      setTracks(prev => prev.filter(item => item.id !== track.id));
+      setTracks((prev) => prev.filter((item) => item.id !== track.id));
 
       if (currentAudioUrl === track.audio_url) {
         onSelect('', '');
@@ -127,7 +165,6 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
         </button>
       </div>
 
-      {/* Selected Indicator */}
       <div className="p-2.5 bg-white border border-stone-200 rounded-lg flex items-center justify-between text-xs">
         <div className="truncate">
           <span className="text-[10px] text-stone-500 uppercase tracking-wider block font-medium">
@@ -136,18 +173,26 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
           <span className="font-semibold text-stone-800 truncate">
             {currentSongTitle || 'Belum ada lagu yang dipilih'}
           </span>
+          {currentAudioUrl && isPlayableAudioUrl(currentAudioUrl) && (
+            <audio controls src={currentAudioUrl} className="w-full h-8 mt-2" />
+          )}
         </div>
       </div>
 
-      {/* Form Upload Musik Baru */}
       {showUploadForm && (
         <div className="p-3 bg-white border border-[#D5D0C6] rounded-xl space-y-3">
           <span className="text-[11px] font-bold text-stone-800 block">
-            Upload File Musik (MP3 / Audio) ke Cloudinary
+            Upload File Musik (MP3 / WAV / M4A / WebM) ke Cloudinary
           </span>
 
           {uploadError && (
             <p className="text-xs text-red-600 bg-red-50 p-2 rounded">{uploadError}</p>
+          )}
+
+          {!isCloudinaryConfigured && (
+            <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
+              Cloudinary belum siap. Lengkapi variabel lingkungan sebelum mengunggah.
+            </p>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -171,7 +216,7 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
             <input
               ref={fileInputRef}
               type="file"
-              accept="audio/*"
+              accept="audio/*,.mp3,.wav,.m4a,.ogg,.webm,.aac"
               onChange={handleFileUpload}
               className="hidden"
             />
@@ -197,77 +242,81 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
         </div>
       )}
 
-      {/* Track List Library */}
       <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
-        {tracks.map((track) => {
-          const isSelected =
-            currentSongTitle.toLowerCase().includes(track.title.toLowerCase()) ||
-            currentAudioUrl === track.audio_url;
+        {tracks.length === 0 ? (
+          <div className="p-3 bg-white border border-dashed border-stone-300 rounded-lg text-xs text-stone-500">
+            Katalog musik masih kosong. Upload lagu baru agar bisa dipilih sebagai musik latar undangan.
+          </div>
+        ) : (
+          tracks.map((track) => {
+            const isSelected =
+              currentAudioUrl === track.audio_url ||
+              (Boolean(currentSongTitle) &&
+                currentSongTitle.toLowerCase().includes(track.title.toLowerCase()));
 
-          return (
-            <div
-              key={track.id}
-              className={`p-2 rounded-lg flex items-center justify-between text-xs transition-colors border ${
-                isSelected
-                  ? 'bg-[#F2ECE1] border-[#C5A880] text-stone-900 font-medium'
-                  : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'
-              }`}
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <button
-                  type="button"
-                  onClick={() => togglePlayPreview(track)}
-                  className="p-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 cursor-pointer shrink-0"
-                  title="Dengarkan pratinjau lagu"
-                >
-                  {playingTrackId === track.id ? (
-                    <Pause className="w-3.5 h-3.5 text-[#C5A880]" />
-                  ) : (
-                    <Play className="w-3.5 h-3.5 text-stone-700" />
-                  )}
-                </button>
-                <div className="truncate">
-                  <p className="truncate text-xs font-semibold text-stone-900">
-                    {track.title}
-                  </p>
-                  <p className="text-[10px] text-stone-500 truncate">
-                    {track.artist} {track.genre ? `• ${track.genre}` : ''}
-                  </p>
+            return (
+              <div
+                key={track.id}
+                className={`p-2 rounded-lg flex items-center justify-between text-xs transition-colors border ${
+                  isSelected
+                    ? 'bg-[#F2ECE1] border-[#C5A880] text-stone-900 font-medium'
+                    : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => togglePlayPreview(track)}
+                    className="p-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 cursor-pointer shrink-0"
+                    title="Dengarkan pratinjau lagu"
+                  >
+                    {playingTrackId === track.id ? (
+                      <Pause className="w-3.5 h-3.5 text-[#C5A880]" />
+                    ) : (
+                      <Play className="w-3.5 h-3.5 text-stone-700" />
+                    )}
+                  </button>
+                  <div className="truncate">
+                    <p className="truncate text-xs font-semibold text-stone-900">{track.title}</p>
+                    <p className="text-[10px] text-stone-500 truncate">
+                      {track.artist} {track.genre ? `• ${track.genre}` : ''}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteTrack(track)}
+                    disabled={isDeletingTrackId === track.id}
+                    className="py-1 px-2 rounded text-[10px] font-semibold border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 cursor-pointer"
+                  >
+                    {isDeletingTrackId === track.id ? 'Menghapus...' : 'Hapus'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onSelect(`${track.title} - ${track.artist}`, track.audio_url)}
+                    className={`py-1 px-2.5 rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-[#C5A880] text-[#181816]'
+                        : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                    }`}
+                  >
+                    {isSelected ? (
+                      <>
+                        <Check className="w-3 h-3" />
+                        <span>Terpasang</span>
+                      </>
+                    ) : (
+                      <span>Pasang</span>
+                    )}
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleDeleteTrack(track)}
-                  disabled={isDeletingTrackId === track.id}
-                  className="py-1 px-2 rounded text-[10px] font-semibold border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 cursor-pointer"
-                >
-                  {isDeletingTrackId === track.id ? 'Menghapus...' : 'Hapus'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onSelect(`${track.title} - ${track.artist}`, track.audio_url)}
-                  className={`py-1 px-2.5 rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
-                    isSelected
-                      ? 'bg-[#C5A880] text-[#181816]'
-                      : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
-                  }`}
-                >
-                  {isSelected ? (
-                    <>
-                      <Check className="w-3 h-3" />
-                      <span>Terpasang</span>
-                    </>
-                  ) : (
-                    <span>Pasang</span>
-                  )}
-                </button>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

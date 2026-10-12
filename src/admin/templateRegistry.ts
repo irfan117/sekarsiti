@@ -86,7 +86,7 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       accountNumber: '8271029384',
       accountHolder: 'Kirana Ayu Lestari',
       songTitle: 'Until I Found You - Stephen Sanchez (Violin Solo)',
-      audioUrl: 'https://actions.google.com/sounds/v1/water/gentle_stream_spring.ogg'
+      audioUrl: ''
     }
   },
 
@@ -158,13 +158,13 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       secondaryAccountNumber: '140001928374',
       secondaryAccountHolder: 'Adhitya Nugraha',
       songTitle: 'Midnight Waltz - Gatsby Evening Strings',
-      audioUrl: 'https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg'
+      audioUrl: ''
     }
   },
 
   'setangkai': {
     id: 'setangkai',
-    name: 'Damar & Alya (Kertas Putih & Sage)',
+    name: 'Kertas Sage',
     styleLabel: 'Botanikal Sage & Kertas Gading',
     demoComponentKey: 'damar-alya',
     coverThumbnail: '/images/sage_outdoor_couple_portrait_1790919006777.jpg',
@@ -182,13 +182,13 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       },
       {
         key: 'bridePortrait',
-        label: 'Foto Mempelai Wanita (Alya)',
+        label: 'Foto Mempelai Wanita',
         description: 'Potret pengantin wanita bergaya gading natural',
         aspectRatio: '4:5'
       },
       {
         key: 'groomPortrait',
-        label: 'Foto Mempelai Pria (Damar)',
+        label: 'Foto Mempelai Pria',
         description: 'Potret pengantin pria berlatar alam teduh',
         aspectRatio: '4:5'
       },
@@ -220,7 +220,7 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       bankName: 'BCA',
       accountNumber: '8801234567',
       accountHolder: 'Damar Aji Wibisono',
-      audioUrl: 'https://actions.google.com/sounds/v1/relaxing/relaxing_waves.ogg',
+      audioUrl: '',
       songTitle: 'Until I Found You - Acoustic Strings'
     }
   },

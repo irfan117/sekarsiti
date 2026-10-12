@@ -113,6 +113,7 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
   const accountNumber = customData?.accountNumber || '1280 5566 990';
   const accountHolder = customData?.accountHolder || 'Ayunda Kirana Putri';
   const songTitle = customData?.songTitle || 'Blueprint Acoustic Strings - Instrumental';
+  const audioUrl = customData?.audioUrl || '';
 
   // Media Slots
   const rawGallery =
@@ -167,7 +168,7 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
     'Bpk. Hendra Wijaya & Keluarga'
   );
   const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } =
-    useAudioController(songTitle);
+    useAudioController(songTitle, audioUrl);
   const { copyText, isCopied } = useClipboardCopy(1800);
   const cd = useCountdown(countdownIsoDate);
 

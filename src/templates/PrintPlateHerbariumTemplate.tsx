@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 
 import { ClientInvitationData } from '../types/clientInvitation';
+import { useAudioController } from '../hooks/useInvitationCore';
 
 interface PrintPlateHerbariumTemplateProps {
   onBackToLanding: () => void;
@@ -75,6 +76,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   const accountNumber = customData?.accountNumber || '8271 0293 84';
   const accountHolder = customData?.accountHolder || 'a.n. Kirana Ayu Lestari';
   const songTitle = customData?.songTitle || 'Until I Found You';
+  const audioUrl = customData?.audioUrl || '';
 
   // Opening state: isOpened triggers smooth reveal, isCoverDismissed removes gate
   const [isOpened, setIsOpened] = useState(false);
@@ -84,9 +86,10 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   const [copiedBank, setCopiedBank] = useState(false);
   const [showQrisModal, setShowQrisModal] = useState(false);
 
-  // Background Audio Simulation State
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [showAudioToast, setShowAudioToast] = useState(false);
+  const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } = useAudioController(
+    songTitle,
+    audioUrl
+  );
 
   // Guest Name personalization (reads from URL query ?to= or universal mode ?notamu=1)
   const [hideGuestName] = useState(() => {
@@ -445,10 +448,8 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   // Open invitation handler - Smooth cinematic fade
   const handleOpenInvitation = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-    setIsPlayingAudio(true);
-    setShowAudioToast(true);
-    setTimeout(() => setShowAudioToast(false), 4000);
-    
+    startAudio();
+
     setIsOpened(true);
     setTimeout(() => {
       setIsCoverDismissed(true);
@@ -459,12 +460,6 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
     navigator.clipboard.writeText(accountNumber.replace(/\s+/g, ''));
     setCopiedBank(true);
     setTimeout(() => setCopiedBank(false), 2500);
-  };
-
-  const toggleAudio = () => {
-    setIsPlayingAudio(!isPlayingAudio);
-    setShowAudioToast(true);
-    setTimeout(() => setShowAudioToast(false), 3000);
   };
 
   const scrollToSection = (id: string) => {
@@ -540,7 +535,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           <div className="hidden sm:flex items-center gap-2 text-[#EFE9DF]/80">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880]" />
             <span className="font-['Fraunces',serif] text-sm text-[#FAF7F2] tracking-wide">
-              Seri Editorial Modern · Kirana &amp; Adhitya
+              Seri Editorial Modern · {brideName} &amp; {groomName}
             </span>
           </div>
 
@@ -560,7 +555,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           {showAudioToast && (
             <div className="flex items-center gap-2 py-1.5 px-3.5 bg-[#161514]/95 backdrop-blur-md border border-[#2A2926] text-[#FAF7F2] rounded-full text-xs shadow-xl animate-fade-in">
               <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880] animate-pulse" />
-              <span>{isPlayingAudio ? 'Until I Found You (Violin Solo)' : 'Musik dijeda'}</span>
+              <span>{isPlayingAudio ? `Musik: ${songTitle}` : 'Musik dijeda'}</span>
             </div>
           )}
 
@@ -1007,31 +1002,33 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
 
         {/* Minimal Audio & Date Bar - Open Typographic Layout */}
         <div className="shrink-0 pt-4 border-t border-[#22211F] space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-0.5 min-w-0">
               <p className="text-[10px] tracking-wider uppercase text-[#C5A880] font-medium">
                 MUSIK LATAR
               </p>
-              <p className="text-xs text-[#FAF7F2]">
-                Until I Found You
+              <p className="text-xs text-[#FAF7F2] truncate" title={songTitle}>
+                {songTitle.includes(' - ') ? songTitle.split(' - ')[0] : songTitle}
               </p>
-              <p className="text-[11px] text-[#8A857D]">
-                Stephen Sanchez (Violin Solo)
-              </p>
+              {songTitle.includes(' - ') && (
+                <p className="text-[11px] text-[#8A857D] truncate">
+                  {songTitle.split(' - ').slice(1).join(' - ')}
+                </p>
+              )}
             </div>
 
             <button
               onClick={toggleAudio}
-              className="w-9 h-9 rounded-full bg-[#1C1B19] hover:bg-[#252422] text-[#C5A880] flex items-center justify-center transition-colors cursor-pointer border border-[#2A2926]"
+              className="w-9 h-9 shrink-0 rounded-full bg-[#1C1B19] hover:bg-[#252422] text-[#C5A880] flex items-center justify-center transition-colors cursor-pointer border border-[#2A2926]"
               title={isPlayingAudio ? 'Jeda Musik' : 'Putar Musik'}
             >
               {isPlayingAudio ? <Disc3 className="w-4 h-4 anim-spin-vinyl" /> : <Disc className="w-4 h-4 opacity-60" />}
             </button>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-[#8A857D] pt-1">
-            <span>Minggu, 14 Februari 2027</span>
-            <span className="font-mono text-[#C5A880]">H-{timeLeft.days} HARI</span>
+          <div className="flex items-center justify-between text-xs text-[#8A857D] pt-1 gap-2">
+            <span className="truncate">{eventDateFormatted}</span>
+            <span className="font-mono text-[#C5A880] shrink-0">H-{timeLeft.days} HARI</span>
           </div>
         </div>
       </aside>
@@ -1185,7 +1182,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
             </p>
 
             <h1 className="font-['Fraunces',serif] text-4xl sm:text-5xl text-[#FAF7F2] font-normal tracking-tight leading-tight">
-              Kirana &amp; Adhitya
+              {brideName} &amp; {groomName}
             </h1>
 
             <div className="flex items-center justify-center gap-3 py-1">
@@ -1782,7 +1779,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           <div className="relative z-10 text-[#FAF7F2] space-y-4 max-w-sm">
             <div className="w-8 h-[1px] bg-[#C5A880] mx-auto opacity-70 mb-2" />
             <div className="font-['Fraunces',serif] text-3xl sm:text-4xl text-[#C5A880]">
-              Kirana &amp; Adhitya
+              {brideName} &amp; {groomName}
             </div>
             <p className="text-xs sm:text-sm leading-relaxed text-[#FAF7F2]/80 font-light">
               Terima kasih telah menjadi bagian dari perjalanan kami. Kehadiran dan doa restu Anda adalah hadiah terindah bagi babak baru kehidupan kami.
@@ -1837,7 +1834,9 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
             </div>
 
             <div className="space-y-0.5">
-              <p className="text-xs font-semibold text-stone-900">Kirana &amp; Adhitya</p>
+              <p className="text-xs font-semibold text-stone-900">
+                {brideName} &amp; {groomName}
+              </p>
               <p className="text-[10px] text-stone-500">Scan via BCA, Mandiri, GoPay, OVO, Dana</p>
             </div>
           </div>

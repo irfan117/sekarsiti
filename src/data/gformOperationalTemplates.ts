@@ -54,7 +54,7 @@ BAGIAN 1: DATA PEMESAN & PILIHAN DESAIN
 1. Nama Pasangan / Judul Undangan (Contoh: Kirana & Adhitya) [Jawaban Singkat]
 2. Nomor WhatsApp Aktif Pemesan [Jawaban Singkat]
 3. Email Pemesan [Jawaban Singkat]
-4. Pilihan Desain Template [Pilihan Ganda: Ruang Rasa (Editorial) / Malam Zamrud (Art Deco) / Setangkai (Sage) / Suasana (Jurnal) / Lembayung (Reel 35mm) / Cetak Biru Kami (Blueprint Arsitektur) / Atlas Cinta (Jurnal Perjalanan)]
+4. Pilihan Desain Template [Pilihan Ganda: Ruang Rasa (Editorial) / Malam Zamrud (Art Deco) / Kertas Sage (setangkai) / Suasana (Jurnal) / Lembayung (Reel 35mm) / Cetak Biru Kami (Blueprint Arsitektur) / Atlas Cinta (Jurnal Perjalanan)]
 5. Keinginan URL Slug Undangan (Contoh: kirana-adhitya) [Jawaban Singkat]
 
 BAGIAN 2: PROFIL MEMPELAI WANITA & PRIA

@@ -113,6 +113,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
   const accountNumber = customData?.accountNumber || '1370019283741';
   const accountHolder = customData?.accountHolder || 'Fajar Nugraha Pratama';
   const songTitle = customData?.songTitle || 'Lagu Senja Analog - 35mm Acoustic Tape';
+  const audioUrl = customData?.audioUrl || '';
 
   const customFilmImages = customData?.mediaSlots?.filmstripImages || customData?.mediaSlots?.galleryImages;
   const galleryPolaroids = (customFilmImages && customFilmImages.length > 0)
@@ -129,7 +130,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
 
   // Modular Hooks: Guest recipient, audio, clipboard, countdown, guestbook, rsvp
   const { guestName: guestRecipient, hideGuestName } = useGuestRecipient('Tamu Undangan');
-  const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } = useAudioController(songTitle);
+  const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } = useAudioController(songTitle, audioUrl);
   const { copyText, isCopied } = useClipboardCopy(2500);
   const countdownRaw = useCountdown(countdownIsoDate);
   const countdown = { d: countdownRaw.days, h: countdownRaw.hours, m: countdownRaw.mins, s: countdownRaw.secs };
@@ -275,7 +276,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
   const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Pernikahan+${encodeURIComponent(brideName)}+%26+${encodeURIComponent(groomName)}&dates=20271009T010000Z/20271009T060000Z&details=Undangan+Pernikahan+${encodeURIComponent(brideFullName)}+%26+${encodeURIComponent(groomFullName)}.+Akad+${encodeURIComponent(akadTime)},+Resepsi+${encodeURIComponent(resepsiTime)}.&location=${encodeURIComponent(resepsiVenue)}`;
 
   return (
-    <div className="reel-template-root relative min-h-screen bg-[#F3EAD9] text-[#211B14] font-['Karla',sans-serif] selection:bg-[#C99A4B]/40 selection:text-[#171310] pb-[82px]">
+    <div className="reel-template-root relative min-h-screen bg-[#171310] text-[#211B14] font-['Karla',sans-serif] selection:bg-[#C99A4B]/40 selection:text-[#171310] pb-[88px]">
       
       {/* ============================================================
           DESIGN TOKENS & CSS STYLESHEET
@@ -683,7 +684,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           <div className="hidden sm:flex items-center gap-2 text-[#F3EAD9]/85">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C99A4B] animate-pulse" />
             <span className="font-['DM_Serif_Display',serif] text-sm text-[#F3EAD9] tracking-wide">
-              Seri Reel Sinematik · Larasati &amp; Fajar
+              Seri Reel Sinematik · {brideName} &amp; {groomName}
             </span>
           </div>
 
@@ -704,7 +705,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
         {showAudioToast && (
           <div className="hidden sm:flex items-center gap-2 py-1.5 px-3.5 bg-[#171310]/95 backdrop-blur-md border border-[#D4AF6A]/30 text-[#F3EAD9] rounded-full text-xs shadow-xl animate-fade-in font-['Courier_Prime',monospace]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C99A4B] animate-pulse" />
-            <span>{isPlayingAudio ? 'Soundtrack: Golden Hour Nostalgia' : 'Audio Dijeda'}</span>
+            <span>{isPlayingAudio ? `Soundtrack: ${songTitle}` : 'Audio Dijeda'}</span>
           </div>
         )}
 
@@ -744,9 +745,9 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
             <span className="reel-kicker text-[#D4AF6A]">Undangan Pernikahan</span>
             
             <h1 className="gate-names gold-text font-serif italic text-3xl sm:text-4xl my-6 leading-tight">
-              <span>Fajar Ramadhan Putra</span>
+              <span>{groomFullName}</span>
               <span className="block font-['Pinyon_Script',cursive] not-italic text-5xl my-1 text-[#D4AF6A]">&amp;</span>
-              <span>Larasati Ayu Ningtyas</span>
+              <span>{brideFullName}</span>
             </h1>
 
             {!hideGuestName && guestRecipient && (
@@ -777,9 +778,9 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
 
       {/* ============================================================
           DESKTOP SIDEBAR LEFT — Film Perforations + Section Navigator
-          Hanya tampil di lg+
+          Full-height agar tidak ada gap kosong di sudut (header/filmstrip overlap via z-index)
           ============================================================ */}
-      <aside className="hidden lg:flex fixed top-[48px] bottom-[100px] left-0 w-[188px] z-30 flex-col bg-[#171310] border-r border-[#D4AF6A]/20 overflow-hidden">
+      <aside className={`hidden lg:flex fixed inset-y-0 left-0 w-[188px] z-30 flex-col bg-[#171310] border-r border-[#D4AF6A]/20 overflow-hidden pb-[88px] ${customData ? 'pt-0' : 'pt-12'}`}>
         {/* Film perforation strip top */}
         <div className="flex-none h-6 bg-[#0D0A08] flex items-center justify-around px-2 border-b border-[#D4AF6A]/10">
           {[...Array(6)].map((_, i) => (
@@ -833,9 +834,9 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
 
       {/* ============================================================
           DESKTOP SIDEBAR RIGHT — Foto pasangan + Countdown
-          Hanya tampil di lg+
+          Full-height agar sudut viewport tidak menyisakan gap kertas cream
           ============================================================ */}
-      <aside className="hidden lg:flex fixed top-[48px] bottom-[100px] right-0 w-[188px] z-30 flex-col bg-[#0D0A08] border-l border-[#D4AF6A]/20 overflow-hidden">
+      <aside className={`hidden lg:flex fixed inset-y-0 right-0 w-[188px] z-30 flex-col bg-[#0D0A08] border-l border-[#D4AF6A]/20 overflow-hidden pb-[88px] ${customData ? 'pt-0' : 'pt-12'}`}>
         {/* Film perforation strip top */}
         <div className="flex-none h-6 bg-[#171310] flex items-center justify-around px-2 border-b border-[#D4AF6A]/10">
           {[...Array(6)].map((_, i) => (
@@ -910,7 +911,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
       {/* ============================================================
           MAIN BODY SECTIONS — center column (padded by sidebars on desktop)
           ============================================================ */}
-      <main className={`${customData ? 'pt-0' : 'pt-12'} lg:ml-[188px] lg:mr-[188px]`}>
+      <main className={`${customData ? 'pt-0' : 'pt-12'} lg:ml-[188px] lg:mr-[188px] bg-[#F3EAD9] min-h-screen`}>
 
         {/* ============ SECTION 1 (STATIS): HERO KOLASE 16 TILES ============ */}
         <section 
@@ -967,19 +968,19 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
               {/* Polaroid Photo */}
               <div className="reel-polaroid w-[min(76vw,320px)] mx-auto mt-6 -rotate-2">
                 <img 
-                  src="/images/editorial_couple_portrait_1790838636662.jpg" 
-                  alt="Foto pasangan mempelai Fajar &amp; Larasati" 
+                  src={customData?.mediaSlots?.heroImage || '/images/editorial_couple_portrait_1790838636662.jpg'} 
+                  alt={`Foto pasangan mempelai ${groomName} & ${brideName}`} 
                   className="aspect-4/5"
                 />
                 <p className="cap">— selamanya, mulai hari ini —</p>
               </div>
 
               <h2 className="text-3xl sm:text-4xl font-serif italic mt-8 text-[#211B14] font-normal leading-tight">
-                <span>Fajar Ramadhan Putra</span>
+                <span>{groomFullName}</span>
                 <span className="block font-['Pinyon_Script',cursive] not-italic text-5xl sm:text-6xl text-[#A9782F] my-1">
                   &amp;
                 </span>
-                <span>Larasati Ayu Ningtyas</span>
+                <span>{brideFullName}</span>
               </h2>
 
               <p className="reel-kicker text-[#7B3B34] mt-4 tracking-widest">
@@ -1382,47 +1383,66 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
                 </div>
 
                 <div className="lg:col-span-7 space-y-4">
-                  {/* Bank BRI */}
                   <div className="p-4 bg-white/90 border border-[#D4AF6A] rounded-xs text-left shadow-xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-['Courier_Prime',monospace] font-bold text-sm text-[#211B14]">Bank BRI</span>
+                      <span className="font-['Courier_Prime',monospace] font-bold text-sm text-[#211B14]">
+                        Bank {bankName}
+                      </span>
                       <span className="text-xs text-[#7B3B34] font-medium font-serif italic">Rekening Utama</span>
                     </div>
                     <p className="font-['Courier_Prime',monospace] text-base font-bold text-[#171310] mt-1 tracking-wider">
-                      0011 2233 4455
+                      {accountNumber}
                     </p>
-                    <p className="text-xs text-[#5A5343]">a.n. Larasati Ayu Ningtyas</p>
+                    <p className="text-xs text-[#5A5343]">a.n. {accountHolder}</p>
                     
                     <button
                       type="button"
-                      onClick={() => handleCopy('001122334455', 'bri')}
+                      onClick={() => handleCopy(accountNumber.replace(/\s+/g, ''), 'bank-primary')}
                       className="mt-3 w-full py-2 bg-[#7B3B34] hover:bg-[#5C2B25] text-white text-xs font-['Courier_Prime',monospace] uppercase tracking-wider rounded-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
-                      {isCopied('bri') ? <Check className="w-3.5 h-3.5 text-[#DFC084]" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{isCopied('bri') ? 'Nomor Tersalin!' : 'Salin Nomor BRI'}</span>
+                      {isCopied('bank-primary') ? <Check className="w-3.5 h-3.5 text-[#DFC084]" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{isCopied('bank-primary') ? 'Nomor Tersalin!' : `Salin Nomor ${bankName}`}</span>
                     </button>
                   </div>
 
-                  {/* Bank BCA */}
-                  <div className="p-4 bg-white/90 border border-[#D4AF6A] rounded-xs text-left shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-['Courier_Prime',monospace] font-bold text-sm text-[#211B14]">Bank BCA</span>
-                      <span className="text-xs text-[#7B3B34] font-medium font-serif italic">Rekening Mempelai</span>
+                  {customData?.secondaryBankName && customData?.secondaryAccountNumber && (
+                    <div className="p-4 bg-white/90 border border-[#D4AF6A] rounded-xs text-left shadow-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-['Courier_Prime',monospace] font-bold text-sm text-[#211B14]">
+                          Bank {customData.secondaryBankName}
+                        </span>
+                        <span className="text-xs text-[#7B3B34] font-medium font-serif italic">Rekening Kedua</span>
+                      </div>
+                      <p className="font-['Courier_Prime',monospace] text-base font-bold text-[#171310] mt-1 tracking-wider">
+                        {customData.secondaryAccountNumber}
+                      </p>
+                      <p className="text-xs text-[#5A5343]">
+                        a.n. {customData.secondaryAccountHolder || brideFullName}
+                      </p>
+                      
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleCopy(
+                            String(customData.secondaryAccountNumber).replace(/\s+/g, ''),
+                            'bank-secondary'
+                          )
+                        }
+                        className="mt-3 w-full py-2 bg-[#211B14] hover:bg-black text-[#F3EAD9] text-xs font-['Courier_Prime',monospace] uppercase tracking-wider rounded-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        {isCopied('bank-secondary') ? (
+                          <Check className="w-3.5 h-3.5 text-[#DFC084]" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                        <span>
+                          {isCopied('bank-secondary')
+                            ? 'Nomor Tersalin!'
+                            : `Salin Nomor ${customData.secondaryBankName}`}
+                        </span>
+                      </button>
                     </div>
-                    <p className="font-['Courier_Prime',monospace] text-base font-bold text-[#171310] mt-1 tracking-wider">
-                      8820 9182 34
-                    </p>
-                    <p className="text-xs text-[#5A5343]">a.n. Fajar Ramadhan Putra</p>
-                    
-                    <button
-                      type="button"
-                      onClick={() => handleCopy('8820918234', 'bca')}
-                      className="mt-3 w-full py-2 bg-[#211B14] hover:bg-black text-[#F3EAD9] text-xs font-['Courier_Prime',monospace] uppercase tracking-wider rounded-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      {isCopied('bca') ? <Check className="w-3.5 h-3.5 text-[#DFC084]" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{isCopied('bca') ? 'Nomor Tersalin!' : 'Salin Nomor BCA'}</span>
-                    </button>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1592,7 +1612,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
               terima kasih telah menonton hingga usai
             </p>
             <p className="font-['Courier_Prime',monospace] text-[11px] text-[#F3EAD9]/70 uppercase tracking-widest mt-6">
-              Pemeran Utama: Fajar &amp; Larasati · Disutradarai oleh Cinta · Bandung, 2027
+              Pemeran Utama: {groomName} &amp; {brideName} · Disutradarai oleh Cinta · {city}
             </p>
           </div>
         </section>

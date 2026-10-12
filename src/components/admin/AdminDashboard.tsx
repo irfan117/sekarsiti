@@ -33,8 +33,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [editingOrder, setEditingOrder] = useState<ClientInvitationData | null>(null);
   const [autoOpenAiSetup, setAutoOpenAiSetup] = useState(false);
 
-  const refreshOrders = async () => {
-    await AdminStore.initFromSupabase();
+  const refreshOrders = () => {
     setOrders(AdminStore.getAll());
   };
 

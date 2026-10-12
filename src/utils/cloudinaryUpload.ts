@@ -42,25 +42,47 @@ export async function uploadToCloudinary(file: File): Promise<string> {
 
 export async function uploadAudioToCloudinary(file: File): Promise<string> {
   const { cloudName, uploadPreset } = getCloudinaryUploadConfig();
-  const normalizedFile = file.type === 'audio/mpeg' || file.type === 'audio/mp3' ? file : new File([file], file.name, { type: file.type || 'audio/webm' });
 
-  const formData = new FormData();
-  formData.append('file', normalizedFile);
-  formData.append('upload_preset', uploadPreset);
-  formData.append('resource_type', 'video');
+  // Cloudinary treats audio as video resource_type for unsigned uploads.
+  const buildFormData = () => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    return formData;
+  };
 
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
-    method: 'POST',
-    body: formData,
-  });
+  const endpoints = [
+    `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
+    `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+  ];
 
-  if (!response.ok) {
+  let lastErrorMessage = 'Gagal mengunggah file musik ke Cloudinary.';
+
+  for (const endpoint of endpoints) {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: buildFormData(),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const url = (data.secure_url || data.url) as string | undefined;
+      if (url) return url;
+      lastErrorMessage = 'Cloudinary tidak mengembalikan URL audio.';
+      continue;
+    }
+
     const errData = await response.json().catch(() => ({}));
-    throw new Error(errData?.error?.message || 'Gagal mengunggah file musik ke Cloudinary.');
+    lastErrorMessage =
+      errData?.error?.message ||
+      `Upload gagal (${response.status}) via ${endpoint.split('/').slice(-2).join('/')}.`;
+    console.warn('Cloudinary audio upload attempt failed:', lastErrorMessage);
   }
 
-  const data = await response.json();
-  return data.secure_url as string;
+  throw new Error(
+    `${lastErrorMessage} Pastikan unsigned upload preset mengizinkan resource type Video/Raw/Auto.`
+  );
 }
 
 function getSupportedWebmMimeType(): string {

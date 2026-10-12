@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ArrowLeft, MessageCircle, Disc3, Disc, Calendar, Sparkles, Gift } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
 import { 
@@ -16,21 +16,20 @@ interface DamarAlyaTemplateProps {
   customData?: ClientInvitationData;
 }
 
-// Stage sections matching the exact HTML data-stage attributes
-const STAGE_CONFIG = [
-  { id: 'sec-hero-couple', key: 'hero-couple', image: '/images/atlas_cinta_groom_portrait_1791177974718.jpg', text: 'Damar & Alya, menghitung hari.' },
-  { id: 'sec-opening', key: 'opening', image: '/images/brand_story_botanical_1790831303860.jpg', text: 'Tenteram dalam satu ikatan suci.' },
-  { id: 'sec-couple', key: 'couple', image: '/images/editorial_couple_portrait_1790838636662.jpg', text: 'Damar & Alya, mempelai yang berbahagia.' },
-  { id: 'sec-story', key: 'story', image: '/images/wedding_bride_veil_1790901501919.jpg', text: 'Kisah yang bermula dari kedai kopi kecil.' },
-  { id: 'sec-spotlight-1', key: 'spotlight1', image: '/images/sage_outdoor_couple_portrait_1790919006777.jpg', text: 'Berjalan berdampingan, satu tujuan.' },
-  { id: 'sec-schedule', key: 'schedule', image: '/images/wedding_dance_lights_1790901533590.jpg', text: 'Akad dan resepsi, dua janji dalam satu hari.' },
-  { id: 'sec-gallery', key: 'gallery', image: '/images/art_deco_emerald_couple_1790840336340.jpg', text: 'Setiap foto membuka diri, satu per satu.' },
-  { id: 'sec-spotlight-2', key: 'spotlight2', image: '/images/atlas_cinta_bride_portrait_1791177955237.jpg', text: 'Waktu berhenti sejenak untuk kami berdua.' },
-  { id: 'sec-gift', key: 'gift', image: '/images/wedding_vows_bouquet_1790901516667.jpg', text: 'Doa restu Anda adalah hadiah paling berarti.' },
-  { id: 'sec-guestbook', key: 'guestbook', image: '/images/wedding_ring_exchange_1790833922500.jpg', text: 'Setiap ucapan, kami simpan sebagai doa.' },
-  { id: 'sec-rsvp', key: 'rsvp', image: '/images/wedding_bride_portrait_1790833939171.jpg', text: 'Kehadiran Anda melengkapi hari kami.' },
-  { id: 'sec-closing', key: 'closing', image: '/images/wedding_dance_lights_1790901533590.jpg', text: 'Terima kasih telah menjadi bagian dari kisah ini.' }
-];
+const STAGE_SECTION_IDS = [
+  'sec-hero-couple',
+  'sec-opening',
+  'sec-couple',
+  'sec-story',
+  'sec-spotlight-1',
+  'sec-schedule',
+  'sec-gallery',
+  'sec-spotlight-2',
+  'sec-gift',
+  'sec-guestbook',
+  'sec-rsvp',
+  'sec-closing',
+] as const;
 
 export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
   onBackToLanding,
@@ -62,38 +61,43 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
   const quoteText = customData?.quoteText || 'Dan di antara tanda-tanda kebesaran-Nya ialah diciptakan-Nya untukmu pasangan hidup, agar engkau merasa tenteram di sisinya.';
   const quoteSource = customData?.quoteSource || 'QS. Ar-Rum: 21';
   const songTitle = customData?.songTitle || 'Until I Found You - Acoustic Strings';
+  const audioUrl = customData?.audioUrl || '';
 
   const heroImage = customData?.mediaSlots?.heroImage || '/images/wedding_couple_portrait_1790833906470.jpg';
   const bridePortrait = customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_portrait_1790833939171.jpg';
   const groomPortrait = customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
 
-  const galleryImages = (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0)
-    ? customData.mediaSlots.galleryImages
-    : [
-        '/images/wedding_bride_veil_1790901501919.jpg',
-        '/images/wedding_shoes_jewelry_1790901548736.jpg',
-        '/images/wedding_table_botanical_1790833955186.jpg',
-        '/images/wedding_dance_lights_1790901533590.jpg',
-        '/images/editorial_venue_rings_1790838653826.jpg',
-        '/images/art_deco_emerald_couple_1790840336340.jpg'
-      ];
+  const galleryImages = useMemo(() => {
+    const customGallery = customData?.mediaSlots?.galleryImages;
+    if (customGallery && customGallery.length > 0) return customGallery;
+    return [
+      '/images/wedding_bride_veil_1790901501919.jpg',
+      '/images/wedding_shoes_jewelry_1790901548736.jpg',
+      '/images/wedding_table_botanical_1790833955186.jpg',
+      '/images/wedding_dance_lights_1790901533590.jpg',
+      '/images/editorial_venue_rings_1790838653826.jpg',
+      '/images/art_deco_emerald_couple_1790840336340.jpg',
+    ];
+  }, [customData?.mediaSlots?.galleryImages]);
 
-  // Dynamic Stage Config: maps desktop left panel to real images from hero/gallery/bride/groom
-  // Guarantees first panel image appears on initial render and every scroll crossfade is accurate
-  const stageConfig = [
-    { id: 'sec-hero-couple', key: 'hero-couple', image: heroImage, text: `${groomName} & ${brideName}, menghitung hari.` },
-    { id: 'sec-opening', key: 'opening', image: galleryImages[0] || heroImage, text: 'Tenteram dalam satu ikatan suci.' },
-    { id: 'sec-couple', key: 'couple', image: groomPortrait, text: `${groomName} & ${brideName}, mempelai yang berbahagia.` },
-    { id: 'sec-story', key: 'story', image: galleryImages[1] || bridePortrait, text: 'Kisah yang bermula dari kedai kopi kecil.' },
-    { id: 'sec-spotlight-1', key: 'spotlight1', image: galleryImages[2] || heroImage, text: 'Berjalan berdampingan, satu tujuan.' },
-    { id: 'sec-schedule', key: 'schedule', image: galleryImages[3] || groomPortrait, text: 'Akad dan resepsi, dua janji dalam satu hari.' },
-    { id: 'sec-gallery', key: 'gallery', image: galleryImages[4] || bridePortrait, text: 'Setiap foto membuka diri, satu per satu.' },
-    { id: 'sec-spotlight-2', key: 'spotlight2', image: galleryImages[5] || heroImage, text: 'Waktu berhenti sejenak untuk kami berdua.' },
-    { id: 'sec-gift', key: 'gift', image: galleryImages[0] || heroImage, text: 'Doa restu Anda adalah hadiah paling berarti.' },
-    { id: 'sec-guestbook', key: 'guestbook', image: galleryImages[1] || bridePortrait, text: 'Setiap ucapan, kami simpan sebagai doa.' },
-    { id: 'sec-rsvp', key: 'rsvp', image: galleryImages[2] || groomPortrait, text: 'Kehadiran Anda melengkapi hari kami.' },
-    { id: 'sec-closing', key: 'closing', image: galleryImages[3] || heroImage, text: 'Terima kasih telah menjadi bagian dari kisah ini.' }
-  ];
+  // Dynamic Stage Config: panel gambar sticky mengikuti section aktif saat scroll
+  const stageConfig = useMemo(
+    () => [
+      { id: 'sec-hero-couple', key: 'hero-couple', image: heroImage, text: `${groomName} & ${brideName}, menghitung hari.` },
+      { id: 'sec-opening', key: 'opening', image: galleryImages[0] || heroImage, text: 'Tenteram dalam satu ikatan suci.' },
+      { id: 'sec-couple', key: 'couple', image: groomPortrait, text: `${groomName} & ${brideName}, mempelai yang berbahagia.` },
+      { id: 'sec-story', key: 'story', image: galleryImages[1] || bridePortrait, text: 'Kisah yang bermula dari kedai kopi kecil.' },
+      { id: 'sec-spotlight-1', key: 'spotlight1', image: galleryImages[2] || heroImage, text: 'Berjalan berdampingan, satu tujuan.' },
+      { id: 'sec-schedule', key: 'schedule', image: galleryImages[3] || groomPortrait, text: 'Akad dan resepsi, dua janji dalam satu hari.' },
+      { id: 'sec-gallery', key: 'gallery', image: galleryImages[4] || bridePortrait, text: 'Setiap foto membuka diri, satu per satu.' },
+      { id: 'sec-spotlight-2', key: 'spotlight2', image: galleryImages[5] || heroImage, text: 'Waktu berhenti sejenak untuk kami berdua.' },
+      { id: 'sec-gift', key: 'gift', image: galleryImages[0] || heroImage, text: 'Doa restu Anda adalah hadiah paling berarti.' },
+      { id: 'sec-guestbook', key: 'guestbook', image: galleryImages[1] || bridePortrait, text: 'Setiap ucapan, kami simpan sebagai doa.' },
+      { id: 'sec-rsvp', key: 'rsvp', image: galleryImages[2] || groomPortrait, text: 'Kehadiran Anda melengkapi hari kami.' },
+      { id: 'sec-closing', key: 'closing', image: galleryImages[3] || heroImage, text: 'Terima kasih telah menjadi bagian dari kisah ini.' },
+    ],
+    [brideName, groomName, bridePortrait, groomPortrait, galleryImages, heroImage]
+  );
 
   // Cover gate state: isCoverOpened controls unsealing, isCoverDismissed removes the gate
   const [isCoverOpened, setIsCoverOpened] = useState(false);
@@ -101,13 +105,15 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
 
   // Active stage index & text - initialize from stageConfig[0] so image appears immediately on page load
   const [activeStageIdx, setActiveStageIdx] = useState(0);
-  const [stageCaptionText, setStageCaptionText] = useState(stageConfig[0]?.text || `${groomName} & ${brideName}, menghitung hari.`);
+  const [stageCaptionText, setStageCaptionText] = useState(
+    () => stageConfig[0]?.text || `${groomName} & ${brideName}, menghitung hari.`
+  );
 
   // Modular Hooks: Countdown, Guest Recipient, Audio, Clipboard, Guestbook, RSVP
   const cdRaw = useCountdown(countdownIsoDate);
   const cd = { d: cdRaw.days, h: cdRaw.hours, m: cdRaw.mins, s: cdRaw.secs };
   const { guestName, hideGuestName } = useGuestRecipient('Bpk. Hendra Wijaya & Keluarga');
-  const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } = useAudioController(songTitle);
+  const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } = useAudioController(songTitle, audioUrl);
   const { copyText, isCopied } = useClipboardCopy(2000);
 
   const initialWishes = customData?.guestbookEntries && customData.guestbookEntries.length > 0
@@ -115,7 +121,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
     : [
         {
           name: 'Salsabila Rahma',
-          message: 'Selamat menempuh hidup baru, Damar & Alya! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah.'
+          message: `Selamat menempuh hidup baru, ${groomName} & ${brideName}! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah.`
         },
         {
           name: 'Dimas Prasetyo & Keluarga',
@@ -148,12 +154,18 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
   } = useRsvpForm();
   const [rsvpNote, setRsvpNote] = useState('');
 
-  // 2. IntersectionObserver for .reveal and .wipe-item and .stage crossfade
+  // Sync caption when couple names / media change
   useEffect(() => {
+    setStageCaptionText(stageConfig[activeStageIdx]?.text || stageConfig[0]?.text || '');
+  }, [stageConfig, activeStageIdx]);
+
+  // IntersectionObserver for .reveal, .wipe-item, and stage panel crossfade
+  useEffect(() => {
+    if (!isCoverDismissed) return;
+
     const root = deviceFrameRef.current;
     if (!root) return;
 
-    // Reveal elements observer
     const revealObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -165,7 +177,6 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
 
     root.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
 
-    // Wipe-stack gallery observer (alternating clip-path wipe reveal)
     const wipeObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -177,30 +188,63 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
 
     root.querySelectorAll('.wipe-item').forEach((el) => wipeObserver.observe(el));
 
-    // Stage mirror observer for desktop left panel
-    const stageObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.35) {
-          const idx = STAGE_CONFIG.findIndex(s => s.id === entry.target.id);
-          if (idx !== -1) {
-            setActiveStageIdx(idx);
-            setStageCaptionText(STAGE_CONFIG[idx].text);
-          }
-        }
-      });
-    }, { root, threshold: [0.35, 0.6] });
+    const activateStage = (sectionId: string) => {
+      const idx = stageConfig.findIndex((s) => s.id === sectionId);
+      if (idx === -1) return;
+      setActiveStageIdx(idx);
+      setStageCaptionText(stageConfig[idx].text);
+    };
 
-    STAGE_CONFIG.forEach((sec) => {
-      const el = root.querySelector('#' + sec.id);
+    // Stage mirror: ganti gambar panel sticky mengikuti section yang paling terlihat
+    const stageObserver = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]?.target?.id) {
+          activateStage(visible[0].target.id);
+        }
+      },
+      { root, threshold: [0.2, 0.35, 0.5, 0.65, 0.8] }
+    );
+
+    STAGE_SECTION_IDS.forEach((id) => {
+      const el = root.querySelector('#' + id);
       if (el) stageObserver.observe(el);
     });
+
+    // Fallback scroll sync (lebih andal di beberapa browser untuk overflow container)
+    const syncStageFromScroll = () => {
+      const rootRect = root.getBoundingClientRect();
+      const markerY = rootRect.top + rootRect.height * 0.35;
+      let bestId: string = STAGE_SECTION_IDS[0];
+      let bestDist = Number.POSITIVE_INFINITY;
+
+      STAGE_SECTION_IDS.forEach((id) => {
+        const el = root.querySelector('#' + id) as HTMLElement | null;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const mid = rect.top + rect.height * 0.35;
+        const dist = Math.abs(mid - markerY);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestId = id;
+        }
+      });
+
+      activateStage(bestId);
+    };
+
+    root.addEventListener('scroll', syncStageFromScroll, { passive: true });
+    syncStageFromScroll();
 
     return () => {
       revealObserver.disconnect();
       wipeObserver.disconnect();
       stageObserver.disconnect();
+      root.removeEventListener('scroll', syncStageFromScroll);
     };
-  }, [isCoverOpened]);
+  }, [isCoverDismissed, stageConfig]);
 
   // Handle Opening the Cover Gate (Real unsealing instead of scroll)
   const handleOpenInvitation = () => {
@@ -657,7 +701,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
           <div className="hidden sm:flex items-center gap-2 text-[#faf7f1]/80">
             <span className="w-1.5 h-1.5 rounded-full bg-[#556743] animate-pulse" />
             <span className="font-['Bodoni_Moda',serif] text-sm text-[#faf7f1] tracking-wide">
-              Kertas Putih &amp; Sage · Damar &amp; Alya
+              Kertas Sage · {groomName} &amp; {brideName}
             </span>
           </div>
 
@@ -677,7 +721,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
           {showAudioToast && (
             <div className="hidden sm:flex items-center gap-2 py-1.5 px-3.5 bg-[#1b1e17]/90 backdrop-blur-md border border-[#b4c1a4]/30 text-[#faf7f1] rounded-full text-xs shadow-xl animate-fade-in">
               <span className="w-1.5 h-1.5 rounded-full bg-[#556743] animate-pulse" />
-              <span>{isPlayingAudio ? 'Musik: Until I Found You (Acoustic Strings)' : 'Musik dijeda'}</span>
+              <span>{isPlayingAudio ? `Musik: ${songTitle}` : 'Musik dijeda'}</span>
             </div>
 
           )}
@@ -704,7 +748,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
       {/* ============================================================
           SAMPUL / COVER GATE (FULL 1 PANEL SCREEN)
           Tampil 1 panel penuh layar (baik desktop maupun mobile).
-          Gaya editorial Kertas Putih & Sage: hening, anggun, dan mewah.
+          Gaya editorial Kertas Sage: hening, anggun, dan mewah.
           Saat dibuka: cover meluncur ke atas (unseal), menyingkap isi undangan
           yang tetap berformat 2 panel di desktop (Stage + Device Frame).
           ============================================================ */}
@@ -784,7 +828,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
           ))}
 
           <div className="stage-caption">
-            <p className="eyebrow">Kertas Putih &amp; Sage</p>
+            <p className="eyebrow">Kertas Sage</p>
             <h2 data-stage-caption>{stageCaptionText}</h2>
           </div>
           <div className="stage-index" data-stage-index>

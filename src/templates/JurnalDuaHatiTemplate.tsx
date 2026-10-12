@@ -96,6 +96,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
   const accountNumber = customData?.accountNumber || '8271029384';
   const accountHolder = customData?.accountHolder || 'Kirana Ayu Lestari';
   const songTitle = customData?.songTitle || 'Until I Found You - Stephen Sanchez';
+  const audioUrl = customData?.audioUrl || '';
 
   const galleryPhotos = (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0)
     ? customData.mediaSlots.galleryImages.map((src, i) => ({ src, alt: `Lembar Polaroid #${i + 1}` }))
@@ -107,7 +108,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
 
   // Modular hooks: guest recipient, audio, clipboard, countdown, guestbook, rsvp
   const { guestName: guestRecipient, hideGuestName } = useGuestRecipient('Bapak / Ibu / Saudara / i');
-  const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } = useAudioController(songTitle);
+  const { isPlayingAudio, showAudioToast, toggleAudio, startAudio } = useAudioController(songTitle, audioUrl);
   const { copyText, isCopied } = useClipboardCopy(2500);
   const countdownRaw = useCountdown(countdownIsoDate);
   const countdown = { days: countdownRaw.days, hours: countdownRaw.hours, mins: countdownRaw.mins, secs: countdownRaw.secs };
@@ -1000,7 +1001,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
           <div className="hidden sm:flex items-center gap-2 text-[#F8F5EC]/85">
             <span className="w-1.5 h-1.5 rounded-full bg-[#55653F] animate-pulse" />
             <span className="font-['Bricolage_Grotesque',sans-serif] text-sm text-[#F8F5EC] tracking-wide">
-              Seri Jurnal Dua Hati · Kirana &amp; Adhitya
+              Seri Jurnal Dua Hati · {brideName} &amp; {groomName}
             </span>
           </div>
 
@@ -1019,7 +1020,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
         {showAudioToast && (
           <div className="hidden sm:flex items-center gap-2 py-1.5 px-3.5 bg-[#1F1D19]/95 backdrop-blur-md border border-[#D8C9A3]/30 text-[#F8F5EC] rounded-full text-xs shadow-xl animate-fade-in">
             <span className="w-1.5 h-1.5 rounded-full bg-[#55653F] animate-pulse" />
-            <span>{isPlayingAudio ? 'Musik: Until I Found You (Acoustic Strings)' : 'Musik dijeda'}</span>
+            <span>{isPlayingAudio ? `Musik: ${songTitle}` : 'Musik dijeda'}</span>
           </div>
         )}
 
@@ -1083,7 +1084,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
                   <img 
                     className="cover-bg" 
                     src="/images/editorial_couple_portrait_1790838636662.jpg" 
-                    alt="Sampul Jurnal Kirana &amp; Adhitya"
+                    alt={`Sampul Jurnal ${brideName} & ${groomName}`}
                   />
                 </div>
                 
@@ -1159,7 +1160,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             <div className="couple-photo-frame mx-4 sm:mx-6 border border-[#D8C9A3]/80">
               <img 
                 src="/images/art_deco_emerald_couple_1790840336340.jpg" 
-                alt="Foto pasangan mempelai Kirana &amp; Adhitya" 
+                alt={`Foto pasangan mempelai ${brideName} & ${groomName}`} 
               />
               <div className="absolute bottom-3 left-4 z-10">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1F1D19]/80 backdrop-blur-xs text-[#D8C9A3] text-[10px] uppercase tracking-widest font-['Bricolage_Grotesque',sans-serif] rounded-xs">
@@ -1546,7 +1547,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
                 Terima kasih telah menjadi bagian berharga dari kisah kami. Kehadiran dan doa restu Anda adalah hadiah terindah dalam memulai babak baru ini.
               </p>
               <p className="closing-credit text-[#D8C9A3]/80">
-                Kirana &amp; Adhitya · Jakarta, 2027
+                {brideName} &amp; {groomName} · {city}
               </p>
             </div>
           </section>

@@ -25,12 +25,15 @@ BEGIN
 END $$;
 
 
--- 3. CATATAN TENTANG WARNING PERMISSIVE RLS POLICIES (USING (true) / WITH CHECK (true)):
--- Pada fitur publik seperti pengisian Guestbook, pengisian RSVP, & pendaftaran link tamu:
--- Kebijakan INSERT WITH CHECK (true) adalah KESENGAJAAN DESAIN (Intentional By Design)
--- agar tamu umum (unauthenticated/anon) dapat mengirimkan RSVP dan ucapan doa selamat tanpa perlu login.
--- 
--- Namun untuk fungsi admin pada music_tracks & portfolio_items, kita pastikan role target hanya authenticated:
-ALTER POLICY "Authenticated users can insert music library" ON public.music_tracks TO authenticated;
-ALTER POLICY "Authenticated users can update music library" ON public.music_tracks TO authenticated;
-ALTER POLICY "Authenticated users can delete music library" ON public.music_tracks TO authenticated;
+-- 3. PERBAIKAN RLS POLICY UNTUK MUSIC TRACKS & PORTFOLIO ITEMS:
+-- Mengizinkan operasi tulis (insert, update, delete) untuk anon & authenticated
+-- agar Admin Workspace yang menggunakan client anon key (mode lokal/frontend) dapat menambah dan menghapus musik
+DROP POLICY IF EXISTS "Authenticated users can insert music library" ON public.music_tracks;
+DROP POLICY IF EXISTS "Authenticated users can update music library" ON public.music_tracks;
+DROP POLICY IF EXISTS "Authenticated users can delete music library" ON public.music_tracks;
+DROP POLICY IF EXISTS "Admins full access to music tracks" ON public.music_tracks;
+
+CREATE POLICY "Allow full access to music tracks"
+ON public.music_tracks FOR ALL
+USING (true)
+WITH CHECK (true);
