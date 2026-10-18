@@ -54,7 +54,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Malam Zamrud)',
     completionTime: '1 Hari Pengerjaan',
-    image: '/images/template_sore_teduh_1790831280150.jpg',
+    image: '/images/art_deco_emerald_couple_1790840336340.jpg',
     description: 'Nuansa malam onyx yang megah, aksen kuningan art-deco, dan kemewahan zamrud yang memikat.',
     features: [
       'Motif kipas sunburst Art Deco mewah',
@@ -134,7 +134,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Jurnal Dua Hati)',
     completionTime: '1 Hari Pengerjaan',
-    image: '/images/brand_story_botanical_1790831303860.jpg',
+    image: '/images/invitation_rustic_botanical_1790827085588.jpg',
     description: 'Desain buku jurnal interaktif dengan sampul 3D lipat buka, panel panggung desktop dinamis, linimasa bergaris buku catatan, dan galeri foto polaroid.',
     features: [
       'Sampul jurnal 3D lipat buka (3D open book swing)',
@@ -174,7 +174,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Reel Sinematik)',
     completionTime: '1 Hari Pengerjaan',
-    image: '/images/editorial_couple_portrait_1790838636662.jpg',
+    image: '/images/film_vintage_couple_1791034007642.jpg',
     description: 'Konsep sinematik rol film 35mm retro. Dilengkapi gerbang sampul dua pintu, tiket bioskop berlubang perforasi, navigasi filmstrip horizontal bawah layar, dan kolase polaroid berserak.',
     features: [
       'Gerbang sampul dua pintu (double door gate slide)',
@@ -214,7 +214,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Cetak Biru Arsitektur)',
     completionTime: '1 Hari Pengerjaan',
-    image: '/images/wedding_couple_portrait_1790833906470.jpg',
+    image: '/images/blueprint_couple_hero_1791171076790.jpg',
     description: 'Estetika lembar kerja arsitektur cyanotype dengan 3 zona desktop asimetris, garis ukur interaktif, lembar potret tampak mempelai, denah lokasi SVG, dan pita ukur hitung mundur.',
     features: [
       'Gerbang cetak biru lipat 3D dengan kompas arsitektur',
@@ -254,7 +254,7 @@ export const TEMPLATES: InvitationItem[] = [
     hasDedicatedDemo: true,
     dedicatedDemoLabel: 'Buka Demo React (Atlas Cinta)',
     completionTime: '1 Hari Pengerjaan',
-    image: '/images/art_deco_emerald_couple_1790840336340.jpg',
+    image: '/images/atlas_cinta_hero_cover_1791177934302.jpg',
     description: 'Desain jurnal perjalanan dan kartu pos ekspedisi dengan dua panel mengambang di layar desktop (konten di kiri, cermin kartu pos dinamis di kanan), tiket boarding pass, dan peta kontur topografi.',
     features: [
       'Sampul jurnal berstempel MULAI & animasi rute pesawat terbang',

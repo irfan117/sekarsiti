@@ -9,6 +9,7 @@ import {
   useGuestbook
 } from '../hooks/useInvitationCore';
 import { AdminStore } from '../admin/adminStore';
+import { requestRateLimitPermit } from '../utils/requestRateLimit';
 
 interface CetakBiruTemplateProps {
   onBackToLanding: () => void;
@@ -402,23 +403,31 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
     setTimeout(() => setCalSaved(false), 1800);
   };
 
-  const handleGuestbookFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGuestbookFormSubmit = async (e: React.FormEvent) => {
     if (!nameInput.trim() || !messageInput.trim()) return;
+
+    const name = nameInput.trim();
+    const message = messageInput.trim();
+    try {
+      await requestRateLimitPermit('rsvp');
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Reservasi belum dapat dikirim.');
+      return;
+    }
+    const accepted = await submitWish(e);
+    if (!accepted) return;
 
     if (customData?.id) {
       AdminStore.addGuestbook(customData.id, {
-        name: nameInput.trim(),
-        message: messageInput.trim()
+        name,
+        message
       });
       AdminStore.addRsvp(customData.id, {
-        name: nameInput.trim(),
+        name,
         attendance: attendanceInput,
         count: guestCountInput
       });
     }
-
-    submitWish(e);
   };
 
   const stepLightbox = (delta: number) => {

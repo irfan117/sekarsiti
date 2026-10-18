@@ -320,7 +320,8 @@ export default function App() {
 
   if (currentView === 'admin') {
     // Cek otentikasi admin: Harus login via Supabase Auth (atau mock admin dev)
-    const isMockAdmin = typeof window !== 'undefined' && localStorage.getItem('sekarsiti_mock_admin_session') === 'true';
+    const isMockAdmin = import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_ADMIN === 'true' &&
+      typeof window !== 'undefined' && localStorage.getItem('sekarsiti_mock_admin_session') === 'true';
     const isAuthenticatedAdmin = Boolean(user || isMockAdmin);
 
     if (!isAuthenticatedAdmin) {

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { requestRateLimitPermit } from '../utils/requestRateLimit';
 
 interface AuthContextType {
   user: User | null;
@@ -47,6 +48,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, pass: string) => {
     if (!isSupabaseConfigured) {
       return { error: new Error('Supabase belum dikonfigurasi di file .env') };
+    }
+    try {
+      await requestRateLimitPermit('login');
+    } catch (error) {
+      return { error: error instanceof Error ? error : new Error('Percobaan login dibatasi.') };
     }
     const { error } = await supabase.auth.signInWithPassword({
       email,

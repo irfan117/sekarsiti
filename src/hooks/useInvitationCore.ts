@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { safeCopyToClipboard } from '../utils/clipboardUtils';
 import { sanitizeAudioUrl } from '../utils/audioUrl';
+import { requestRateLimitPermit } from '../utils/requestRateLimit';
 
 // 1. REUSABLE COUNTDOWN TIMER LOGIC
 export function useCountdown(targetIsoDate: string) {
@@ -200,9 +201,16 @@ export function useGuestbook(initialWishes: WishItem[] = []) {
   const [nameInput, setNameInput] = useState('');
   const [messageInput, setMessageInput] = useState('');
 
-  const submitWish = (e?: React.FormEvent) => {
+  const submitWish = async (e?: React.FormEvent): Promise<boolean> => {
     if (e) e.preventDefault();
-    if (!nameInput.trim() || !messageInput.trim()) return;
+    if (!nameInput.trim() || !messageInput.trim()) return false;
+
+    try {
+      await requestRateLimitPermit('guestbook');
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Ucapan belum dapat dikirim.');
+      return false;
+    }
 
     const newWish: WishItem = {
       name: nameInput.trim(),
@@ -213,6 +221,7 @@ export function useGuestbook(initialWishes: WishItem[] = []) {
     setWishes(prev => [newWish, ...prev]);
     setNameInput('');
     setMessageInput('');
+    return true;
   };
 
   return {
@@ -232,13 +241,21 @@ export function useRsvpForm(onSuccessCallback?: () => void) {
   const [guestCount, setGuestCount] = useState('2');
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const submitRsvp = (e?: React.FormEvent) => {
+  const submitRsvp = async (e?: React.FormEvent): Promise<boolean> => {
     if (e) e.preventDefault();
-    if (!rsvpName.trim()) return;
+    if (!rsvpName.trim()) return false;
+
+    try {
+      await requestRateLimitPermit('rsvp');
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Reservasi belum dapat dikirim.');
+      return false;
+    }
 
     setIsSuccess(true);
     if (onSuccessCallback) onSuccessCallback();
     setTimeout(() => setIsSuccess(false), 5000);
+    return true;
   };
 
   return {

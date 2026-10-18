@@ -27,6 +27,7 @@ import {
 
 import { ClientInvitationData } from '../types/clientInvitation';
 import { useAudioController } from '../hooks/useInvitationCore';
+import { requestRateLimitPermit } from '../utils/requestRateLimit';
 
 interface PrintPlateHerbariumTemplateProps {
   onBackToLanding: () => void;
@@ -418,9 +419,15 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   const [guestNameInput, setGuestNameInput] = useState('');
   const [guestMsgInput, setGuestMsgInput] = useState('');
 
-  const handleGuestbookSubmit = (e: React.FormEvent) => {
+  const handleGuestbookSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!guestNameInput.trim() || !guestMsgInput.trim()) return;
+    try {
+      await requestRateLimitPermit('guestbook');
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Ucapan belum dapat dikirim.');
+      return;
+    }
     setWishes(prev => [
       {
         name: guestNameInput.trim(),
@@ -439,8 +446,15 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   const [rsvpCount, setRsvpCount] = useState('2');
   const [rsvpSuccess, setRsvpSuccess] = useState(false);
 
-  const handleRsvpSubmit = (e: React.FormEvent) => {
+  const handleRsvpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!rsvpName.trim()) return;
+    try {
+      await requestRateLimitPermit('rsvp');
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Reservasi belum dapat dikirim.');
+      return;
+    }
     setRsvpSuccess(true);
     setTimeout(() => setRsvpSuccess(false), 6000);
   };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Lock, Mail, ArrowRight, Loader2, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { isSupabaseConfigured } from '../../lib/supabase';
+import { requestRateLimitPermit } from '../../utils/requestRateLimit';
 
 interface AdminLoginViewProps {
   onBackToLanding: () => void;
@@ -21,13 +22,18 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({ onBackToLanding 
 
     try {
       if (!isSupabaseConfigured) {
-        // Fallback untuk mode development jika Supabase belum diset
-        if (password === 'admin123' || email.includes('admin')) {
+        const mockAdminEnabled = import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_ADMIN === 'true';
+        if (!mockAdminEnabled) {
+          throw new Error('Supabase belum dikoneksikan. Login admin dinonaktifkan.');
+        }
+
+        await requestRateLimitPermit('login');
+        if (password === 'admin123') {
           localStorage.setItem('sekarsiti_mock_admin_session', 'true');
           window.location.reload();
           return;
         } else {
-          throw new Error('Supabase belum dikoneksikan. Gunakan kata sandi dev: "admin123"');
+          throw new Error('Email atau kata sandi salah.');
         }
       }
 
@@ -121,7 +127,7 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({ onBackToLanding 
             </button>
           </form>
 
-          {!isSupabaseConfigured && (
+          {!isSupabaseConfigured && import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_ADMIN === 'true' && (
             <p className="text-[11px] text-stone-500 text-center">
               Mode Mock Development: Gunakan kata sandi <span className="font-mono text-stone-400">admin123</span>
             </p>

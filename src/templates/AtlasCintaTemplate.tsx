@@ -9,6 +9,7 @@ import {
   useGuestbook
 } from '../hooks/useInvitationCore';
 import { AdminStore } from '../admin/adminStore';
+import { requestRateLimitPermit } from '../utils/requestRateLimit';
 
 interface AtlasCintaTemplateProps {
   onBackToLanding: () => void;
@@ -556,23 +557,31 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
   };
 
   // Guestbook Submit
-  const handleGuestbookSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGuestbookSubmit = async (e: React.FormEvent) => {
     if (!nameInput.trim() || !messageInput.trim()) return;
+
+    const name = nameInput.trim();
+    const message = messageInput.trim();
+    try {
+      await requestRateLimitPermit('rsvp');
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Reservasi belum dapat dikirim.');
+      return;
+    }
+    const accepted = await submitWish(e);
+    if (!accepted) return;
 
     if (customData?.id) {
       AdminStore.addGuestbook(customData.id, {
-        name: nameInput.trim(),
-        message: messageInput.trim()
+        name,
+        message
       });
       AdminStore.addRsvp(customData.id, {
-        name: nameInput.trim(),
+        name,
         attendance: attendanceInput,
         count: guestCountInput
       });
     }
-
-    submitWish(e);
   };
 
   return (
