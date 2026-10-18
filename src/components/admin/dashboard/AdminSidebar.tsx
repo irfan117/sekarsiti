@@ -2,7 +2,6 @@ import React from 'react';
 import {
   LayoutDashboard,
   Plus,
-  FileSpreadsheet,
   Heart,
   Download,
   Upload,
@@ -17,13 +16,12 @@ import { useAuth } from '../../../context/AuthContext';
 
 interface AdminSidebarProps {
   viewState: 'list' | 'create' | 'edit' | 'portfolio';
-  autoOpenAiSetup: boolean;
   statusFilter: 'all' | OrderStatus;
   ordersCount: number;
   stats: AdminStoreStats;
   onSelectListView: () => void;
   onSelectPortfolioView: () => void;
-  onCreateNew: (openGFormAi?: boolean) => void;
+  onCreateNew: () => void;
   onOpenClientPortal?: () => void;
   onChangeStatusFilter: (status: 'all' | OrderStatus) => void;
   onExportBackup: () => void;
@@ -34,7 +32,6 @@ interface AdminSidebarProps {
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   viewState,
-  autoOpenAiSetup,
   statusFilter,
   ordersCount,
   stats,
@@ -100,28 +97,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         </button>
 
         <button
-          onClick={() => onCreateNew(false)}
+          onClick={onCreateNew}
           className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors cursor-pointer ${
-            viewState === 'create' && !autoOpenAiSetup
+            viewState === 'create'
               ? 'bg-[#22211E] text-[#C5A880] font-semibold'
               : 'text-stone-400 hover:text-white hover:bg-[#1A1918]'
           }`}
         >
           <Plus className="w-4 h-4 text-[#C5A880]" />
           <span>Buat Undangan Baru</span>
-        </button>
-
-        <button
-          onClick={() => onCreateNew(true)}
-          className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors cursor-pointer ${
-            viewState === 'create' && autoOpenAiSetup
-              ? 'bg-[#22211E] text-[#C5A880] font-semibold'
-              : 'text-stone-400 hover:text-white hover:bg-[#1A1918]'
-          }`}
-          title="Impor data & media dari Google Form klien"
-        >
-          <FileSpreadsheet className="w-4 h-4 text-[#C5A880]" />
-          <span>Impor GForm &amp; Media (AI)</span>
         </button>
 
         <button

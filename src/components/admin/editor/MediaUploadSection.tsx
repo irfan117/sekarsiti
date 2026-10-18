@@ -36,11 +36,11 @@ export const MediaUploadSection: React.FC<MediaUploadSectionProps> = ({
           <button
             type="button"
             onClick={onSmartAutoAssign}
-            title="AI akan mengurutkan & mendistribusikan foto yang tersedia ke hero, mempelai, filmstrip, dan galeri secara cerdas"
+            title="Sistem akan mengurutkan & mendistribusikan foto yang tersedia ke hero, mempelai, filmstrip, dan galeri secara cerdas"
             className="px-3.5 py-2 bg-gradient-to-r from-amber-50 to-stone-100 hover:from-amber-100 hover:to-stone-200 border border-amber-300/80 rounded-xl text-xs font-bold text-stone-800 flex items-center gap-2 shadow-2xs transition-all cursor-pointer shrink-0 self-start sm:self-auto"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-            <span>Tata Ulang Aset Cerdas (AI)</span>
+            <span>Tata Ulang Aset Cerdas</span>
           </button>
         )}
       </div>

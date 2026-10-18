@@ -1,60 +1,43 @@
 import React from 'react';
-import { Sparkles, Tag, Smartphone } from 'lucide-react';
+
+const PILLARS = [
+  {
+    num: '01',
+    title: 'Kurasi Estetika',
+    body: 'Setiap siluet, palet, dan pilihan huruf disusun dengan ketelitian editorial.',
+  },
+  {
+    num: '02',
+    title: 'Alur Tanpa Hambatan',
+    body: 'Siap dibagikan hanya dalam hitungan hari, dirancang responsif di setiap genggaman gawai.',
+  },
+  {
+    num: '03',
+    title: 'Nilai yang Jujur',
+    body: 'Kualitas desain atelier berstandar tinggi dengan penawaran yang tetap bersahabat.',
+  },
+];
 
 export const ValueProposition: React.FC = () => {
   return (
-    <section className="border-y border-[#EBE6DD] bg-[#FAF8F3] py-8 sm:py-9">
+    <section className="border-y border-[#E8E5DF] bg-[#FAF9F6]">
       <div className="max-w-6xl mx-auto px-6 sm:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start text-left md:text-center">
-          
-          {/* Item 1 */}
-          <div className="flex items-start md:items-center md:flex-col gap-3.5 md:gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#EBE6DD]/60 flex items-center justify-center shrink-0 text-[#414A35]">
-              <Sparkles className="w-4 h-4 text-[#7A8B74] stroke-[1.5]" />
-            </div>
-            <div>
-              <p className="text-sm font-sans font-medium text-[#414A35]">
-                Desain pilihan
-              </p>
-              <p className="text-xs text-[#6B6F63] font-light mt-0.5">
-                Beragam gaya untuk berbagai selera.
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E8E5DF]">
+          {PILLARS.map(({ num, title, body }) => (
+            <div key={num} className="py-9 px-0 md:px-10 first:pl-0 last:pr-0 flex flex-col gap-3 text-left">
+              <span className="font-serif text-[11px] tracking-[0.18em] text-[#C6A679] font-normal">
+                {num} /
+              </span>
+              <h3 className="font-sans text-sm font-semibold text-[#181816] tracking-wide">
+                {title}
+              </h3>
+              <p className="font-sans text-[13px] text-[#716E68] font-light leading-relaxed">
+                {body}
               </p>
             </div>
-          </div>
-
-          {/* Item 2 */}
-          <div className="flex items-start md:items-center md:flex-col gap-3.5 md:gap-2 md:border-x md:border-[#EBE6DD] md:px-4">
-            <div className="w-8 h-8 rounded-full bg-[#EBE6DD]/60 flex items-center justify-center shrink-0 text-[#414A35]">
-              <Tag className="w-4 h-4 text-[#7A8B74] stroke-[1.5]" />
-            </div>
-            <div>
-              <p className="text-sm font-sans font-medium text-[#414A35]">
-                Harga bersahabat
-              </p>
-              <p className="text-xs text-[#6B6F63] font-light mt-0.5">
-                Pilihan undangan digital dengan harga yang jelas.
-              </p>
-            </div>
-          </div>
-
-          {/* Item 3 */}
-          <div className="flex items-start md:items-center md:flex-col gap-3.5 md:gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#EBE6DD]/60 flex items-center justify-center shrink-0 text-[#414A35]">
-              <Smartphone className="w-4 h-4 text-[#7A8B74] stroke-[1.5]" />
-            </div>
-            <div>
-              <p className="text-sm font-sans font-medium text-[#414A35]">
-                Praktis digunakan
-              </p>
-              <p className="text-xs text-[#6B6F63] font-light mt-0.5">
-                Sesuaikan detail dan bagikan undangan secara digital.
-              </p>
-            </div>
-          </div>
-
+          ))}
         </div>
       </div>
     </section>
   );
 };
-

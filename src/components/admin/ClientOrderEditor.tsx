@@ -11,7 +11,6 @@ import {
   ImageIcon,
   UserCheck,
   Users,
-  FileSpreadsheet,
   Globe,
   FileText
 } from 'lucide-react';
@@ -25,12 +24,10 @@ import { EventScheduleSection } from './editor/EventScheduleSection';
 import { MediaUploadSection } from './editor/MediaUploadSection';
 import { GiftMusicSection } from './editor/GiftMusicSection';
 import { RsvpGuestbookSection } from './editor/RsvpGuestbookSection';
-import { AiSetupModal, ApplyAiSetupOptions } from './editor/AiSetupModal';
-import { ParsedInvitationAiResult, smartPlaceAssets } from '../../services/aiSetupAssistant';
+import { smartPlaceAssets } from '../../services/mediaAssetAssistant';
 
 interface ClientOrderEditorProps {
   initialData?: ClientInvitationData | null;
-  autoOpenAiSetup?: boolean;
   onSave: (data: ClientInvitationData) => void;
   onCancel: () => void;
   onPreview: (data: ClientInvitationData) => void;
@@ -40,7 +37,6 @@ type EditorTab = 'template' | 'client' | 'couple' | 'event' | 'media' | 'gift' |
 
 export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
   initialData,
-  autoOpenAiSetup = false,
   onSave,
   onCancel,
   onPreview
@@ -105,104 +101,10 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
   const [activeTab, setActiveTab] = useState<EditorTab>('template');
   const [saveToast, setSaveToast] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isAiModalOpen, setIsAiModalOpen] = useState(autoOpenAiSetup);
 
   const showEditorToast = (msg: string) => {
     setSaveToast(msg);
     setTimeout(() => setSaveToast(null), 3200);
-  };
-
-  // Apply data & media extracted by AI from Google Form
-  const handleApplyAiData = (parsed: ParsedInvitationAiResult, options?: ApplyAiSetupOptions) => {
-    const shouldApplyMedia = options?.applyMedia !== false;
-
-    setFormData(prev => {
-      const updated: ClientInvitationData = {
-        ...prev,
-        mediaSlots: { ...prev.mediaSlots }
-      };
-
-      // 1. Info Klien & Slug
-      if (parsed.clientName) updated.clientName = parsed.clientName;
-      if (parsed.clientPhone) updated.clientPhone = parsed.clientPhone;
-      if (parsed.clientEmail) updated.clientEmail = parsed.clientEmail;
-      if (parsed.slug) {
-        updated.slug = parsed.slug;
-        updated.accessCode = parsed.slug;
-      }
-
-      // 2. Mempelai Wanita & Pria
-      if (parsed.brideName) updated.brideName = parsed.brideName;
-      if (parsed.brideFullName) updated.brideFullName = parsed.brideFullName;
-      if (parsed.brideParents) updated.brideParents = parsed.brideParents;
-      if (parsed.brideInstagram) updated.brideInstagram = parsed.brideInstagram;
-
-      if (parsed.groomName) updated.groomName = parsed.groomName;
-      if (parsed.groomFullName) updated.groomFullName = parsed.groomFullName;
-      if (parsed.groomParents) updated.groomParents = parsed.groomParents;
-      if (parsed.groomInstagram) updated.groomInstagram = parsed.groomInstagram;
-
-      // 3. Jadwal & Lokasi
-      if (parsed.eventDateFormatted) updated.eventDateFormatted = parsed.eventDateFormatted;
-      if (parsed.countdownIsoDate) updated.countdownIsoDate = parsed.countdownIsoDate;
-      if (parsed.akadTime) updated.akadTime = parsed.akadTime;
-      if (parsed.akadVenue) updated.akadVenue = parsed.akadVenue;
-      if (parsed.resepsiTime) updated.resepsiTime = parsed.resepsiTime;
-      if (parsed.resepsiVenue) updated.resepsiVenue = parsed.resepsiVenue;
-      if (parsed.city) updated.city = parsed.city;
-      if (parsed.mapsUrl) updated.mapsUrl = parsed.mapsUrl;
-
-      // 4. Rekening Bank 1 & 2, QRIS, Musik, Kutipan
-      if (parsed.bankName) updated.bankName = parsed.bankName;
-      if (parsed.accountNumber) updated.accountNumber = parsed.accountNumber;
-      if (parsed.accountHolder) updated.accountHolder = parsed.accountHolder;
-      if (parsed.secondaryBankName) updated.secondaryBankName = parsed.secondaryBankName;
-      if (parsed.secondaryAccountNumber) updated.secondaryAccountNumber = parsed.secondaryAccountNumber;
-      if (parsed.secondaryAccountHolder) updated.secondaryAccountHolder = parsed.secondaryAccountHolder;
-      if (parsed.qrisImageUrl) updated.qrisImageUrl = parsed.qrisImageUrl;
-
-      if (parsed.quoteText) updated.quoteText = parsed.quoteText;
-      if (parsed.quoteSource) updated.quoteSource = parsed.quoteSource;
-      if (parsed.songTitle) updated.songTitle = parsed.songTitle;
-      if (parsed.audioUrl) updated.audioUrl = parsed.audioUrl;
-
-      // 5. Template
-      if (parsed.recommendedTemplate) {
-        updated.templateId = parsed.recommendedTemplate;
-        setSelectedTemplateId(parsed.recommendedTemplate);
-      }
-
-      // 6. Media Slots dari Google Form File Upload
-      if (shouldApplyMedia && parsed.media) {
-        if (parsed.media.heroImage) {
-          updated.mediaSlots.heroImage = parsed.media.heroImage;
-        }
-        if (parsed.media.bridePortrait) {
-          updated.mediaSlots.bridePortrait = parsed.media.bridePortrait;
-        }
-        if (parsed.media.groomPortrait) {
-          updated.mediaSlots.groomPortrait = parsed.media.groomPortrait;
-        }
-        if (parsed.media.qrisImageUrl) {
-          updated.mediaSlots.qrisImageUrl = parsed.media.qrisImageUrl;
-          updated.qrisImageUrl = parsed.media.qrisImageUrl;
-        }
-        if (parsed.media.waxSealEmblem) {
-          updated.mediaSlots.waxSealEmblem = parsed.media.waxSealEmblem;
-        }
-        if (parsed.media.galleryImages && parsed.media.galleryImages.length > 0) {
-          updated.mediaSlots.galleryImages = parsed.media.galleryImages;
-        }
-        if (parsed.media.filmstripImages && parsed.media.filmstripImages.length > 0) {
-          updated.mediaSlots.filmstripImages = parsed.media.filmstripImages;
-        }
-      }
-
-      return updated;
-    });
-
-    setHasUnsavedChanges(true);
-    showEditorToast('Data & Media GForm berhasil diterapkan ke formulir!');
   };
 
   // Template switch handler dengan penyesuaian aset cerdas otomatis
@@ -238,7 +140,7 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
     setHasUnsavedChanges(true);
   };
 
-  // Handler tata ulang aset secara cerdas via AI
+  // Handler tata ulang aset secara cerdas
   const handleSmartAutoAssignAssets = () => {
     const currentSlots = formData.mediaSlots || { galleryImages: [] };
     const pool: string[] = [];
@@ -384,16 +286,6 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
               <span>{saveToast}</span>
             </span>
           )}
-
-          <button
-            type="button"
-            onClick={() => setIsAiModalOpen(true)}
-            className="px-3.5 py-2 bg-[#FAF7F2] hover:bg-[#F3EAD9] border border-[#C5A880]/60 text-stone-900 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
-            title="Impor data & tautan media dari Google Form klien dengan AI"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span>Impor GForm &amp; Media (AI)</span>
-          </button>
 
           <button
             type="button"
@@ -600,13 +492,6 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
           </button>
         </div>
       </div>
-
-      {/* AI GForm & Media Setup Modal */}
-      <AiSetupModal
-        isOpen={isAiModalOpen}
-        onClose={() => setIsAiModalOpen(false)}
-        onApplyParsedData={handleApplyAiData}
-      />
 
     </div>
   );

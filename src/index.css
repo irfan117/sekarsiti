@@ -4,11 +4,12 @@
   :root {
     --font-serif: 'Cormorant Garamond', Georgia, serif;
     --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --color-ivory: #F7F5EF;
-    --color-olive: #414A35;
-    --color-beige: #EBE6DD;
-    --color-sage: #8A9A86;
-    --color-dusty-pink: #C8A8A1;
+    /* Boutique editorial palette */
+    --color-linen: #FAF9F6;
+    --color-charcoal: #181816;
+    --color-taupe: #716E68;
+    --color-brass: #C6A679;
+    --color-hairline: #E8E5DF;
   }
 }
 
@@ -20,26 +21,26 @@
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Custom smooth scroll and styling */
+/* Custom smooth scroll */
 html {
   scroll-behavior: smooth;
-  background-color: #F7F5EF;
+  background-color: #FAF9F6;
 }
 
-/* Custom subtle scrollbar */
+/* Elegant minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #F7F5EF;
+  background: #FAF9F6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D9D3C7;
+  background: #C6A679;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #B8B0A2;
+  background: #B5926A;
 }
 
 /* Vinyl Record Spinning Animation */

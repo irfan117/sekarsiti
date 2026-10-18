@@ -1,5 +1,11 @@
-import React from 'react';
-import { ArrowRight, Compass } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+
+const HERO_IMAGES = [
+  '/images/template_ruang_rasa_1790831267799.jpg',
+  '/images/editorial_couple_portrait_1790838636662.jpg',
+  '/images/template_setangkai_1790831293717.jpg',
+  '/images/atlas_cinta_hero_cover_1791177934302.jpg',
+];
 
 interface HeroProps {
   onExploreCollection: () => void;
@@ -10,74 +16,161 @@ export const Hero: React.FC<HeroProps> = ({
   onExploreCollection,
   onExploreHowItWorks,
 }) => {
-  return (
-    <section className="relative pt-12 pb-20 sm:pt-20 sm:pb-32 overflow-hidden bg-[#F7F5EF]">
-      <div className="max-w-6xl mx-auto px-6 sm:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          
-          {/* Left Editorial Column */}
-          <div className="lg:col-span-6 space-y-6 text-left">
-            {/* Eyebrow */}
-            <p className="text-xs sm:text-[13px] font-sans font-semibold tracking-widest text-[#414A35]/70 uppercase">
-              UNDANGAN DIGITAL · TEMPLATE PILIHAN
-            </p>
+  const [activeImg, setActiveImg] = useState(0);
+  const [visible, setVisible] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-            {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.75rem] font-serif font-normal text-[#2C2E28] leading-[1.12] tracking-tight text-balance">
-              Untuk hari yang punya cerita.
+  useEffect(() => {
+    // Stagger reveal on mount
+    const t = setTimeout(() => setVisible(true), 80);
+    // Image rotation
+    timerRef.current = setInterval(() => {
+      setActiveImg((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 4200);
+    return () => {
+      clearTimeout(t);
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  return (
+    <section className="relative bg-[#FAF9F6] pt-14 pb-20 sm:pt-20 sm:pb-32 overflow-hidden">
+
+      {/* Hairline accent stripe */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-[#E8E5DF]" />
+
+      <div className="max-w-6xl mx-auto px-6 sm:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-16 items-center">
+
+          {/* — LEFT EDITORIAL COLUMN — */}
+          <div
+            className={`lg:col-span-6 space-y-7 text-left transition-all duration-700 ease-out ${
+              visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            {/* Eyebrow kicker */}
+            <div className="inline-flex items-center gap-2.5">
+              <span className="block w-6 h-[1px] bg-[#C6A679]" />
+              <p className="text-[11px] font-sans font-semibold tracking-[0.18em] text-[#C6A679] uppercase">
+                Atelier Undangan Digital · Edisi Terbatas
+              </p>
+            </div>
+
+            {/* Main Headline */}
+            <h1 className="font-serif font-normal text-[#181816] leading-[1.1] tracking-[-0.02em] text-[2.5rem] sm:text-[3.2rem] lg:text-[3.75rem] text-balance">
+              Untuk awal kisah<br className="hidden sm:block" /> yang diceritakan<br className="hidden sm:block" /> dengan anggun.
             </h1>
 
-            {/* Supporting Copy */}
-            <p className="text-base sm:text-lg text-[#55594F] leading-relaxed max-w-lg font-sans font-light">
-              Koleksi undangan digital dengan desain yang menarik, mudah disesuaikan, dan harga yang bersahabat. Temukan tampilan yang paling sesuai untuk hari istimewamu.
+            {/* Sub-headline */}
+            <p className="font-sans text-base sm:text-lg text-[#716E68] leading-relaxed max-w-[440px] font-light">
+              Sekarsiti merancang undangan pernikahan digital berpola editorial dan tipografi terkurasi. Dihadirkan bagi mereka yang menghargai keindahan dalam kesederhanaan.
             </p>
 
             {/* Action Buttons */}
-            <div className="pt-4 flex flex-wrap items-center gap-4">
+            <div
+              className={`pt-2 flex flex-wrap items-center gap-4 transition-all duration-700 delay-200 ease-out ${
+                visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+              }`}
+            >
               {/* Primary CTA */}
               <button
                 onClick={onExploreCollection}
-                className="inline-flex items-center justify-center gap-1.5 px-7 py-3.5 text-sm font-medium text-[#F7F5EF] bg-[#414A35] hover:bg-[#323929] rounded-full transition-all active:scale-[0.98] cursor-pointer shadow-sm"
+                className="group inline-flex items-center gap-2 px-7 py-3.5 text-[13px] font-sans font-semibold text-[#FAF9F6] bg-[#181816] hover:bg-[#C6A679] rounded-full transition-all duration-300 active:scale-[0.97] cursor-pointer shadow-sm"
               >
-                <span>Jelajahi koleksi ↗</span>
+                <span>Jelajahi Koleksi</span>
+                <span className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300">↓</span>
               </button>
 
               {/* Secondary CTA */}
               <button
                 onClick={onExploreHowItWorks}
-                className="inline-flex items-center justify-center gap-1.5 px-6 py-3.5 text-sm font-medium text-[#414A35] hover:text-[#2C2E28] hover:bg-[#EBE6DD]/60 rounded-full transition-colors cursor-pointer"
+                className="group inline-flex items-center gap-2 px-5 py-3.5 text-[13px] font-sans font-medium text-[#181816] hover:text-[#C6A679] transition-colors duration-200 cursor-pointer"
               >
-                <span>Cara pemesanan →</span>
+                <span>Lihat Desain Khusus</span>
+                <span className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300">→</span>
               </button>
+            </div>
+
+            {/* Trust tally */}
+            <div
+              className={`pt-4 flex items-center gap-6 transition-all duration-700 delay-300 ease-out ${
+                visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+              }`}
+            >
+              <div className="h-8 w-[1px] bg-[#E8E5DF]" />
+              <div className="text-left">
+                <span className="block font-serif text-2xl font-normal text-[#181816]">7+</span>
+                <span className="text-[11px] font-sans text-[#716E68] tracking-wide">Seri Desain Eksklusif</span>
+              </div>
+              <div className="h-8 w-[1px] bg-[#E8E5DF]" />
+              <div className="text-left">
+                <span className="block font-serif text-2xl font-normal text-[#181816]">1 Hari</span>
+                <span className="text-[11px] font-sans text-[#716E68] tracking-wide">Estimasi Pengerjaan</span>
+              </div>
             </div>
           </div>
 
-          {/* Right Visual Composition Column */}
-          <div className="lg:col-span-6 relative">
-            <div className="relative mx-auto max-w-lg">
-              
-              {/* Main Stationery Photograph */}
-              <div className="relative rounded-2xl overflow-hidden shadow-sm border border-[#EBE6DD] bg-white">
-                <img
-                  src="/images/template_ruang_rasa_1790831267799.jpg"
-                  alt="Komposisi stationery undangan pernikahan sekarsiti dengan pita sutra dan segel lilin"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-auto aspect-4/3 sm:aspect-16/11 object-cover"
-                />
+          {/* — RIGHT VISUAL COMPOSITION — */}
+          <div
+            className={`lg:col-span-6 relative transition-all duration-1000 delay-100 ease-out ${
+              visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+            }`}
+          >
+            <div className="relative mx-auto max-w-[440px]">
+
+              {/* Main image frame — tall portrait ratio */}
+              <div className="relative rounded-2xl overflow-hidden border border-[#E8E5DF] shadow-[0_4px_40px_rgba(0,0,0,0.06)] bg-[#F0EDE7]" style={{ aspectRatio: '4/5' }}>
+                {HERO_IMAGES.map((src, i) => (
+                  <img
+                    key={src}
+                    src={src}
+                    alt="Koleksi undangan sekarsiti"
+                    referrerPolicy="no-referrer"
+                    className={`absolute inset-0 w-full h-full object-cover transition-all duration-[1200ms] ease-in-out ${
+                      i === activeImg ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.03]'
+                    }`}
+                  />
+                ))}
+
+                {/* Overlay: image counter indicator */}
+                <div className="absolute bottom-4 right-4 flex gap-1.5">
+                  {HERO_IMAGES.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveImg(i)}
+                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                        i === activeImg ? 'bg-white w-4' : 'bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {/* Floating badge */}
+                <div className="absolute top-5 left-5 bg-[#181816]/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full">
+                  <span className="text-[10px] font-sans font-semibold tracking-[0.15em] uppercase text-[#C6A679]">
+                    Seri 2025
+                  </span>
+                </div>
               </div>
 
-              {/* Overlapping secondary stationery card with delicate botanical detail */}
-              <div className="hidden sm:block absolute -bottom-6 -left-6 w-52 rounded-xl overflow-hidden shadow-md border border-[#EBE6DD] bg-white p-2.5 transition-transform hover:-translate-y-1">
+              {/* Secondary floating stationery card */}
+              <div className="absolute -bottom-5 -left-7 hidden sm:block w-[185px] rounded-xl overflow-hidden border border-[#E8E5DF] bg-[#FAF9F6] shadow-[0_8px_30px_rgba(0,0,0,0.09)] hover:-translate-y-1.5 transition-transform duration-500">
                 <img
-                  src="/images/template_sore_teduh_1790831280150.jpg"
-                  alt="Detail tekstur kertas dan bayangan daun zaitun"
+                  src="/images/invitation_physical_foil_1790827073923.jpg"
+                  alt="Detail stationery fisik sekarsiti"
                   referrerPolicy="no-referrer"
-                  className="w-full h-32 object-cover rounded-lg"
+                  className="w-full h-28 object-cover"
                 />
-                <div className="pt-2 px-1 text-left">
-                  <p className="text-[11px] font-serif text-[#2C2E28]">Seri Alam &amp; Kertas</p>
-                  <p className="text-[10px] text-[#7A8B74]">Tekstur hangat &amp; natural</p>
+                <div className="px-3 py-2.5 text-left">
+                  <p className="text-[11px] font-serif text-[#181816] leading-snug">Seri Stationery Fisik</p>
+                  <p className="text-[10px] font-sans text-[#716E68] mt-0.5">Tekstur cetak & foil emas</p>
                 </div>
+              </div>
+
+              {/* Top-right floating chip */}
+              <div className="absolute -top-4 -right-3 hidden sm:flex items-center gap-2 bg-white border border-[#E8E5DF] rounded-full pl-2.5 pr-4 py-2 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-[#C6A679] animate-pulse" />
+                <span className="text-[11px] font-sans font-medium text-[#716E68]">Siap dalam 1 hari</span>
               </div>
 
             </div>

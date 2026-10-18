@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Upload, X, Plus, Image as ImageIcon, Link2, Check, Loader2 } from 'lucide-react';
 import { MediaSlotDefinition } from '../../admin/templateRegistry';
-import { normalizeMediaUrl, parseMultipleMediaUrls } from '../../services/aiSetupAssistant';
+import { normalizeMediaUrl, parseMultipleMediaUrls } from '../../services/mediaAssetAssistant';
 import { uploadToCloudinary, isCloudinaryConfigured } from '../../utils/cloudinaryUpload';
 
 // Library of high-res authentic wedding photos ready for quick pick
@@ -179,8 +179,8 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
         <div className="p-3 bg-white border border-[#D5D0C6] rounded-lg space-y-2">
           <label className="block text-[11px] font-medium text-stone-700">
             {isMultiple
-              ? 'Tempel 1 atau beberapa Link Google Drive / URL Foto (pisahkan dengan koma dari sel Google Form):'
-              : 'Tempel Link Upload Google Drive dari Google Form atau URL Gambar:'}
+              ? 'Tempel 1 atau beberapa link Google Drive / URL foto, pisahkan dengan koma:'
+              : 'Tempel link Google Drive atau URL gambar:'}
           </label>
           <div className="flex items-center gap-2">
             <input
@@ -215,7 +215,7 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
         </div>
       )}
 
-      {/* Action Controls: Upload from device, Paste GForm/GDrive link, OR Pick from curated library */}
+      {/* Action Controls: Upload from device, paste GDrive/direct link, or pick from curated library */}
       <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#EAE6DE]">
         <input 
           ref={fileInputRef}
@@ -246,7 +246,7 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
           className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-white hover:bg-neutral-50 border border-[#D5D0C6] text-[#242321] rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap"
         >
           <Link2 className="w-3.5 h-3.5 text-[#C5A880]" />
-          <span>Tempel Link GForm / GDrive</span>
+          <span>Tempel Link GDrive / URL</span>
         </button>
 
         {/* Quick Pick Dropdown from Library */}

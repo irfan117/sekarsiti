@@ -1,6 +1,6 @@
 /**
  * Utility untuk mengunggah file gambar/media langsung ke Cloudinary dari client/browser
- * atau mengonversi URL Google Drive ke format direct thumbnail jika diunggah via GForm.
+ * atau mengonversi URL Google Drive ke format direct thumbnail.
  */
 
 export const isCloudinaryConfigured = Boolean(

@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { X, MessageCircle } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, MessageCircle, Heart, Calendar, MapPin, User } from 'lucide-react';
 import { InvitationItem } from '../types';
 import { TEMPLATES } from '../data/catalog';
+import { AdminStore } from '../admin/adminStore';
+import { TemplateId } from '../types/clientInvitation';
 
 interface WhatsAppOrderModalProps {
   isOpen: boolean;
@@ -17,175 +19,294 @@ export const WhatsAppOrderModal: React.FC<WhatsAppOrderModalProps> = ({
   // Nomor WhatsApp Resmi Pemesanan Sekarsiti Studio
   const adminPhone = '6283850714456';
 
-  // Form states
-  const [coupleName, setCoupleName] = useState('Bagas & Nirmala');
-  const [eventDate, setEventDate] = useState('2026-10-24');
-  const [selectedTemplateTitle, setSelectedTemplateTitle] = useState('Ruang Rasa');
+  const [selectedTemplateId, setSelectedTemplateId] = useState(TEMPLATES[0].id);
+  const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [brideName, setBrideName] = useState('');
+  const [groomName, setGroomName] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [city, setCity] = useState('');
   const [notes, setNotes] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (preselectedItem) {
-      setSelectedTemplateTitle(preselectedItem.title);
+      setSelectedTemplateId(preselectedItem.id);
     } else {
-      setSelectedTemplateTitle(TEMPLATES[0].title);
+      setSelectedTemplateId(TEMPLATES[0].id);
     }
   }, [preselectedItem, isOpen]);
 
+  const selectedTemplate = useMemo(() => {
+    return TEMPLATES.find((t) => t.id === selectedTemplateId) || preselectedItem || TEMPLATES[0];
+  }, [selectedTemplateId, preselectedItem]);
+
   if (!isOpen) return null;
 
-  const selectedTemplate = TEMPLATES.find((t) => t.title === selectedTemplateTitle) || preselectedItem || TEMPLATES[0];
   const formattedPrice = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(selectedTemplate.price);
 
-  // Build warm, understated WhatsApp message
-  const generatedMessage = `Halo sekarsiti, saya ingin memesan template undangan:
+  const handleSubmitOrder = (e: React.FormEvent) => {
+    e.preventDefault();
 
-• Pilihan Desain: ${selectedTemplateTitle} (${formattedPrice})
-• Nama Pasangan: ${coupleName || '-'}
-• Rencana Tanggal Acara: ${eventDate || '-'}
-• Catatan: ${notes || 'Mohon panduan untuk pengisian data dan langkah selanjutnya.'}
+    if (!clientName.trim()) {
+      setErrorMessage('Mohon cantumkan nama pemesan.');
+      return;
+    }
 
-Terima kasih.`;
+    if (!clientPhone.trim()) {
+      setErrorMessage('Mohon cantumkan nomor WhatsApp Anda.');
+      return;
+    }
 
-  const waUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(generatedMessage)}`;
+    setErrorMessage('');
 
-  const handleSendOrder = () => {
+    // Format tanggal jika diisi
+    let formattedDateText = eventDate;
+    if (eventDate) {
+      try {
+        const parsed = new Date(eventDate);
+        if (!isNaN(parsed.getTime())) {
+          formattedDateText = new Intl.DateTimeFormat('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          }).format(parsed);
+        }
+      } catch {
+        formattedDateText = eventDate;
+      }
+    }
+
+    const coupleSummary =
+      brideName && groomName
+        ? `${brideName} & ${groomName}`
+        : brideName || groomName || 'Mempelai';
+
+    // Buat draft pesanan otomatis di AdminStore
+    const newOrder = AdminStore.create({
+      clientName: clientName.trim(),
+      clientPhone: clientPhone.trim(),
+      templateId: selectedTemplate.id as TemplateId,
+      status: 'pending',
+      brideName: brideName.trim() || 'Mempelai Wanita',
+      groomName: groomName.trim() || 'Mempelai Pria',
+      eventDateFormatted: formattedDateText || undefined,
+      city: city.trim() || undefined,
+      quoteText: notes.trim() || undefined,
+    });
+
+    // Susun pesan WhatsApp yang rapi dan profesional
+    const message = `Halo Sekarsiti Studio, saya ingin memesan undangan digital:
+
+• ID Draft: ${newOrder.id}
+• Desain Dipilih: ${selectedTemplate.title} (${formattedPrice})
+• Nama Pemesan: ${clientName.trim()}
+• WhatsApp: ${clientPhone.trim()}
+• Mempelai: ${coupleSummary}
+• Rencana Tanggal: ${formattedDateText || '-'}
+• Lokasi / Kota: ${city.trim() || '-'}
+${notes.trim() ? `• Catatan: ${notes.trim()}\n` : ''}
+Mohon informasi nomor rekening untuk DP dan aktivasi Portal Mempelai. Terima kasih!`;
+
+    const waUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank', 'noopener,noreferrer');
+    onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C2E28]/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-[#FAF8F3] rounded-2xl shadow-xl overflow-hidden border border-[#EBE6DD] my-auto text-[#2C2E28]">
+      <div className="relative w-full max-w-lg bg-[#FAF8F3] rounded-2xl shadow-2xl overflow-hidden border border-[#EBE6DD] my-auto text-[#2C2E28]">
         
         {/* Modal Header */}
-        <div className="p-6 bg-[#414A35] text-[#F7F5EF] flex items-start justify-between">
-          <div className="space-y-1 text-left">
-            <span className="text-[11px] font-sans font-semibold tracking-widest text-[#E3DFD5] uppercase">
-              sekarsiti · Pemesanan Langsung
+        <div className="p-5 sm:p-6 bg-[#414A35] text-[#F7F5EF] flex items-start justify-between">
+          <div className="text-left pr-6">
+            <span className="text-[10px] uppercase tracking-widest text-[#C5A880] font-semibold block">
+              Form Pemesanan Cepat
             </span>
-            <h3 className="text-2xl font-serif font-normal text-[#F7F5EF]">
-              Pilih Desain &amp; Hubungi Kami
+            <h3 className="text-xl sm:text-2xl font-serif font-normal text-[#F7F5EF] leading-snug mt-0.5">
+              Pesan Undangan Digital
             </h3>
-            <p className="text-xs text-[#E3DFD5] font-light">
-              Lengkapi data singkat berikut untuk langsung tersambung via WhatsApp.
+            <p className="text-xs text-[#E3DFD5]/80 mt-1">
+              Isi data awal pemesanan. Pembayaran DP &amp; akses portal kelengkapan template dilakukan via WhatsApp resmi.
             </p>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 text-[#E3DFD5] hover:text-white rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-[#E3DFD5] hover:text-white rounded-lg transition-colors cursor-pointer shrink-0"
             aria-label="Tutup modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 space-y-5 text-left max-h-[70vh] overflow-y-auto">
+        {/* Modal Body Form */}
+        <form onSubmit={handleSubmitOrder} className="p-5 sm:p-6 space-y-4 text-left max-h-[75vh] overflow-y-auto">
           
-          {/* Info WhatsApp Resmi Pemesanan */}
-          <div className="p-3 bg-white rounded-xl border border-[#EBE6DD] flex items-center justify-between text-xs shadow-2xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[#7A8B74]">WhatsApp Resmi:</span>
-              <span className="font-mono font-semibold text-[#414A35]">
-                +62 838-5071-4456
-              </span>
+          {errorMessage && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs">
+              {errorMessage}
             </div>
-            <span className="text-[11px] text-[#7A8B74] font-medium">Sekarsiti Studio</span>
+          )}
+
+          {/* Pilihan Template */}
+          <div>
+            <label className="block text-xs font-semibold text-[#414A35] mb-1">
+              Pilihan Desain Template
+            </label>
+            <select
+              value={selectedTemplateId}
+              onChange={(e) => setSelectedTemplateId(e.target.value)}
+              className="w-full text-xs sm:text-sm p-2.5 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
+            >
+              {TEMPLATES.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.title} — {item.styleLabel} ({new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)})
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Form Fields */}
-          <div className="space-y-3.5">
+          {/* Kontak Pemesan */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#414A35] mb-1">
-                Pilihan Template
+              <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                Nama Pemesan <span className="text-red-500">*</span>
               </label>
-              <select
-                value={selectedTemplateTitle}
-                onChange={(e) => setSelectedTemplateTitle(e.target.value)}
-                className="w-full text-xs sm:text-sm p-2.5 rounded-lg border border-[#EBE6DD] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
-              >
-                {TEMPLATES.map((item) => (
-                  <option key={item.id} value={item.title}>
-                    {item.title} — {item.styleLabel} (Rp{item.price.toLocaleString('id-ID')})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-[#414A35] mb-1">
-                  Nama Pasangan
-                </label>
+              <div className="relative">
+                <User className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
                 <input
                   type="text"
-                  placeholder="Contoh: Bagas & Nirmala"
-                  value={coupleName}
-                  onChange={(e) => setCoupleName(e.target.value)}
-                  className="w-full text-xs sm:text-sm p-2.5 rounded-lg border border-[#EBE6DD] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
                   required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#414A35] mb-1">
-                  Rencana Tanggal Acara
-                </label>
-                <input
-                  type="date"
-                  value={eventDate}
-                  onChange={(e) => setEventDate(e.target.value)}
-                  className="w-full text-xs sm:text-sm p-2.5 rounded-lg border border-[#EBE6DD] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
-                  required
+                  placeholder="Contoh: Adhitya / Kirana"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  className="w-full text-xs sm:text-sm pl-8 pr-3 py-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#414A35] mb-1">
-                Catatan Tambahan (Opsional)
+              <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                Nomor WhatsApp <span className="text-red-500">*</span>
               </label>
-              <textarea
-                rows={2}
-                placeholder="Misal: Perlu tambahan peta lokasi khusus atau 2 rekening bank..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full text-xs sm:text-sm p-2.5 rounded-lg border border-[#EBE6DD] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35] resize-none"
+              <input
+                type="tel"
+                required
+                placeholder="081234567890"
+                value={clientPhone}
+                onChange={(e) => setClientPhone(e.target.value)}
+                className="w-full text-xs sm:text-sm p-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
               />
             </div>
           </div>
 
-          {/* Formatted Message Preview */}
-          <div className="space-y-1.5 pt-1">
-            <span className="text-[11px] font-medium text-[#7A8B74]">
-              Pratinjau Pesan WhatsApp:
+          {/* Nama Singkat Mempelai */}
+          <div className="p-3.5 bg-stone-100/70 rounded-xl border border-stone-200/80 space-y-2.5">
+            <span className="text-[11px] font-bold text-[#414A35] flex items-center gap-1.5">
+              <Heart className="w-3.5 h-3.5 text-[#C5A880]" />
+              <span>Nama Calon Mempelai (Panggilan)</span>
             </span>
-            <div className="p-3 bg-white border border-[#EBE6DD] rounded-xl font-mono text-[11px] text-[#414A35] whitespace-pre-wrap leading-relaxed">
-              {generatedMessage}
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] text-stone-600 mb-0.5">Mempelai Wanita</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Kirana"
+                  value={brideName}
+                  onChange={(e) => setBrideName(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] text-stone-600 mb-0.5">Mempelai Pria</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Adhitya"
+                  value={groomName}
+                  onChange={(e) => setGroomName(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
+                />
+              </div>
             </div>
           </div>
 
-        </div>
+          {/* Tanggal & Kota Acara */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                Rencana Tanggal Acara
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  className="w-full text-xs sm:text-sm p-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
+                />
+              </div>
+            </div>
 
-        {/* Modal Footer */}
-        <div className="p-5 sm:p-6 bg-white border-t border-[#EBE6DD] flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-xs text-[#7A8B74] font-light">
-            Sekali bayar {formattedPrice} · Tanpa biaya tersembunyi
-          </span>
+            <div>
+              <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                Kota Penyelenggaraan
+              </label>
+              <div className="relative">
+                <MapPin className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
+                <input
+                  type="text"
+                  placeholder="Contoh: Jakarta / Bandung"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full text-xs sm:text-sm pl-8 pr-3 py-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
+                />
+              </div>
+            </div>
+          </div>
 
-          <button
-            onClick={handleSendOrder}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-6 bg-[#414A35] hover:bg-[#343B2A] text-[#F7F5EF] text-xs sm:text-sm font-medium rounded-full transition-all active:scale-[0.98] cursor-pointer shadow-sm whitespace-nowrap"
-          >
-            <MessageCircle className="w-4 h-4 text-[#F7F5EF]" />
-            <span>Kirim Pesanan ke WhatsApp</span>
-          </button>
-        </div>
+          {/* Catatan Khusus */}
+          <div>
+            <label className="block text-xs font-semibold text-[#414A35] mb-1">
+              Catatan atau Pertanyaan (Opsional)
+            </label>
+            <textarea
+              rows={2}
+              placeholder="Ada request khusus tema warna, revisi font, atau pertanyaan sebelum bayar?"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full text-xs p-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
+            />
+          </div>
+
+          {/* Modal Footer Buttons */}
+          <div className="pt-3 border-t border-[#EBE6DD] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-left w-full sm:w-auto">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500 block">
+                Total Biaya Desain
+              </span>
+              <span className="text-base font-serif font-bold text-[#414A35]">
+                {formattedPrice}
+              </span>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-6 bg-[#414A35] hover:bg-[#343B2A] text-[#F7F5EF] text-xs sm:text-sm font-semibold rounded-full transition-all active:scale-[0.98] cursor-pointer shadow-md whitespace-nowrap"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-400" />
+              <span>Kirim Pesanan ke WhatsApp</span>
+            </button>
+          </div>
+
+        </form>
 
       </div>
     </div>

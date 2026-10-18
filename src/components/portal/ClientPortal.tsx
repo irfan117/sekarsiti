@@ -16,6 +16,7 @@ import { PortalShareTab } from './PortalShareTab';
 import { PortalRsvpTab } from './PortalRsvpTab';
 import { PortalWishesTab } from './PortalWishesTab';
 import { PortalInfoTab } from './PortalInfoTab';
+import { PortalDataFormTab } from './PortalDataFormTab';
 import { savePortalSession, getPortalSession, clearPortalSession } from '../../utils/portalAuth';
 
 interface ClientPortalProps {
@@ -39,7 +40,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
     // Mulai dengan loading true jika ada initial params atau sesi tersimpan di storage
     return Boolean((initialCode && initialPin) || getPortalSession());
   });
-  const [activeTab, setActiveTab] = useState<'share' | 'rsvp' | 'wishes' | 'info'>('share');
+  const [activeTab, setActiveTab] = useState<'edit' | 'share' | 'rsvp' | 'wishes'>('edit');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [showIosGuide, setShowIosGuide] = useState(false);
@@ -328,6 +329,15 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
       {/* Mobile Sticky Action Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-[#E8E4DA] p-3 shadow-2xl flex items-center justify-around">
         <button
+          onClick={() => setActiveTab('edit')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${
+            activeTab === 'edit' ? 'text-[#C5A880]' : 'text-stone-500'
+          }`}
+        >
+          <Sparkles className="w-5 h-5" />
+          <span>Data &amp; Foto</span>
+        </button>
+        <button
           onClick={() => setActiveTab('share')}
           className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${
             activeTab === 'share' ? 'text-[#C5A880]' : 'text-stone-500'
@@ -354,19 +364,22 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
           <MessageSquare className="w-5 h-5" />
           <span>Doa</span>
         </button>
-        <button
-          onClick={() => setActiveTab('info')}
-          className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${
-            activeTab === 'info' ? 'text-[#C5A880]' : 'text-stone-500'
-          }`}
-        >
-          <Sparkles className="w-5 h-5" />
-          <span>Data Acara</span>
-        </button>
       </div>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-6 space-y-6 pb-20 md:pb-6">
         <div className="hidden md:flex border-b border-stone-200 overflow-x-auto no-scrollbar gap-2 sm:gap-4">
+          <button
+            onClick={() => setActiveTab('edit')}
+            className={`pb-3 px-2 text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'edit'
+                ? 'border-[#C5A880] text-stone-900'
+                : 'border-transparent text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-[#C5A880]" />
+            <span>Lengkapi Data &amp; Foto Template</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('share')}
             className={`pb-3 px-2 text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
@@ -402,29 +415,18 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
             <MessageSquare className="w-4 h-4 text-[#C5A880]" />
             <span>Doa &amp; Buku Tamu ({(currentClient.guestbookEntries || []).length})</span>
           </button>
-
-          <button
-            onClick={() => setActiveTab('info')}
-            className={`pb-3 px-2 text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'info'
-                ? 'border-[#C5A880] text-stone-900'
-                : 'border-transparent text-stone-500 hover:text-stone-800'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-[#C5A880]" />
-            <span>Data Acara &amp; Kado</span>
-          </button>
         </div>
 
+        {activeTab === 'edit' && (
+          <PortalDataFormTab
+            client={currentClient}
+            onClientUpdated={(updatedClient) => setCurrentClient(updatedClient)}
+            onOpenPreview={onOpenInvitation}
+          />
+        )}
         {activeTab === 'share' && <PortalShareTab client={currentClient} />}
         {activeTab === 'rsvp' && <PortalRsvpTab client={currentClient} />}
         {activeTab === 'wishes' && <PortalWishesTab client={currentClient} />}
-        {activeTab === 'info' && (
-          <PortalInfoTab
-            client={currentClient}
-            onClientUpdated={(updatedClient) => setCurrentClient(updatedClient)}
-          />
-        )}
       </main>
     </div>
   );

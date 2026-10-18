@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, CheckCircle2, FileSpreadsheet } from 'lucide-react';
+import { Plus, CheckCircle2 } from 'lucide-react';
 import { ClientInvitationData, OrderStatus } from '../../types/clientInvitation';
 import { PortfolioItemData } from '../../types/portfolio';
 import { AdminStore } from '../../admin/adminStore';
@@ -31,7 +31,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const [viewState, setViewState] = useState<'list' | 'create' | 'edit' | 'portfolio'>('list');
   const [editingOrder, setEditingOrder] = useState<ClientInvitationData | null>(null);
-  const [autoOpenAiSetup, setAutoOpenAiSetup] = useState(false);
 
   const refreshOrders = () => {
     setOrders(AdminStore.getAll());
@@ -55,17 +54,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const portalUrl = `${origin}${path}?portal=${encodeURIComponent(code)}&pin=${encodeURIComponent(pin)}`;
     const universalNoNameUrl = AdminStore.generateUniversalShareLink(order, { hideGuestName: true });
 
-    const message = `Halo ${order.clientName}, undangan pernikahan digital Anda di Sekarsiti Studio telah aktif! ✨
+    const message = `Halo ${order.clientName}, pesanan undangan pernikahan digital Anda di Sekarsiti Studio telah disiapkan! ✨
 
-1️⃣ *Tautan Satu Undangan untuk Semua (Tanpa Nama Tamu / Grup):*
+1️⃣ *Tautan Undangan Digital Anda:*
 🔗 ${universalNoNameUrl}
 
-2️⃣ *Portal Mempelai (Untuk Tamu Khusus, Impor Excel Tamu & Pantau RSVP):*
+2️⃣ *Portal Mempelai (Untuk Lengkapi Data, Unggah Foto & Lagu, serta Sebar WA & RSVP):*
 🔗 ${portalUrl}
 • Kode Akses: ${code}
 • Sandi PIN: ${pin}
 
-Di dalam Portal Mempelai, Anda juga dapat mengunduh Template Excel & mengimpor daftar tamu sekaligus. Semoga persiapan hari bahagia Anda berjalan lancar!`;
+Di dalam Portal Mempelai, Anda dapat langsung mengunggah foto prewedding/galeri, melengkapi detail acara, mengatur musik latar, serta membuat tautan nama tamu & memantau konfirmasi RSVP. Semoga persiapan hari bahagia Anda berjalan lancar!`;
 
     safeCopyToClipboard(message);
     showToast(`Pesan akses & tautan undangan untuk ${order.clientName} berhasil disalin!`);
@@ -90,15 +89,13 @@ Di dalam Portal Mempelai, Anda juga dapat mengunduh Template Excel & mengimpor d
     return unsubscribe;
   }, []);
 
-  const handleCreateNew = (openGFormAi = false) => {
+  const handleCreateNew = () => {
     setEditingOrder(null);
-    setAutoOpenAiSetup(openGFormAi);
     setViewState('create');
   };
 
   const handleEdit = (order: ClientInvitationData) => {
     setEditingOrder(order);
-    setAutoOpenAiSetup(false);
     setViewState('edit');
   };
 
@@ -209,7 +206,6 @@ Di dalam Portal Mempelai, Anda juga dapat mengunduh Template Excel & mengimpor d
 
       <AdminSidebar
         viewState={viewState}
-        autoOpenAiSetup={autoOpenAiSetup}
         statusFilter={statusFilter}
         ordersCount={orders.length}
         stats={stats}
@@ -249,22 +245,13 @@ Di dalam Portal Mempelai, Anda juga dapat mengunduh Template Excel & mengimpor d
 
           <div className="flex items-center gap-2.5">
             {viewState === 'list' && (
-              <>
-                <button
-                  onClick={() => handleCreateNew(true)}
-                  className="px-3.5 py-2 bg-[#FAF7F2] hover:bg-[#F3EAD9] border border-[#C5A880]/60 text-stone-900 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Impor GForm &amp; Media (AI)</span>
-                </button>
-                <button
-                  onClick={() => handleCreateNew(false)}
-                  className="px-4 py-2 bg-[#C5A880] hover:bg-[#b8986c] text-[#141413] rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Undangan Klien Baru</span>
-                </button>
-              </>
+              <button
+                onClick={handleCreateNew}
+                className="px-4 py-2 bg-[#C5A880] hover:bg-[#b8986c] text-[#141413] rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Undangan Klien Baru</span>
+              </button>
             )}
           </div>
         </header>
@@ -347,12 +334,10 @@ Di dalam Portal Mempelai, Anda juga dapat mengunduh Template Excel & mengimpor d
             <div className="bg-white p-8 rounded-2xl border border-stone-200 shadow-2xs">
               <ClientOrderEditor
                 initialData={editingOrder}
-                autoOpenAiSetup={autoOpenAiSetup}
                 onSave={handleSaveOrder}
                 onCancel={() => {
                   setViewState('list');
                   setEditingOrder(null);
-                  setAutoOpenAiSetup(false);
                 }}
                 onPreview={onPreviewClientInvitation}
               />

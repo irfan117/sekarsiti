@@ -10,6 +10,7 @@ import { Footer } from './components/Footer';
 import { MobilePreviewModal } from './components/MobilePreviewModal';
 import { WhatsAppOrderModal } from './components/WhatsAppOrderModal';
 import { FloatingWhatsAppButton } from './components/FloatingWhatsAppButton';
+import { OrderDataFormPage } from './components/OrderDataFormPage';
 import { PrintPlateHerbariumTemplate } from './templates/PrintPlateHerbariumTemplate';
 import { MalamZamrudTemplate } from './templates/MalamZamrudTemplate';
 import { DamarAlyaTemplate } from './templates/DamarAlyaTemplate';
@@ -36,7 +37,7 @@ type DemoView =
   | 'demo-cetak-biru'
   | 'demo-atlas-cinta';
 
-type AppView = 'landing' | 'admin' | 'portal' | DemoView;
+type AppView = 'landing' | 'admin' | 'portal' | 'order-form' | DemoView;
 
 function resolveDemoViewFromId(key?: string | null): DemoView {
   if (!key) return 'demo-editorial';
@@ -178,11 +179,19 @@ export default function App() {
     const portalParam = params.get('portal');
     const pinParam = params.get('pin');
     const demoParam = params.get('demo');
+    const orderParam = params.get('order');
 
     if (portalParam || viewParam === 'portal') {
       setPortalInitialCode(portalParam || '');
       setPortalInitialPin(pinParam || '');
       setCurrentView('portal');
+      return;
+    }
+
+    if (orderParam || viewParam === 'order') {
+      const selectedOrderTemplate = TEMPLATES.find((item) => item.id === orderParam);
+      setSelectedTemplateForOrder(selectedOrderTemplate || TEMPLATES[0]);
+      setCurrentView('order-form');
       return;
     }
 
@@ -214,6 +223,15 @@ export default function App() {
     setSelectedTemplateForOrder(item);
     setIsOrderModalOpen(true);
     setPreviewTemplate(null);
+  };
+
+  const handleOpenOrderForm = (item: InvitationItem) => {
+    setSelectedTemplateForOrder(item);
+    setIsOrderModalOpen(false);
+    setPreviewTemplate(null);
+    setCurrentView('order-form');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.history.pushState({}, '', `?order=${encodeURIComponent(item.id)}`);
   };
 
   const handleScrollToSection = (sectionId: string) => {
@@ -322,6 +340,15 @@ export default function App() {
     );
   }
 
+  if (currentView === 'order-form') {
+    return (
+      <OrderDataFormPage
+        initialTemplate={selectedTemplateForOrder}
+        onBackToLanding={handleBackToLanding}
+      />
+    );
+  }
+
   if (currentView !== 'landing') {
     const config = DEMO_VIEW_CONFIG[currentView];
     const activeCatalogItem =
@@ -362,7 +389,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F5EF] text-[#2C2E28] font-sans selection:bg-[#E2DDD3] selection:text-[#414A35]">
+    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#181816] font-sans selection:bg-[#E8E5DF] selection:text-[#181816]">
       <Navbar
         onSelectTemplateCTA={() => handleOpenOrderModal()}
       />
