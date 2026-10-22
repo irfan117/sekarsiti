@@ -423,7 +423,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
     e.preventDefault();
     if (!guestNameInput.trim() || !guestMsgInput.trim()) return;
     try {
-      await requestRateLimitPermit('guestbook');
+      await requestRateLimitPermit('guestbook', customData?.id);
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Ucapan belum dapat dikirim.');
       return;
@@ -450,7 +450,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
     e.preventDefault();
     if (!rsvpName.trim()) return;
     try {
-      await requestRateLimitPermit('rsvp');
+      await requestRateLimitPermit('rsvp', customData?.id);
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Reservasi belum dapat dikirim.');
       return;

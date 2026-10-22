@@ -239,7 +239,7 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
     messageInput,
     setMessageInput,
     submitWish
-  } = useGuestbook(initialWishes);
+  } = useGuestbook(initialWishes, customData?.id);
 
   const [attendanceInput, setAttendanceInput] = useState<'hadir' | 'ragu' | 'tidak_hadir'>('hadir');
   const [guestCountInput, setGuestCountInput] = useState(2);
@@ -563,7 +563,7 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
     const name = nameInput.trim();
     const message = messageInput.trim();
     try {
-      await requestRateLimitPermit('rsvp');
+      await requestRateLimitPermit('rsvp', customData?.id);
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Reservasi belum dapat dikirim.');
       return;

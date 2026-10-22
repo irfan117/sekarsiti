@@ -137,7 +137,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
     messageInput: guestMessage,
     setMessageInput: setGuestMessage,
     submitWish: handleAddWish
-  } = useGuestbook(initialWishes);
+  } = useGuestbook(initialWishes, customData?.id);
 
   const {
     rsvpName,
@@ -148,7 +148,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
     setGuestCount: setRsvpCount,
     isSuccess: rsvpSubmitted,
     submitRsvp: handleRsvpSubmit
-  } = useRsvpForm();
+  } = useRsvpForm(undefined, customData?.id);
 
   // Lightbox Modal state
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);

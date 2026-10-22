@@ -169,7 +169,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
     messageInput: guestMessage,
     setMessageInput: setGuestMessage,
     submitWish: handleAddWish
-  } = useGuestbook(initialWishes as any);
+  } = useGuestbook(initialWishes as any, customData?.id);
 
   const {
     rsvpName,
@@ -180,7 +180,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
     setGuestCount: setRsvpCount,
     isSuccess: rsvpSubmitted,
     submitRsvp: handleRsvpSubmit
-  } = useRsvpForm();
+  } = useRsvpForm(undefined, customData?.id);
   const [rsvpNote, setRsvpNote] = useState('');
 
   // Filmstrip track container ref

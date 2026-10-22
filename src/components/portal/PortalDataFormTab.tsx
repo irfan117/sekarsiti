@@ -59,8 +59,25 @@ export const PortalDataFormTab: React.FC<PortalDataFormTabProps> = ({
   };
 
   const handleSmartAutoAssign = () => {
-    const updated = smartPlaceAssets(formData, formData.templateId);
-    setFormData(updated);
+    const currentSlots = formData.mediaSlots || { galleryImages: [] };
+    const pool: string[] = [];
+    if (currentSlots.heroImage) pool.push(currentSlots.heroImage);
+    if (currentSlots.bridePortrait) pool.push(currentSlots.bridePortrait);
+    if (currentSlots.groomPortrait) pool.push(currentSlots.groomPortrait);
+    if (currentSlots.qrisImageUrl) pool.push(currentSlots.qrisImageUrl);
+    if (currentSlots.waxSealEmblem) pool.push(currentSlots.waxSealEmblem);
+    if (Array.isArray(currentSlots.galleryImages)) pool.push(...currentSlots.galleryImages);
+    if (Array.isArray(currentSlots.filmstripImages)) pool.push(...currentSlots.filmstripImages);
+
+    const { placedMedia } = smartPlaceAssets(currentSlots, formData.templateId, pool);
+    setFormData((prev) => ({
+      ...prev,
+      mediaSlots: {
+        ...prev.mediaSlots,
+        ...placedMedia,
+        galleryImages: placedMedia.galleryImages || prev.mediaSlots?.galleryImages || [],
+      },
+    }));
     setSaveSuccess(false);
   };
 

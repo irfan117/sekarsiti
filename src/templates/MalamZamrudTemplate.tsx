@@ -203,7 +203,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
     messageInput: guestMsgInput,
     setMessageInput: setGuestMsgInput,
     submitWish: handleGuestbookSubmit
-  } = useGuestbook(initialWishes);
+  } = useGuestbook(initialWishes, customData?.id);
 
   const {
     rsvpName,
@@ -214,7 +214,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
     setGuestCount: setRsvpCount,
     isSuccess: rsvpSuccess,
     submitRsvp: handleRsvpSubmit
-  } = useRsvpForm();
+  } = useRsvpForm(undefined, customData?.id);
 
   // Lightbox Photo Modal state
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);

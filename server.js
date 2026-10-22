@@ -4,7 +4,7 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-import { rateLimit } from "express-rate-limit";
+import { ipKeyGenerator, rateLimit } from "express-rate-limit";
 dotenv.config();
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path.dirname(__filename);
@@ -19,28 +19,31 @@ async function startServer() {
   const limits = {
     login: rateLimit({
       windowMs: 15 * 60 * 1e3,
-      limit: 5,
+      limit: 10,
       standardHeaders: true,
       legacyHeaders: false,
+      keyGenerator: (req) => ipKeyGenerator(req.ip || "unknown"),
       message: { error: "Terlalu banyak percobaan masuk. Coba lagi dalam 15 menit." }
     }),
     guestbook: rateLimit({
-      windowMs: 10 * 60 * 1e3,
-      limit: 3,
+      windowMs: 60 * 60 * 1e3,
+      limit: 10,
       standardHeaders: true,
       legacyHeaders: false,
-      message: { error: "Terlalu banyak kiriman ucapan. Coba lagi dalam 10 menit." }
+      keyGenerator: (req) => `${ipKeyGenerator(req.ip || "unknown")}:${String(req.body?.scope || "").slice(0, 100)}`,
+      message: { error: "Terlalu banyak kiriman ucapan untuk undangan ini. Coba lagi dalam satu jam." }
     }),
     rsvp: rateLimit({
-      windowMs: 10 * 60 * 1e3,
-      limit: 5,
+      windowMs: 60 * 60 * 1e3,
+      limit: 10,
       standardHeaders: true,
       legacyHeaders: false,
-      message: { error: "Terlalu banyak perubahan reservasi. Coba lagi dalam 10 menit." }
+      keyGenerator: (req) => `${ipKeyGenerator(req.ip || "unknown")}:${String(req.body?.scope || "").slice(0, 100)}`,
+      message: { error: "Terlalu banyak perubahan reservasi untuk undangan ini. Coba lagi dalam satu jam." }
     })
   };
-  app.post("/api/security/rate-limit/:action", (req, res, next) => {
-    const action = req.params.action;
+  app.post(["/api/security/rate-limit", "/api/security/rate-limit/:action"], (req, res, next) => {
+    const action = req.params.action || req.query.action;
     const limiter = limits[action];
     if (!limiter) {
       res.status(404).json({ error: "Jenis permintaan tidak dikenal." });

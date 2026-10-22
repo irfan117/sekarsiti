@@ -1,12 +1,12 @@
 export type PublicRateLimitAction = 'login' | 'guestbook' | 'rsvp';
 
-export async function requestRateLimitPermit(action: PublicRateLimitAction): Promise<void> {
+export async function requestRateLimitPermit(action: PublicRateLimitAction, scope?: string): Promise<void> {
   let response: Response;
   try {
-    response = await fetch(`/api/security/rate-limit/${action}`, {
+    response = await fetch(`/api/security/rate-limit?action=${action}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: '{}',
+      body: JSON.stringify({ scope }),
       credentials: 'same-origin',
     });
   } catch {

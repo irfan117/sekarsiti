@@ -1,6 +1,13 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/security/rate-limit/:action",
+      "destination": "/api/security/rate-limit?action=:action"
+    },
+    {
+      "source": "/((?!api/|_vercel/).*)",
+      "destination": "/index.html"
+    }
   ]
 }
 

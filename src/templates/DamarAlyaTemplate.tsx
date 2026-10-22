@@ -140,7 +140,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
     messageInput: gbMsg,
     setMessageInput: setGbMsg,
     submitWish: handleGuestbookSubmit
-  } = useGuestbook(initialWishes);
+  } = useGuestbook(initialWishes, customData?.id);
 
   const {
     rsvpName,
@@ -151,7 +151,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
     setGuestCount: setRsvpCount,
     isSuccess: showRsvpNote,
     submitRsvp: handleRsvpSubmit
-  } = useRsvpForm();
+  } = useRsvpForm(undefined, customData?.id);
   const [rsvpNote, setRsvpNote] = useState('');
 
   // Sync caption when couple names / media change

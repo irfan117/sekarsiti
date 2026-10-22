@@ -196,7 +196,7 @@ export interface WishItem {
   rotate?: number;
 }
 
-export function useGuestbook(initialWishes: WishItem[] = []) {
+export function useGuestbook(initialWishes: WishItem[] = [], rateLimitScope?: string) {
   const [wishes, setWishes] = useState<WishItem[]>(initialWishes);
   const [nameInput, setNameInput] = useState('');
   const [messageInput, setMessageInput] = useState('');
@@ -206,7 +206,7 @@ export function useGuestbook(initialWishes: WishItem[] = []) {
     if (!nameInput.trim() || !messageInput.trim()) return false;
 
     try {
-      await requestRateLimitPermit('guestbook');
+      await requestRateLimitPermit('guestbook', rateLimitScope);
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Ucapan belum dapat dikirim.');
       return false;
@@ -235,7 +235,7 @@ export function useGuestbook(initialWishes: WishItem[] = []) {
 }
 
 // 6. REUSABLE RSVP FORM LOGIC
-export function useRsvpForm(onSuccessCallback?: () => void) {
+export function useRsvpForm(onSuccessCallback?: () => void, rateLimitScope?: string) {
   const [rsvpName, setRsvpName] = useState('');
   const [attendance, setAttendance] = useState<'hadir' | 'tidak_hadir' | 'ragu'>('hadir');
   const [guestCount, setGuestCount] = useState('2');
@@ -246,7 +246,7 @@ export function useRsvpForm(onSuccessCallback?: () => void) {
     if (!rsvpName.trim()) return false;
 
     try {
-      await requestRateLimitPermit('rsvp');
+      await requestRateLimitPermit('rsvp', rateLimitScope);
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Reservasi belum dapat dikirim.');
       return false;
