@@ -46,12 +46,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setTimeout(() => setFeedbackToast(null), 3500);
   };
 
+  const handleCopyInvitationLink = (order: ClientInvitationData) => {
+    const link = AdminStore.generateShareLink(order);
+    safeCopyToClipboard(link);
+    showToast(`Tautan undangan (${link}) berhasil disalin!`);
+  };
+
   const handleCopyClientAccess = (order: ClientInvitationData) => {
     const code = order.accessCode || order.slug || order.id;
     const pin = order.pinCode || '7429';
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const path = typeof window !== 'undefined' ? window.location.pathname : '';
-    const portalUrl = `${origin}${path}?portal=${encodeURIComponent(code)}&pin=${encodeURIComponent(pin)}`;
+    const portalUrl = `${origin}/?portal=${encodeURIComponent(code)}&pin=${encodeURIComponent(pin)}`;
     const universalNoNameUrl = AdminStore.generateUniversalShareLink(order, { hideGuestName: true });
 
     const message = `Halo ${order.clientName}, pesanan undangan pernikahan digital Anda di Sekarsiti Studio telah disiapkan! ✨
@@ -276,6 +281,7 @@ Di dalam Portal Mempelai, Anda dapat langsung mengunggah foto prewedding/galeri,
                 onChangeStatusFilter={setStatusFilter}
                 onChangeTemplateFilter={setTemplateFilter}
                 onChangeSortOption={setSortOption}
+                onCopyInvitationLink={handleCopyInvitationLink}
                 onCopyClientAccess={handleCopyClientAccess}
                 onOpenClientPortal={onOpenClientPortal}
                 onPreviewClientInvitation={onPreviewClientInvitation}

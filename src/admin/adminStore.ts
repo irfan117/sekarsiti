@@ -224,7 +224,14 @@ export class AdminStore {
   }
 
   static getById(id: string): ClientInvitationData | undefined {
-    return this.getStore().find(item => item.id === id || item.slug === id);
+    if (!id) return undefined;
+    const clean = id.trim().toLowerCase();
+    return this.getStore().find(
+      item =>
+        item.id.toLowerCase() === clean ||
+        item.slug?.toLowerCase() === clean ||
+        item.accessCode?.toLowerCase() === clean
+    );
   }
 
   static getStats(): AdminStoreStats {

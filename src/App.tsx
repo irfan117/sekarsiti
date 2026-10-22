@@ -145,10 +145,17 @@ export default function App() {
   const [previewTemplate, setPreviewTemplate] = useState<InvitationItem | null>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [selectedTemplateForOrder, setSelectedTemplateForOrder] = useState<InvitationItem | null>(null);
+  const [isResolvingClient, setIsResolvingClient] = useState<boolean>(() => {
+    const detected = getSubdomain();
+    if (!detected) return false;
+    return !AdminStore.getById(detected);
+  });
 
   useEffect(() => {
+    const initialLookup = getSubdomain();
+
     // Ambil order nyata dari database Supabase
-    AdminStore.initFromSupabase().then(() => {
+    AdminStore.initFromSupabase(Boolean(initialLookup)).then(() => {
       const detectedSubdomain = getSubdomain();
       const params = new URLSearchParams(window.location.search);
       const clientLookup = detectedSubdomain || params.get('client');
@@ -160,6 +167,9 @@ export default function App() {
           setCurrentView(resolveDemoViewFromId(found.templateId));
         }
       }
+      setIsResolvingClient(false);
+    }).catch(() => {
+      setIsResolvingClient(false);
     });
 
     const detectedSubdomain = getSubdomain();
@@ -168,6 +178,7 @@ export default function App() {
       if (foundClient) {
         setClientPreviewData(foundClient);
         setCurrentView(resolveDemoViewFromId(foundClient.templateId));
+        setIsResolvingClient(false);
         return;
       }
     }
@@ -244,7 +255,7 @@ export default function App() {
     const { querySlug } = DEMO_VIEW_CONFIG[targetView];
     setCurrentView(targetView);
     window.scrollTo({ top: 0, behavior: 'instant' });
-    window.history.pushState({}, '', `?demo=${querySlug}`);
+    window.history.pushState({}, '', `/?demo=${querySlug}`);
   };
 
   const handleBackToLanding = () => {
@@ -252,13 +263,13 @@ export default function App() {
     setClientPreviewData(null);
     setIsAdminPreviewMode(false);
     window.scrollTo({ top: 0, behavior: 'instant' });
-    window.history.pushState({}, '', window.location.pathname);
+    window.history.pushState({}, '', '/');
   };
 
   const handleOpenAdmin = () => {
     setCurrentView('admin');
     window.scrollTo({ top: 0, behavior: 'instant' });
-    window.history.pushState({}, '', '?admin=true');
+    window.history.pushState({}, '', '/?admin=true');
   };
 
   const handleOpenClientPortal = (invitation?: ClientInvitationData) => {
@@ -267,11 +278,11 @@ export default function App() {
       const pin = invitation.pinCode || '7429';
       setPortalInitialCode(code);
       setPortalInitialPin(pin);
-      window.history.pushState({}, '', `?portal=${encodeURIComponent(code)}&pin=${encodeURIComponent(pin)}`);
+      window.history.pushState({}, '', `/?portal=${encodeURIComponent(code)}&pin=${encodeURIComponent(pin)}`);
     } else {
       setPortalInitialCode('');
       setPortalInitialPin('');
-      window.history.pushState({}, '', '?view=portal');
+      window.history.pushState({}, '', '/?view=portal');
     }
     setCurrentView('portal');
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -295,17 +306,26 @@ export default function App() {
         setPreviewSource(null);
         setCurrentView('portal');
         window.scrollTo({ top: 0, behavior: 'instant' });
-        window.history.pushState({}, '', '?view=portal');
+        window.history.pushState({}, '', '/?view=portal');
         return;
       }
       setPreviewSource(null);
       setCurrentView('admin');
       window.scrollTo({ top: 0, behavior: 'instant' });
-      window.history.pushState({}, '', '?admin=true');
+      window.history.pushState({}, '', '/?admin=true');
       return;
     }
     handleBackToLanding();
   };
+
+  if (isResolvingClient) {
+    return (
+      <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center p-6 text-[#181816]">
+        <div className="w-10 h-10 rounded-full border-2 border-[#C6A679]/30 border-t-[#C6A679] animate-spin mb-4" />
+        <p className="font-serif text-lg text-[#181816]">Memuat Undangan...</p>
+      </div>
+    );
+  }
 
   if (currentView === 'portal') {
     return (

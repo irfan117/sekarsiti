@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ClientInvitationData, OrderStatus } from '../../../types/clientInvitation';
-import { UserCheck, Hash, Phone, Mail, Link as LinkIcon } from 'lucide-react';
+import { UserCheck, Phone, Mail, Link as LinkIcon, Copy, Check } from 'lucide-react';
+import { buildInvitationUrl } from '../../../utils/subdomainUtils';
+import { safeCopyToClipboard } from '../../../utils/clipboardUtils';
 
 interface ClientInfoSectionProps {
   formData: ClientInvitationData;
@@ -11,6 +13,14 @@ export const ClientInfoSection: React.FC<ClientInfoSectionProps> = ({
   formData,
   onChange
 }) => {
+  const [copiedLink, setCopiedLink] = useState(false);
+  const fullInvitationUrl = buildInvitationUrl(formData.slug || formData.id, formData.id);
+
+  const handleCopyUrl = () => {
+    safeCopyToClipboard(fullInvitationUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
   return (
     <div className="max-w-2xl text-left space-y-5">
       <div>
@@ -78,6 +88,26 @@ export const ClientInfoSection: React.FC<ClientInfoSectionProps> = ({
             placeholder="kirana-adhitya"
             className="w-full p-2.5 bg-white border border-stone-300 rounded-lg text-xs font-mono text-stone-800 focus:outline-none focus:border-[#C5A880]"
           />
+        </div>
+
+        {/* Live Invitation URL & Copy Button */}
+        <div className="sm:col-span-2 p-3 bg-[#FAF7F2] border border-[#E8E4DA] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div className="min-w-0">
+            <span className="text-[10px] uppercase tracking-wider font-bold text-[#C5A880] block">
+              Tautan Undangan Aktif Klien
+            </span>
+            <p className="text-xs font-mono text-stone-800 truncate mt-0.5">
+              {fullInvitationUrl}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleCopyUrl}
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-[#181816] hover:bg-[#C5A880] hover:text-[#141413] text-[#FAF8F5] text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
+          >
+            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copiedLink ? 'Tersalin!' : 'Salin Link Undangan'}</span>
+          </button>
         </div>
 
         {/* WhatsApp Phone */}

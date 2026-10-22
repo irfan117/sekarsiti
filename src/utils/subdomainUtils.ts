@@ -1,72 +1,112 @@
 /**
- * Utility untuk menangani Subdomain Undangan (misal: kirana-adhitya.sekarsiti.com)
- * atau fallback ke localhost/query params jika sedang development.
+ * Utility untuk menangani URL Undangan Klien.
+ * Secara default menggunakan path/query pada domain utama (misal: https://ssiti.tech/kirana-adhitya)
+ * agar langsung dapat diakses di Vercel tanpa memerlukan konfigurasi Wildcard DNS (*.ssiti.tech).
+ * Tetap mendukung pembacaan subdomain apabila VITE_ENABLE_SUBDOMAIN=true diaktifkan.
  */
+
+const RESERVED_PATHS = new Set([
+  '',
+  'index.html',
+  'admin',
+  'portal',
+  'order',
+  'login',
+  'api',
+  'assets',
+  'images',
+  'favicon.ico',
+  'robots.txt',
+  'sitemap.xml',
+]);
 
 export function getSubdomain(): string | null {
   if (typeof window === 'undefined') return null;
 
-  const hostname = window.location.hostname.toLowerCase();
+  const urlParams = new URLSearchParams(window.location.search);
 
-  // Abaikan localhost, IP 127.0.0.1, atau format IP langsung
+  // 1. Jika sedang membuka halaman khusus (admin, portal, demo katalog, form order), jangan anggap sebagai slug klien
+  if (
+    urlParams.get('admin') === 'true' ||
+    urlParams.get('view') === 'admin' ||
+    urlParams.get('view') === 'portal' ||
+    urlParams.get('portal') ||
+    urlParams.get('demo') ||
+    urlParams.get('order') ||
+    urlParams.get('view') === 'order'
+  ) {
+    return null;
+  }
+
+  // 2. Cek parameter eksplisit ?client=... atau ?undangan=... atau ?subdomain=...
+  const querySlug =
+    urlParams.get('client') ||
+    urlParams.get('undangan') ||
+    urlParams.get('subdomain');
+  if (querySlug && querySlug.trim()) {
+    return querySlug.trim().toLowerCase();
+  }
+
+  // 3. Cek path URL pada domain utama (contoh: https://ssiti.tech/fgd-gfgdg atau https://ssiti.tech/u/fgd-gfgdg)
+  const rawPath = decodeURIComponent(window.location.pathname || '')
+    .replace(/^\/+|\/+$/g, '')
+    .trim();
+
+  if (rawPath) {
+    const segments = rawPath.split('/').filter(Boolean);
+    if (segments.length === 1 && !RESERVED_PATHS.has(segments[0].toLowerCase())) {
+      return segments[0].toLowerCase();
+    }
+    if (
+      segments.length === 2 &&
+      (segments[0].toLowerCase() === 'u' || segments[0].toLowerCase() === 'undangan') &&
+      !RESERVED_PATHS.has(segments[1].toLowerCase())
+    ) {
+      return segments[1].toLowerCase();
+    }
+  }
+
+  // 4. Fallback: Cek subdomain jika diakses melalui subdomain (misal: kirana-adhitya.ssiti.tech)
+  const hostname = window.location.hostname.toLowerCase();
   if (
     hostname === 'localhost' ||
     hostname === '127.0.0.1' ||
     hostname.endsWith('.localhost') ||
+    hostname.endsWith('.vercel.app') ||
     /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)
   ) {
-    // Mode dev bisa dites dengan parameter ?subdomain=nama-klien
-    const urlParams = new URLSearchParams(window.location.search);
-    const mockSubdomain = urlParams.get('subdomain');
-    return mockSubdomain ? mockSubdomain.trim().toLowerCase() : null;
+    return null;
   }
 
-  // Pisahkan bagian domain
-  // Contoh: kirana-adhitya.sekarsiti.com -> ['kirana-adhitya', 'sekarsiti', 'com']
   const parts = hostname.split('.');
-
-  // Jika ada subdomain sebelum root domain (misal sekarsiti.com memiliki 2 parts, subdomain membuat jadi >= 3 parts)
   if (parts.length >= 3) {
     const sub = parts[0];
-    // Abaikan jika subdomain adalah www, app, admin, api
-    if (['www', 'app', 'admin', 'api', 'stage'].includes(sub)) {
-      return null;
+    if (!['www', 'app', 'admin', 'api', 'stage'].includes(sub)) {
+      return sub;
     }
-    return sub;
   }
 
   return null;
 }
 
 /**
- * Menghasilkan Link Undangan berbasis Subdomain jika domain produksi terkonfigurasi,
- * atau berbasis path/query parameter dengan cerdas.
+ * Menghasilkan Link Undangan pada domain utama (contoh: https://ssiti.tech/kirana-adhitya)
+ * sehingga langsung aktif tanpa perlu setting Wildcard Subdomain DNS.
+ * Jika VITE_ENABLE_SUBDOMAIN === 'true' dan VITE_ROOT_DOMAIN disetel, barulah menggunakan subdomain.
  */
 export function buildInvitationUrl(slug: string, id: string): string {
   if (typeof window === 'undefined') return '';
 
+  const identifier = encodeURIComponent((slug || id || '').trim());
   const protocol = window.location.protocol;
   const hostname = window.location.hostname;
-  const port = window.location.port ? `:${window.location.port}` : '';
 
-  // Cek apakah ada ROOT_DOMAIN yang ditentukan di environment (misal: "sekarsiti.com")
-  const rootDomain = import.meta.env.VITE_ROOT_DOMAIN;
+  const enableSubdomain = import.meta.env.VITE_ENABLE_SUBDOMAIN === 'true';
+  const rootDomain = import.meta.env.VITE_ROOT_DOMAIN?.trim();
 
-  if (rootDomain && !hostname.includes('localhost')) {
-    return `${protocol}//${slug}.${rootDomain}`;
+  if (enableSubdomain && rootDomain && !hostname.includes('localhost')) {
+    return `${protocol}//${identifier}.${rootDomain}`;
   }
 
-  // Jika di localhost / preview mode biasa
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return `${protocol}//${hostname}${port}/?subdomain=${slug}`;
-  }
-
-  // Format fleksibel jika menggunakan domain standar
-  const parts = hostname.split('.');
-  if (parts.length >= 2) {
-    const baseDomain = parts.slice(-2).join('.');
-    return `${protocol}//${slug}.${baseDomain}${port}`;
-  }
-
-  return `${window.location.origin}/?client=${id}`;
+  return `${window.location.origin}/${identifier}`;
 }

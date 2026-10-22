@@ -52,12 +52,7 @@ export const PortalShareTab: React.FC<PortalShareTabProps> = ({ client }) => {
   const excelInputRef = useRef<HTMLInputElement>(null);
 
   const getBaseInvitationUrl = (guestParam?: string) => {
-    if (typeof window === 'undefined') return '';
-    const base = `${window.location.origin}${window.location.pathname}?client=${client.id}`;
-    if (guestParam) {
-      return `${base}&to=${encodeURIComponent(guestParam)}`;
-    }
-    return base;
+    return AdminStore.generateShareLink(client, guestParam);
   };
 
   const generateWhatsAppMessage = (guestName: string) => {
