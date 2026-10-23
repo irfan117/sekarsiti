@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
 import { isVideoUrl } from '../utils/cloudinaryUpload';
+import { collectAdminUploadedPhotos } from '../utils/templateMediaResolver';
 import { 
   useCountdown, 
   useGuestRecipient, 
@@ -99,8 +100,16 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
   const songTitle = customData?.songTitle || 'Until I Found You - Stephen Sanchez';
   const audioUrl = customData?.audioUrl || '';
 
-  const galleryPhotos = (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0)
-    ? customData.mediaSlots.galleryImages.map((src, i) => ({ src, alt: `Lembar Polaroid #${i + 1}` }))
+  const allAdminUploadedImages = React.useMemo(
+    () => collectAdminUploadedPhotos(customData),
+    [customData]
+  );
+
+  const galleryPhotos = customData
+    ? (customData.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
+        ? customData.mediaSlots.galleryImages.filter((u) => Boolean(u && !isVideoUrl(u)))
+        : allAdminUploadedImages
+      ).map((src, i) => ({ src, alt: `Lembar Polaroid #${i + 1}` }))
     : GALLERY_PHOTOS;
 
   const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
@@ -109,27 +118,101 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
   const heroImage =
     !isVideoUrl(rawHeroMedia) && rawHeroMedia
       ? rawHeroMedia
-      : galleryPhotos[0]?.src || '/images/editorial_couple_portrait_1790838636662.jpg';
-  const bridePortrait =
-    customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_veil_1790901501919.jpg';
-  const groomPortrait =
-    customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
+      : galleryPhotos[0]?.src || allAdminUploadedImages[0] || (!customData ? '/images/editorial_couple_portrait_1790838636662.jpg' : '');
+  const bridePortrait = customData
+    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    : '/images/wedding_bride_veil_1790901501919.jpg';
+  const groomPortrait = customData
+    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    : '/images/editorial_groom_portrait_1790915490996.jpg';
+  const spotlightImage = customData
+    ? customData.mediaSlots?.spotlightImage || galleryPhotos[0]?.src || heroImage || ''
+    : '';
+  const closingImage = customData
+    ? customData.mediaSlots?.closingImage || galleryPhotos[galleryPhotos.length - 1]?.src || heroImage || ''
+    : heroImage;
+  const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
 
-  const sectionPhotos: Record<string, string> = {
-    ...SECTION_PHOTOS,
-    cover: heroImage,
-    couple: heroImage,
-    'moment-1': galleryPhotos[0]?.src || SECTION_PHOTOS['moment-1'],
-    datetime: bridePortrait,
-    lokasi: galleryPhotos[1]?.src || SECTION_PHOTOS.lokasi,
-    turut: groomPortrait,
-    'our-story': galleryPhotos[2]?.src || SECTION_PHOTOS['our-story'],
-    'moment-2': galleryPhotos[3]?.src || galleryPhotos[0]?.src || SECTION_PHOTOS['moment-2'],
-    dresscode: bridePortrait,
-    'moment-3': galleryPhotos[4]?.src || galleryPhotos[1]?.src || SECTION_PHOTOS['moment-3'],
-    gallery: galleryPhotos[0]?.src || SECTION_PHOTOS.gallery,
-    closing: heroImage
-  };
+  const panelSourcePhotos = React.useMemo(() => {
+    if (!customData) return [];
+    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
+  }, [customData, allAdminUploadedImages]);
+
+  const sectionPhotos: Record<string, string> = React.useMemo(() => {
+    if (customData) {
+      const map: Record<string, string> = {};
+      SECTION_ORDER.forEach((secId, idx) => {
+        map[secId] =
+          panelSourcePhotos.length > 0
+            ? panelSourcePhotos[idx % panelSourcePhotos.length]
+            : heroImage || '';
+      });
+      if (heroImage) map.cover = heroImage;
+      if (bridePortrait) map.datetime = bridePortrait;
+      if (groomPortrait) map.turut = groomPortrait;
+      if (spotlightImage) map.lokasi = spotlightImage;
+      if (closingImage) map.closing = closingImage;
+      return map;
+    }
+    return {
+      ...SECTION_PHOTOS,
+      cover: heroImage,
+      couple: heroImage,
+      'moment-1': galleryPhotos[0]?.src || SECTION_PHOTOS['moment-1'],
+      datetime: bridePortrait,
+      lokasi: galleryPhotos[1]?.src || SECTION_PHOTOS.lokasi,
+      turut: groomPortrait,
+      'our-story': galleryPhotos[2]?.src || SECTION_PHOTOS['our-story'],
+      'moment-2': galleryPhotos[3]?.src || galleryPhotos[0]?.src || SECTION_PHOTOS['moment-2'],
+      dresscode: bridePortrait,
+      'moment-3': galleryPhotos[4]?.src || galleryPhotos[1]?.src || SECTION_PHOTOS['moment-3'],
+      gallery: galleryPhotos[0]?.src || SECTION_PHOTOS.gallery,
+      closing: heroImage
+    };
+  }, [customData, panelSourcePhotos, heroImage, bridePortrait, groomPortrait, spotlightImage, closingImage, galleryPhotos]);
+
+  const storyMilestones = React.useMemo(() => {
+    const rawChapters = customData?.mediaSlots?.storyChapters;
+    if (Array.isArray(rawChapters)) {
+      if (rawChapters.length === 0) return [];
+      return rawChapters.map((ch, idx) => ({
+        date: ch.date || ch.chapter || `BABAK ${String(idx + 1).padStart(2, '0')}`,
+        title: ch.title || `Babak ${idx + 1}`,
+        quote: ch.quote || '',
+        story: ch.story || '',
+        image:
+          ch.image && !isVideoUrl(ch.image)
+            ? ch.image
+            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+      }));
+    }
+    return [
+      {
+        date: 'Agustus 2019',
+        title: 'Pertemuan Pertama',
+        quote: '',
+        story: 'Bertemu tanpa sengaja di sebuah acara kampus, dan sejak itu percakapan tak pernah berhenti mengalir hangat.',
+        image: customData ? allAdminUploadedImages[0] || '' : ''
+      },
+      {
+        date: 'Desember 2022',
+        title: 'Lamaran',
+        quote: '',
+        story: 'Di depan keluarga besar, sebuah janji sederhana disampaikan dan diterima dengan haru bahagia.',
+        image: customData ? allAdminUploadedImages[1] || allAdminUploadedImages[0] || '' : ''
+      },
+      {
+        date: 'Februari 2027',
+        title: 'Hari Bahagia',
+        quote: '',
+        story: 'Babak baru dimulai — dua keluarga menjadi satu, disaksikan oleh seluruh orang-orang tercinta.',
+        image: customData ? allAdminUploadedImages[2] || allAdminUploadedImages[0] || '' : ''
+      }
+    ];
+  }, [customData, allAdminUploadedImages]);
 
   // 3D Journal Cover swing open state
   const [isCoverOpening, setIsCoverOpening] = useState(false);
@@ -1312,12 +1395,14 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
 
           {/* ============ 3. MOMEN 1 ============ */}
           <section id="moment-1" className="section section--moment">
-            <img 
-              loading="lazy" 
-              className="moment-bg" 
-              src={galleryPhotos[0]?.src || '/images/wedding_couple_portrait_1790833906470.jpg'} 
-              alt="Momen Cahaya Sore" 
-            />
+            {(spotlightImage || galleryPhotos[0]?.src || heroImage || (!customData ? '/images/wedding_couple_portrait_1790833906470.jpg' : '')) && (
+              <img 
+                loading="lazy" 
+                className="moment-bg" 
+                src={spotlightImage || galleryPhotos[0]?.src || heroImage || (!customData ? '/images/wedding_couple_portrait_1790833906470.jpg' : '')} 
+                alt="Momen Cahaya Sore" 
+              />
+            )}
             <div className="moment-caption reveal">
               <h3>Cahaya Sore</h3>
               <p className="text-xs italic text-[#D8C9A3] tracking-wide mt-1">Saat langkah pertama saling berpadu</p>
@@ -1362,12 +1447,14 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
 
           {/* ============ 5. LOKASI ACARA ============ */}
           <section id="lokasi" className="section section--lokasi">
-            <img 
-              loading="lazy" 
-              className="lokasi-bg" 
-              src="/images/art_deco_venue_details_1790840351864.jpg" 
-              alt={resepsiVenue} 
-            />
+            {(spotlightImage || galleryPhotos[1]?.src || galleryPhotos[0]?.src || heroImage || (!customData ? '/images/art_deco_venue_details_1790840351864.jpg' : '')) && (
+              <img 
+                loading="lazy" 
+                className="lokasi-bg" 
+                src={spotlightImage || galleryPhotos[1]?.src || galleryPhotos[0]?.src || heroImage || (!customData ? '/images/art_deco_venue_details_1790840351864.jpg' : '')} 
+                alt={resepsiVenue} 
+              />
+            )}
             <div className="lokasi-content">
               <p className="lead reveal text-[#D8C9A3]">Lokasi acara</p>
               <h3 className="reveal text-[#F8F5EC]">{resepsiVenue}</h3>
@@ -1391,40 +1478,51 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
           <section id="turut" className="section section--turut">
             <h3 className="section-title reveal text-[#F8F5EC]">Turut mengundang</h3>
             <p className="turut-text reveal text-[#F8F5EC]/95">
-              Keluarga Besar Wijaya &amp; Keluarga Besar Nugraha turut mengundang Bapak/Ibu/Saudara/i untuk berkenan hadir dan memberikan doa restu bagi kedua mempelai.
+              Keluarga Besar kedua mempelai turut mengundang Bapak/Ibu/Saudara/i untuk berkenan hadir dan memberikan doa restu bagi kedua mempelai.
             </p>
           </section>
 
           {/* ============ 7. KISAH CINTA KAMI ============ */}
-          <section id="our-story" className="section section--story">
-            <h3 className="section-title reveal text-[#1F1D19]">Kisah Cinta Kami</h3>
-            <div className="story-timeline">
-              <div className="story-item reveal">
-                <span className="story-date">Agustus 2019</span>
-                <span className="story-title">Pertemuan Pertama</span>
-                <p>Bertemu tanpa sengaja di sebuah acara kampus, dan sejak itu percakapan tak pernah berhenti mengalir hangat.</p>
+          {storyMilestones.length > 0 && (
+            <section id="our-story" className="section section--story">
+              <h3 className="section-title reveal text-[#1F1D19]">Kisah Cinta Kami</h3>
+              <div className="story-timeline">
+                {storyMilestones.map((item, idx) => (
+                  <div key={idx} className="story-item reveal">
+                    <span className="story-date">{item.date}</span>
+                    <span className="story-title">{item.title}</span>
+                    {item.image && (
+                      <div
+                        onClick={() => setSelectedPhoto(item.image)}
+                        className="my-2.5 rounded-sm overflow-hidden border border-[#D8C9A3] bg-white p-1.5 shadow-sm cursor-pointer max-w-[260px]"
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-full aspect-[4/3] object-cover"
+                        />
+                      </div>
+                    )}
+                    {item.quote && (
+                      <p className="italic text-[#55653F] mb-1">{item.quote}</p>
+                    )}
+                    <p>{item.story}</p>
+                  </div>
+                ))}
               </div>
-              <div className="story-item reveal">
-                <span className="story-date">Desember 2022</span>
-                <span className="story-title">Lamaran</span>
-                <p>Di depan keluarga besar, sebuah janji sederhana disampaikan dan diterima dengan haru bahagia.</p>
-              </div>
-              <div className="story-item reveal">
-                <span className="story-date">Februari 2027</span>
-                <span className="story-title">Hari Bahagia</span>
-                <p>Babak baru dimulai — dua keluarga menjadi satu, disaksikan oleh seluruh orang-orang tercinta.</p>
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* ============ 8. MOMEN 2 ============ */}
           <section id="moment-2" className="section section--moment">
-            <img 
-              loading="lazy" 
-              className="moment-bg" 
-              src={galleryPhotos[1]?.src || '/images/wedding_dance_lights_1790901533590.jpg'} 
-              alt="Momen Tawa yang Sama" 
-            />
+            {(galleryPhotos[1]?.src || spotlightImage || galleryPhotos[0]?.src || heroImage || (!customData ? '/images/wedding_dance_lights_1790901533590.jpg' : '')) && (
+              <img 
+                loading="lazy" 
+                className="moment-bg" 
+                src={galleryPhotos[1]?.src || spotlightImage || galleryPhotos[0]?.src || heroImage || (!customData ? '/images/wedding_dance_lights_1790901533590.jpg' : '')} 
+                alt="Momen Tawa yang Sama" 
+              />
+            )}
             <div className="moment-caption reveal">
               <h3>Tawa yang Sama</h3>
               <p className="text-xs italic text-[#D8C9A3] tracking-wide mt-1">Di setiap kelakar dan obrolan panjang</p>
@@ -1447,12 +1545,14 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
 
           {/* ============ 10. MOMEN 3 ============ */}
           <section id="moment-3" className="section section--moment">
-            <img 
-              loading="lazy" 
-              className="moment-bg" 
-              src={galleryPhotos[2]?.src || '/images/sage_outdoor_couple_portrait_1790919006777.jpg'} 
-              alt="Momen Menuju Rumah" 
-            />
+            {(galleryPhotos[2]?.src || spotlightImage || galleryPhotos[0]?.src || heroImage || (!customData ? '/images/sage_outdoor_couple_portrait_1790919006777.jpg' : '')) && (
+              <img 
+                loading="lazy" 
+                className="moment-bg" 
+                src={galleryPhotos[2]?.src || spotlightImage || galleryPhotos[0]?.src || heroImage || (!customData ? '/images/sage_outdoor_couple_portrait_1790919006777.jpg' : '')} 
+                alt="Momen Menuju Rumah" 
+              />
+            )}
             <div className="moment-caption reveal">
               <h3>Menuju Rumah</h3>
               <p className="text-xs italic text-[#D8C9A3] tracking-wide mt-1">Tempat hati ini selalu pulang</p>
@@ -1533,6 +1633,18 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
                 {isCopied('jurnal-bank') ? <Check className="w-3.5 h-3.5 text-[#D8C9A3]" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{isCopied('jurnal-bank') ? 'Nomor Tersalin!' : 'Salin Nomor Rekening'}</span>
               </button>
+
+              {qrisImageUrl && (
+                <div className="pt-3 border-t border-[#D8C9A3]/60">
+                  <p className="text-xs text-[#55653F] font-medium mb-2">Scan QRIS Tanda Kasih</p>
+                  <img
+                    src={qrisImageUrl}
+                    alt="Barcode QRIS"
+                    onClick={() => setSelectedPhoto(qrisImageUrl)}
+                    className="w-40 h-40 object-contain mx-auto rounded-xs border border-[#D8C9A3] bg-white p-1.5 cursor-pointer"
+                  />
+                </div>
+              )}
             </div>
           </section>
 
@@ -1604,12 +1716,14 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
 
           {/* ============ 15. PENUTUP ============ */}
           <section id="closing" className="section section--closing">
-            <img 
-              loading="lazy" 
-              className="closing-bg" 
-              src={heroImage} 
-              alt="Penutup Jurnal" 
-            />
+            {closingImage && (
+              <img 
+                loading="lazy" 
+                className="closing-bg" 
+                src={closingImage} 
+                alt="Penutup Jurnal" 
+              />
+            )}
             <div className="closing-content reveal">
               <h3 className="section-title text-[#F8F5EC]">Terima kasih</h3>
               <p className="text-sm text-[#F8F5EC]/90 leading-relaxed">

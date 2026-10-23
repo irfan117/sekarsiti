@@ -29,6 +29,7 @@ import { ClientInvitationData } from '../types/clientInvitation';
 import { useAudioController } from '../hooks/useInvitationCore';
 import { requestRateLimitPermit } from '../utils/requestRateLimit';
 import { isVideoUrl } from '../utils/cloudinaryUpload';
+import { collectAdminUploadedPhotos } from '../utils/templateMediaResolver';
 
 interface PrintPlateHerbariumTemplateProps {
   onBackToLanding: () => void;
@@ -72,11 +73,13 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   const resepsiTime = customData?.resepsiTime || '11.00 – 14.00 WIB';
   const resepsiVenue = customData?.resepsiVenue || 'Grand Ballroom, Aryaduta Hotel';
   const city = customData?.city || 'Jakarta Selatan';
+  const mapsUrl = customData?.mapsUrl || 'https://maps.google.com';
   const quoteText = customData?.quoteText || 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan pasangan untukmu dari jenismu sendiri, agar kamu merasa tenteram kepadanya, serta menjadikan di antara kamu rasa kasih dan sayang.';
   const quoteSource = customData?.quoteSource || 'QS. AR-RUM : 21';
   const bankName = customData?.bankName || 'BANK CENTRAL ASIA (BCA)';
   const accountNumber = customData?.accountNumber || '8271 0293 84';
   const accountHolder = customData?.accountHolder || 'a.n. Kirana Ayu Lestari';
+  const qrisImageUrl = customData?.mediaSlots?.qrisImageUrl || customData?.qrisImageUrl || '';
   const songTitle = customData?.songTitle || 'Until I Found You';
   const audioUrl = customData?.audioUrl || '';
 
@@ -111,9 +114,17 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   // Lightbox Photo Modal state
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
-  // Gallery image assets (Custom or Default)
-  const galleryImages = (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0)
-    ? customData.mediaSlots.galleryImages
+  // Kumpulan seluruh foto asli yang diupload oleh Admin pada undangan ini (tanpa batasan jumlah)
+  const allAdminUploadedImages = React.useMemo(
+    () => collectAdminUploadedPhotos(customData),
+    [customData]
+  );
+
+  // Gallery image assets: 100% dari upload admin saat customData aktif (bebas jumlah, tanpa minimal/maksimal)
+  const galleryImages = customData
+    ? customData.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
+      ? customData.mediaSlots.galleryImages.filter((u) => Boolean(u && !isVideoUrl(u)))
+      : allAdminUploadedImages
     : [
         '/images/editorial_couple_portrait_1790838636662.jpg',
         '/images/wedding_bride_veil_1790901501919.jpg',
@@ -126,16 +137,32 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       ];
 
   const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
-  const heroVideoUrl =
-    customData?.mediaSlots?.heroVideo ||
-    (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '/videos/wedding-cinematic.mp4');
-  const heroImage = !isVideoUrl(rawHeroMedia) && rawHeroMedia ? rawHeroMedia : galleryImages[0];
+  const heroVideoUrl = customData
+    ? customData.mediaSlots?.heroVideo || (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '')
+    : '/videos/wedding-cinematic.mp4';
+  const heroImage =
+    !isVideoUrl(rawHeroMedia) && rawHeroMedia
+      ? rawHeroMedia
+      : galleryImages[0] || allAdminUploadedImages[0] || (!customData ? '/images/editorial_couple_portrait_1790838636662.jpg' : '');
   const isCoverVideo =
     isVideoUrl(rawHeroMedia) || Boolean(customData?.mediaSlots?.heroVideo && !rawHeroMedia);
-  const bridePortrait = customData?.mediaSlots?.bridePortrait || galleryImages[1] || galleryImages[0];
-  const groomPortrait = customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
+  const bridePortrait = customData
+    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    : '/images/wedding_bride_veil_1790901501919.jpg';
+  const groomPortrait = customData
+    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    : '/images/editorial_groom_portrait_1790915490996.jpg';
+  const spotlightImage = customData
+    ? customData.mediaSlots?.spotlightImage || galleryImages[1] || galleryImages[0] || heroImage || ''
+    : galleryImages[1] || heroImage;
+  const closingImage = customData
+    ? customData.mediaSlots?.closingImage || galleryImages[galleryImages.length - 1] || galleryImages[0] || heroImage || ''
+    : galleryImages[0] || heroImage;
+  const waxSealImage =
+    customData?.mediaSlots?.waxSealEmblem ||
+    (!customData ? '/images/wax_seal_gold_monogram_1790915522548.jpg' : heroImage || '/images/wax_seal_gold_monogram_1790915522548.jpg');
 
-  // Curatorial photos for Left Exhibition Companion (Rich 18+ High-Fidelity Plates)
+  // Curatorial photos for Left Exhibition Companion (Demo Mode defaults)
   const defaultCompanionPlates = [
     { 
       src: heroImage, 
@@ -265,18 +292,54 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
     }
   ];
 
-  // Combine default museum plates with any client uploaded images
-  const customGalleryPlates = (customData?.mediaSlots?.galleryImages || [])
-    .filter(url => !defaultCompanionPlates.some(p => p.src === url))
-    .map((url, i) => ({
-      src: url,
-      plate: String(defaultCompanionPlates.length + i + 1).padStart(2, '0'),
-      title: `Foto Klien Terpilih #${i + 1}`,
-      meta: 'Dokumentasi Klien · Kurasi Khusus',
-      spec: 'Archival Print · High-Resolution'
-    }));
+  // Panel Kiri Desktop: Saat customData aktif, 100% hanya menggunakan aset asli yang diupload Admin (tanpa mencampur gambar default!)
+  const leftCompanionPhotos = React.useMemo(() => {
+    if (!customData) return defaultCompanionPlates;
 
-  const leftCompanionPhotos = [...defaultCompanionPlates, ...customGalleryPlates];
+    const explicitLeft = (customData.mediaSlots?.leftPanelImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    const sourceUrls = explicitLeft.length > 0 ? explicitLeft : allAdminUploadedImages;
+
+    return sourceUrls.map((url, idx) => {
+      const plateNum = String(idx + 1).padStart(2, '0');
+      const matchedStory = (customData.mediaSlots?.storyChapters || []).find((ch) => ch.image === url);
+
+      let title = `${brideName} & ${groomName} · Arsip #${plateNum}`;
+      let meta = `${eventDateFormatted} · ${city}`;
+
+      if (url === customData.mediaSlots?.heroImage) {
+        title = `${brideName} & ${groomName}`;
+        meta = `Potret Utama · ${city}`;
+      } else if (url === customData.mediaSlots?.bridePortrait) {
+        title = `The Bride · ${brideName}`;
+        meta = brideFullName;
+      } else if (url === customData.mediaSlots?.groomPortrait) {
+        title = `The Groom · ${groomName}`;
+        meta = groomFullName;
+      } else if (matchedStory?.title) {
+        title = matchedStory.title;
+        meta = `${matchedStory.chapter || ''} · ${matchedStory.date || ''}`.replace(/^ · | · $/g, '');
+      }
+
+      return {
+        src: url,
+        plate: plateNum,
+        title,
+        meta,
+        spec: `Archival Plate ${plateNum}`,
+      };
+    });
+  }, [
+    customData,
+    allAdminUploadedImages,
+    brideName,
+    groomName,
+    brideFullName,
+    groomFullName,
+    eventDateFormatted,
+    city,
+  ]);
 
   // Left Panel Curatorial & Spotlight States (Expanded with 3 modes)
   const [leftPanelTab, setLeftPanelTab] = useState<'curated' | 'contact' | 'filmreel'>('curated');
@@ -286,7 +349,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
 
   // Spotlight autoplay timer with progress bar
   useEffect(() => {
-    if (!isSpotlightPlaying) return;
+    if (!isSpotlightPlaying || leftCompanionPhotos.length === 0) return;
 
     const intervalTime = 4200;
     const stepTime = 60;
@@ -295,7 +358,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
     const timer = setInterval(() => {
       setSpotlightProgress(prev => {
         if (prev >= 100) {
-          setSpotlightIdx(idx => (idx + 1) % leftCompanionPhotos.length);
+          setSpotlightIdx(idx => (idx + 1) % Math.max(1, leftCompanionPhotos.length));
           return 0;
         }
         return prev + increment;
@@ -305,14 +368,18 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
     return () => clearInterval(timer);
   }, [isSpotlightPlaying, leftCompanionPhotos.length]);
 
+  const safeSpotlightIdx = leftCompanionPhotos.length > 0 ? spotlightIdx % leftCompanionPhotos.length : 0;
+
   const handleSpotlightNext = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (leftCompanionPhotos.length === 0) return;
     setSpotlightIdx(idx => (idx + 1) % leftCompanionPhotos.length);
     setSpotlightProgress(0);
   };
 
   const handleSpotlightPrev = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (leftCompanionPhotos.length === 0) return;
     setSpotlightIdx(idx => (idx - 1 + leftCompanionPhotos.length) % leftCompanionPhotos.length);
     setSpotlightProgress(0);
   };
@@ -493,15 +560,15 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   // Google Calendar URL
   const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Pernikahan+${encodeURIComponent(brideName)}+%26+${encodeURIComponent(groomName)}&dates=20270214T010000Z/20270214T070000Z&details=Undangan+Pernikahan+${encodeURIComponent(brideFullName)}+%26+${encodeURIComponent(groomFullName)}.+Akad+${encodeURIComponent(akadTime)},+Resepsi+${encodeURIComponent(resepsiTime)}.&location=${encodeURIComponent(resepsiVenue)},+${encodeURIComponent(city)}`;
 
-  // Story milestones data for Section 6 (Our Journey)
-  const storyMilestones = [
+  // Story milestones data for Section 6 (Our Journey): 100% dari CRUD Admin saat customData aktif
+  const defaultStoryMilestones = [
     {
       year: '2019',
       date: 'Agustus 2019',
       chapter: 'BABAK 01',
       title: 'Titik Temu di Kota Kembang',
       location: 'Bandung · Sudut Baca Kampus',
-      image: '/images/film_vintage_couple_1791034007642.jpg',
+      image: customData ? (allAdminUploadedImages[0] || '') : '/images/film_vintage_couple_1791034007642.jpg',
       quote: '“Pertemuan pertama yang tak disengaja di ruang baca kampus...”',
       story: 'Dipertemukan dalam lingkaran perkuliahan di Bandung. Dari obrolan hangat tentang arsitektur, karya desain, dan secangkir kopi di sudut kota, kisah kami perlahan menemukan jalannya. Tak ada yang tergesa, semua mengalir bersahaja dan apa adanya.'
     },
@@ -511,7 +578,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 02',
       title: 'Saling Menguatkan Cita',
       location: 'Jakarta & Denpasar · Meniti Karir',
-      image: '/images/wedding_vows_bouquet_1790901516667.jpg',
+      image: customData ? (allAdminUploadedImages[1] || allAdminUploadedImages[0] || '') : '/images/wedding_vows_bouquet_1790901516667.jpg',
       quote: '“Menemukan ketenangan di tengah riuhnya langkah awal...”',
       story: 'Menghadapi fase awal dunia kerja dan kesibukan yang sesekali memisahkan jarak, kami belajar arti saling percaya dan mendengarkan. Setiap perbincangan malam menjadi tempat pulang ternyaman di tengah riuhnya dunia luar.'
     },
@@ -521,7 +588,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 03',
       title: 'Satu Niat di Hadapan Keluarga',
       location: 'Jakarta Selatan · Ikrar Pertunangan',
-      image: '/images/editorial_venue_rings_1790838653826.jpg',
+      image: customData ? (allAdminUploadedImages[2] || allAdminUploadedImages[0] || '') : '/images/editorial_venue_rings_1790838653826.jpg',
       quote: '“Di hadapan kedua keluarga besar, doa-doa mulai berpadu...”',
       story: 'Di hadapan kedua orang tua dan keluarga besar yang kami muliakan, sebuah cincin melingkar sebagai tanda kesungguhan hati. Sebuah komitmen tulus untuk melangkah ke jenjang yang lebih tinggi dan saling menyempurnakan seumur hidup.'
     },
@@ -531,11 +598,30 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 04',
       title: 'Menyatukan Dua Jiwa',
       location: 'Grand Ballroom Aryaduta · Janji Suci',
-      image: '/images/editorial_couple_portrait_1790838636662.jpg',
+      image: customData ? (allAdminUploadedImages[3] || allAdminUploadedImages[0] || '') : '/images/editorial_couple_portrait_1790838636662.jpg',
       quote: '“Awal dari pelayaran panjang yang dibangun di atas cinta dan iman.”',
       story: 'Kini, dengan penuh rasa syukur dan memohon ridho Allah SWT, kami melangkah menuju gerbang pernikahan suci. Menyatukan dua keluarga, melayari samudra kehidupan bersama dalam sakinah, mawaddah, dan rahmah.'
     }
   ];
+
+  const storyMilestones = React.useMemo(() => {
+    if (customData && Array.isArray(customData.mediaSlots?.storyChapters)) {
+      return customData.mediaSlots.storyChapters.map((ch, idx) => ({
+        year: ch.date || '',
+        date: ch.date || '',
+        chapter: ch.chapter || `BABAK ${String(idx + 1).padStart(2, '0')}`,
+        title: ch.title || '',
+        location: ch.location || '',
+        image:
+          ch.image ||
+          allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] ||
+          '',
+        quote: ch.quote || '',
+        story: ch.story || '',
+      }));
+    }
+    return defaultStoryMilestones;
+  }, [customData, allAdminUploadedImages]);
 
   return (
     <div className="relative min-h-screen bg-[#111110] text-[#242321] font-['Plus_Jakarta_Sans',sans-serif] selection:bg-[#C5A880]/30 selection:text-[#111110]">
@@ -736,7 +822,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] tracking-wider uppercase font-mono text-[#C5A880] font-bold flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880] animate-ping" />
-                <span>SPOTLIGHT · PLATE {leftCompanionPhotos[spotlightIdx].plate} / {String(leftCompanionPhotos.length).padStart(2, '0')}</span>
+                <span>SPOTLIGHT · PLATE {leftCompanionPhotos[safeSpotlightIdx].plate} / {String(leftCompanionPhotos.length).padStart(2, '0')}</span>
               </span>
 
               {/* Spotlight controls */}
@@ -770,13 +856,13 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
 
             {/* Spotlight Image Container with Ken Burns motion */}
             <div 
-              onClick={() => setSelectedPhoto(leftCompanionPhotos[spotlightIdx].src)}
+              onClick={() => setSelectedPhoto(leftCompanionPhotos[safeSpotlightIdx].src)}
               className="relative aspect-[16/10] overflow-hidden bg-black rounded cursor-pointer group/img"
             >
               <img 
-                key={spotlightIdx}
-                src={leftCompanionPhotos[spotlightIdx].src} 
-                alt={leftCompanionPhotos[spotlightIdx].title}
+                key={safeSpotlightIdx}
+                src={leftCompanionPhotos[safeSpotlightIdx].src} 
+                alt={leftCompanionPhotos[safeSpotlightIdx].title}
                 className="w-full h-full object-cover filter brightness-[0.95] contrast-[1.05] transition-all duration-700 ease-out group-hover/img:scale-110 group-hover/img:brightness-105 animate-ken-burns"
               />
 
@@ -788,8 +874,8 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
 
               {/* Top spec tag */}
               <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between text-[9px] font-mono text-[#EFE9DF]/80 bg-black/60 px-2 py-0.5 rounded backdrop-blur-xs">
-                <span className="truncate max-w-[170px]">{leftCompanionPhotos[spotlightIdx].title}</span>
-                <span className="text-[#DFC084]">{leftCompanionPhotos[spotlightIdx].spec || '35MM'}</span>
+                <span className="truncate max-w-[170px]">{leftCompanionPhotos[safeSpotlightIdx].title}</span>
+                <span className="text-[#DFC084]">{leftCompanionPhotos[safeSpotlightIdx].spec || '35MM'}</span>
               </div>
             </div>
 
@@ -959,7 +1045,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full overflow-hidden p-0.5 bg-[#C5A880]/30 shadow-md">
               <img 
-                src="/images/wax_seal_gold_monogram_1790915522548.jpg" 
+                src={waxSealImage} 
                 alt="Segel Lilin" 
                 className="w-full h-full object-cover rounded-full filter contrast-[1.1] animate-seal-spin"
               />
@@ -1157,7 +1243,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
               {/* Monogram Seal */}
               <div className="w-16 h-16 rounded-full overflow-hidden shadow-2xl p-0.5 bg-[#C5A880]/40">
                 <img 
-                  src={customData?.mediaSlots?.waxSealEmblem || "/images/wax_seal_gold_monogram_1790915522548.jpg"} 
+                  src={waxSealImage} 
                   alt="Segel Lilin Emas" 
                   className="w-full h-full object-cover rounded-full filter contrast-[1.08]"
                 />
@@ -1188,25 +1274,33 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           id="hero-video"
           className="relative min-h-[90vh] sm:min-h-screen flex flex-col justify-center items-center text-center p-6 overflow-hidden bg-[#141413]"
         >
-          {/* Parallax Video Background */}
+          {/* Parallax Video or Photo Background */}
           <div 
             className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none will-change-transform"
             style={{
               transform: `translate3d(0, ${scrollY * 0.3}px, 0) scale(1.12)`,
             }}
           >
-            <video
-              key={heroVideoUrl}
-              src={heroVideoUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              poster={heroImage}
-              className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.10]"
-            >
-              <source src={heroVideoUrl} type="video/mp4" />
-            </video>
+            {heroVideoUrl ? (
+              <video
+                key={heroVideoUrl}
+                src={heroVideoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster={heroImage}
+                className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.10]"
+              >
+                <source src={heroVideoUrl} type="video/mp4" />
+              </video>
+            ) : heroImage ? (
+              <img
+                src={heroImage}
+                alt={`${brideName} & ${groomName}`}
+                className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.10]"
+              />
+            ) : null}
           </div>
 
           <div className="absolute inset-0 bg-gradient-to-t from-[#141413] via-[#141413]/30 to-[#141413]/70 pointer-events-none" />
@@ -1228,7 +1322,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
             </div>
 
             <p className="text-xs sm:text-sm text-[#FAF7F2]/90 font-light tracking-[0.25em] uppercase">
-              14 · FEBRUARI · 2027
+              {eventDateFormatted}
             </p>
 
             <div className="pt-10 flex flex-col items-center gap-1.5 text-[#C5A880] text-[10px] tracking-widest uppercase animate-pulse">
@@ -1375,11 +1469,11 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
         <section id="quote" className="py-20 px-6 sm:px-10 bg-[#FAF7F2] border-b border-[#EAE4DC] text-center">
           <div className="max-w-md mx-auto space-y-4">
             <p className="font-['Fraunces',serif] italic text-lg sm:text-xl leading-relaxed text-[#242321]">
-              &ldquo;Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan pasangan untukmu dari jenismu sendiri, agar kamu merasa tenteram kepadanya, serta menjadikan di antara kamu rasa kasih dan sayang.&rdquo;
+              &ldquo;{quoteText}&rdquo;
             </p>
             <div className="w-12 h-[1px] bg-[#C5A880] mx-auto opacity-60" />
             <p className="text-[11px] tracking-[0.25em] uppercase text-[#C5A880] font-semibold">
-              QS. AR-RUM : 21
+              {quoteSource}
             </p>
           </div>
         </section>
@@ -1387,12 +1481,14 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
         {/* ============================================================
             SECTION 4: SPOTLIGHT 1
             ============================================================ */}
-        <section id="spotlight-1" className="relative min-h-[60vh] flex items-end overflow-hidden">
-          <img 
-            src={galleryImages[1]} 
-            alt="Spotlight wedding detail" 
-            className="absolute inset-0 w-full h-full object-cover filter brightness-[0.78]"
-          />
+        <section id="spotlight-1" className="relative min-h-[60vh] flex items-end overflow-hidden bg-[#141413]">
+          {spotlightImage && (
+            <img 
+              src={spotlightImage} 
+              alt="Spotlight wedding detail" 
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.78]"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#141413] via-[#141413]/30 to-transparent" />
           <div className="relative z-10 w-full p-8 text-center text-[#FAF7F2]">
             <p className="font-['Fraunces',serif] italic text-lg sm:text-xl leading-relaxed max-w-sm mx-auto">
@@ -1482,7 +1578,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
             <span className="text-[#3A3834]">·</span>
 
             <a
-              href="https://maps.google.com"
+              href={mapsUrl}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 text-[#C5A880] hover:text-white transition-colors"
@@ -1498,6 +1594,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
             SECTION 6: OUR JOURNEY (Flowing Editorial Photo-Essay)
             NO CARD BOXES! Pure storytelling with open photography & prose.
             ============================================================ */}
+        {storyMilestones.length > 0 && (
         <section id="story" className="py-20 px-6 sm:px-10 bg-[#FAF7F2] border-b border-[#EAE4DC]">
           
           {/* Header */}
@@ -1518,22 +1615,24 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
             {storyMilestones.map((milestone, idx) => (
               <article key={idx} className="space-y-4">
                 
-                {/* Open Photo */}
-                <div 
-                  onClick={() => setSelectedPhoto(milestone.image)}
-                  className="relative aspect-[16/10] overflow-hidden bg-[#EAE4DC] cursor-pointer group"
-                >
-                  <img 
-                    src={milestone.image} 
-                    alt={milestone.title} 
-                    className="w-full h-full object-cover filter brightness-[0.95] group-hover:scale-103 transition-transform duration-700"
-                  />
-                </div>
+                {/* Open Photo (hanya tampil jika ada foto dari unggahan admin) */}
+                {milestone.image && (
+                  <div 
+                    onClick={() => setSelectedPhoto(milestone.image)}
+                    className="relative aspect-[16/10] overflow-hidden bg-[#EAE4DC] cursor-pointer group"
+                  >
+                    <img 
+                      src={milestone.image} 
+                      alt={milestone.title} 
+                      className="w-full h-full object-cover filter brightness-[0.95] group-hover:scale-103 transition-transform duration-700"
+                    />
+                  </div>
+                )}
 
                 {/* Narrative Details */}
                 <div className="space-y-2 text-left pt-1">
                   <div className="flex items-center justify-between text-[10px] tracking-wider uppercase font-mono text-[#C5A880]">
-                    <span>{milestone.chapter} · {milestone.date}</span>
+                    <span>{milestone.chapter}{milestone.date ? ` · ${milestone.date}` : ''}</span>
                     <span className="text-[#8A857D]">{milestone.location}</span>
                   </div>
 
@@ -1541,9 +1640,11 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
                     {milestone.title}
                   </h4>
 
-                  <p className="font-['Fraunces',serif] italic text-xs text-[#7A756D]">
-                    {milestone.quote}
-                  </p>
+                  {milestone.quote && (
+                    <p className="font-['Fraunces',serif] italic text-xs text-[#7A756D]">
+                      {milestone.quote}
+                    </p>
+                  )}
 
                   <p className="text-xs text-[#5C5954] leading-relaxed font-light pt-1">
                     {milestone.story}
@@ -1568,10 +1669,12 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           </div>
 
         </section>
+        )}
 
         {/* ============================================================
-            SECTION 7: GALERI (Open Carousel)
+            SECTION 7: GALERI (Open Carousel - Unlimited Photos)
             ============================================================ */}
+        {galleryImages.length > 0 && (
         <section id="gallery" className="py-20 bg-[#161514] text-[#FAF7F2] border-b border-[#22211F]">
           <div className="text-center max-w-xs mx-auto mb-10 px-6">
             <p className="uppercase tracking-[0.3em] text-[10px] font-semibold text-[#C5A880] mb-2">
@@ -1585,12 +1688,12 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           {/* Carousel Viewport - Open framing */}
           <div className="relative px-6">
             <div 
-              onClick={() => setSelectedPhoto(galleryImages[carouselIndex])}
+              onClick={() => setSelectedPhoto(galleryImages[Math.min(carouselIndex, galleryImages.length - 1)])}
               className="relative aspect-[3/4] max-w-[340px] mx-auto overflow-hidden cursor-pointer group shadow-xl"
             >
               <img 
-                src={galleryImages[carouselIndex]} 
-                alt={`Momen pernikahan ${carouselIndex + 1}`} 
+                src={galleryImages[Math.min(carouselIndex, galleryImages.length - 1)]} 
+                alt={`Momen pernikahan ${Math.min(carouselIndex, galleryImages.length - 1) + 1}`} 
                 className="w-full h-full object-cover transition-all duration-700 group-hover:scale-103"
               />
             </div>
@@ -1608,21 +1711,46 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
               </button>
 
               <span className="text-xs font-mono text-[#C5A880] tracking-widest">
-                0{carouselIndex + 1} / 0{galleryImages.length}
+                {String(Math.min(carouselIndex, galleryImages.length - 1) + 1).padStart(2, '0')} / {String(galleryImages.length).padStart(2, '0')}
               </span>
 
               <button
                 type="button"
                 onClick={nextSlide}
-                disabled={carouselIndex === galleryImages.length - 1}
+                disabled={carouselIndex >= galleryImages.length - 1}
                 className="text-[#FAF7F2]/60 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer text-xs uppercase tracking-widest flex items-center gap-1 font-mono"
               >
                 <span>SELANJUTNYA</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
+
+            {/* Thumbnail Strip (Bebas Jumlah Foto) */}
+            {galleryImages.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto max-w-md mx-auto mt-6 pb-2 scrollbar-none">
+                {galleryImages.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setCarouselIndex(idx)}
+                    className={`relative w-14 h-14 shrink-0 overflow-hidden transition-all cursor-pointer border ${
+                      Math.min(carouselIndex, galleryImages.length - 1) === idx
+                        ? 'border-[#C5A880] opacity-100 scale-105'
+                        : 'border-transparent opacity-50 hover:opacity-80'
+                    }`}
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </section>
+        )}
 
         {/* ============================================================
             SECTION 8: TANDA KASIH (Open Stationery Layout, NO Box Frame)
@@ -1805,11 +1933,13 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
             SECTION 11: CLOSING
             ============================================================ */}
         <section id="closing" className="relative min-h-[60vh] flex items-center justify-center text-center p-8 overflow-hidden bg-[#141413]">
-          <img 
-            src={galleryImages[0]} 
-            alt="Closing background" 
-            className="absolute inset-0 w-full h-full object-cover filter brightness-[0.35]"
-          />
+          {closingImage && (
+            <img 
+              src={closingImage} 
+              alt="Closing background" 
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.35]"
+            />
+          )}
           <div className="absolute inset-0 bg-[#141413]/75" />
 
           <div className="relative z-10 text-[#FAF7F2] space-y-4 max-w-sm">
@@ -1866,7 +1996,15 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
             </div>
 
             <div className="p-4 bg-stone-50 border border-stone-200 flex items-center justify-center">
-              <QrCode className="w-40 h-40 text-stone-800" />
+              {qrisImageUrl ? (
+                <img
+                  src={qrisImageUrl}
+                  alt="Barcode QRIS"
+                  className="max-h-52 w-auto object-contain"
+                />
+              ) : (
+                <QrCode className="w-40 h-40 text-stone-800" />
+              )}
             </div>
 
             <div className="space-y-0.5">

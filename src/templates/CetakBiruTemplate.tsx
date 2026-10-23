@@ -11,6 +11,7 @@ import {
 import { AdminStore } from '../admin/adminStore';
 import { requestRateLimitPermit } from '../utils/requestRateLimit';
 import { isVideoUrl } from '../utils/cloudinaryUpload';
+import { collectAdminUploadedPhotos } from '../utils/templateMediaResolver';
 
 interface CetakBiruTemplateProps {
   onBackToLanding: () => void;
@@ -117,16 +118,25 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
   const songTitle = customData?.songTitle || 'Blueprint Acoustic Strings - Instrumental';
   const audioUrl = customData?.audioUrl || '';
 
-  // Media Slots
-  const rawGallery =
-    customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
-      ? customData.mediaSlots.galleryImages
-      : DEFAULT_GALLERY_PHOTOS;
+  const allAdminUploadedImages = React.useMemo(
+    () => collectAdminUploadedPhotos(customData),
+    [customData]
+  );
 
-  // Ensure up to 10 gallery photos for the blueprint documentation grid
-  const galleryPhotos = Array.from({ length: Math.max(rawGallery.length, 6) }, (_, idx) => {
-    return rawGallery[idx % rawGallery.length];
-  }).slice(0, 10);
+  // Media Slots: 100% dari upload admin saat customData aktif (bebas jumlah, tanpa minimal/maksimal)
+  const galleryPhotos = customData
+    ? customData.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
+      ? customData.mediaSlots.galleryImages.filter((u) => Boolean(u && !isVideoUrl(u)))
+      : allAdminUploadedImages
+    : DEFAULT_GALLERY_PHOTOS;
+
+  const panelSourcePhotos = React.useMemo(() => {
+    if (!customData) return galleryPhotos;
+    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
+  }, [customData, allAdminUploadedImages, galleryPhotos]);
 
   const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
   const heroVideoUrl =
@@ -134,29 +144,32 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
   const heroCoverPhoto =
     !isVideoUrl(rawHeroMedia) && rawHeroMedia
       ? rawHeroMedia
-      : '/images/blueprint_couple_hero_1791171076790.jpg';
-  const groomPortraitPhoto =
-    customData?.mediaSlots?.groomPortrait ||
-    '/images/blueprint_groom_portrait_1791171047935.jpg';
-  const bridePortraitPhoto =
-    customData?.mediaSlots?.bridePortrait ||
-    '/images/blueprint_bride_portrait_1791171064118.jpg';
+      : galleryPhotos[0] || allAdminUploadedImages[0] || (!customData ? '/images/blueprint_couple_hero_1791171076790.jpg' : '');
+  const groomPortraitPhoto = customData
+    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    : '/images/blueprint_groom_portrait_1791171047935.jpg';
+  const bridePortraitPhoto = customData
+    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    : '/images/blueprint_bride_portrait_1791171064118.jpg';
   const gateBgPhoto =
     !isVideoUrl(rawHeroMedia) && rawHeroMedia
       ? rawHeroMedia
-      : '/images/blueprint_couple_candid_1791171089791.jpg';
-  const fullbleed1Photo =
-    (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[0]) ||
-    '/images/blueprint_couple_candid_1791171089791.jpg';
-  const elevation1Photo =
-    (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[1]) ||
-    '/images/blueprint_venue_detail_1791171101186.jpg';
-  const elevation2Photo =
-    (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[2]) ||
-    '/images/botanical_estate_venue_1790919022237.jpg';
-  const closingBgPhoto =
-    (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[3]) ||
-    '/images/blueprint_couple_hero_1791171076790.jpg';
+      : customData
+        ? heroCoverPhoto || allAdminUploadedImages[0] || ''
+        : '/images/blueprint_couple_candid_1791171089791.jpg';
+  const fullbleed1Photo = customData
+    ? customData.mediaSlots?.spotlightImage || panelSourcePhotos[0] || heroCoverPhoto || ''
+    : '/images/blueprint_couple_candid_1791171089791.jpg';
+  const elevation1Photo = customData
+    ? panelSourcePhotos[1] || customData.mediaSlots?.spotlightImage || panelSourcePhotos[0] || heroCoverPhoto || ''
+    : '/images/blueprint_venue_detail_1791171101186.jpg';
+  const elevation2Photo = customData
+    ? panelSourcePhotos[2] || panelSourcePhotos[0] || heroCoverPhoto || ''
+    : '/images/botanical_estate_venue_1790919022237.jpg';
+  const closingBgPhoto = customData
+    ? customData.mediaSlots?.closingImage || panelSourcePhotos[panelSourcePhotos.length - 1] || heroCoverPhoto || ''
+    : '/images/blueprint_couple_hero_1791171076790.jpg';
+  const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
 
   const photoSlotMap: Record<string, string> = {
     'couple-cover': heroCoverPhoto,
@@ -166,9 +179,50 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
     'fullbleed-1': fullbleed1Photo,
     'elevation-1': elevation1Photo,
     'elevation-2': elevation2Photo,
-    'gallery-1': galleryPhotos[0],
+    'gallery-1': galleryPhotos[0] || heroCoverPhoto,
     'closing-bp': closingBgPhoto
   };
+
+  const storyMilestones = React.useMemo(() => {
+    const rawChapters = customData?.mediaSlots?.storyChapters;
+    const revLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    if (Array.isArray(rawChapters)) {
+      if (rawChapters.length === 0) return [];
+      return rawChapters.map((ch, idx) => ({
+        rev: revLetters[idx] || String(idx + 1),
+        date: ch.date || ch.chapter || `REV ${idx + 1}`,
+        title: ch.title || `Babak ${idx + 1}`,
+        story: ch.story || '',
+        image:
+          ch.image && !isVideoUrl(ch.image)
+            ? ch.image
+            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+      }));
+    }
+    return [
+      {
+        rev: 'A',
+        date: 'Maret 2021',
+        title: 'Pertama Bertemu',
+        story: 'Bertemu di sebuah proyek kolaborasi kampus, saling mengoreksi sketsa satu sama lain.',
+        image: customData ? allAdminUploadedImages[0] || '' : galleryPhotos[0]
+      },
+      {
+        rev: 'B',
+        date: 'Juli 2023',
+        title: 'Lamaran',
+        story: 'Revisi besar: dari dua rencana terpisah menjadi satu cetak biru bersama.',
+        image: customData ? allAdminUploadedImages[1] || allAdminUploadedImages[0] || '' : galleryPhotos[1]
+      },
+      {
+        rev: 'C',
+        date: 'November 2026',
+        title: 'Hari Peresmian',
+        story: 'Dan kini, kami mengundang Anda untuk menyaksikan peresmiannya.',
+        image: customData ? allAdminUploadedImages[2] || '' : ''
+      }
+    ];
+  }, [customData, allAdminUploadedImages, galleryPhotos]);
 
   // Hooks
   const { guestName: guestRecipient, hideGuestName } = useGuestRecipient(
@@ -2461,50 +2515,33 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
           {/* ============================================================
               OUR STORY — dynamic list (Linimasa Revisi)
               ============================================================ */}
-          <section
-            className="story"
-            id="section-story"
-            data-section-type="dynamic"
-            data-invitation-type="pernikahan"
-          >
-            <div className="section-tag reveal">Kisah Kami</div>
-            <h2 className="story__title reveal reveal-delay-1">Linimasa Revisi</h2>
+          {storyMilestones.length > 0 && (
+            <section
+              className="story"
+              id="section-story"
+              data-section-type="dynamic"
+              data-invitation-type="pernikahan"
+            >
+              <div className="section-tag reveal">Kisah Kami</div>
+              <h2 className="story__title reveal reveal-delay-1">Linimasa Revisi</h2>
 
-            <div className="story__path">
-              <div className="story__item reveal">
-                <div className="story__rev">A</div>
-                <div className="story__date">Maret 2021</div>
-                <div className="story__item-title">Pertama Bertemu</div>
-                <div className="story__desc">
-                  Bertemu di sebuah proyek kolaborasi kampus, saling mengoreksi sketsa satu sama lain.
-                </div>
-                <div className="story__photo">
-                  <img src={galleryPhotos[0]} alt="Momen pertama bertemu" />
-                </div>
+              <div className="story__path">
+                {storyMilestones.map((item, idx) => (
+                  <div key={idx} className="story__item reveal">
+                    <div className="story__rev">{item.rev}</div>
+                    <div className="story__date">{item.date}</div>
+                    <div className="story__item-title">{item.title}</div>
+                    <div className="story__desc">{item.story}</div>
+                    {item.image && (
+                      <div className="story__photo">
+                        <img src={item.image} alt={item.title} />
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-
-              <div className="story__item reveal reveal-delay-1">
-                <div className="story__rev">B</div>
-                <div className="story__date">Juli 2023</div>
-                <div className="story__item-title">Lamaran</div>
-                <div className="story__desc">
-                  Revisi besar: dari dua rencana terpisah menjadi satu cetak biru bersama.
-                </div>
-                <div className="story__photo">
-                  <img src={galleryPhotos[1]} alt="Momen lamaran" />
-                </div>
-              </div>
-
-              <div className="story__item reveal reveal-delay-2">
-                <div className="story__rev">C</div>
-                <div className="story__date">November 2026</div>
-                <div className="story__item-title">Hari Peresmian</div>
-                <div className="story__desc">
-                  Dan kini, kami mengundang Anda untuk menyaksikan peresmiannya.
-                </div>
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* ============================================================
               FULLBLEED 2 — statis, dua "gambar tampak" (elevation)
@@ -2645,6 +2682,20 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
                 >
                   {isCopied('bank-2') ? 'Tersalin ✓' : 'Salin Nomor Rekening'}
                 </button>
+              </div>
+            )}
+
+            {qrisImageUrl && (
+              <div className="gift__card reveal">
+                <span className="gift__reqno">REQ &mdash; QRIS</span>
+                <div className="gift__bank">Scan Barcode QRIS</div>
+                <div className="my-3 flex justify-center">
+                  <img
+                    src={qrisImageUrl}
+                    alt="Barcode QRIS"
+                    className="w-40 h-40 object-contain border border-current/25 bg-white p-1.5"
+                  />
+                </div>
               </div>
             )}
 

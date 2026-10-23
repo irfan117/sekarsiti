@@ -41,15 +41,15 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
     mediaSlots: [
       {
         key: 'heroImage',
-        label: 'Foto / Poster Video Hero',
-        description: 'Tampil sebagai latar sinematik pertama di sampul dan pembuka (bisa unggah Foto maupun Video MP4/WebM)',
-        aspectRatio: '16:9',
+        label: 'Foto / Poster Video Hero (Sampul & Pembuka)',
+        description: 'Tampil sebagai latar utama di sampul pembuka dan Section 01 Pembuka (bisa unggah Foto maupun Video MP4/WebM)',
+        aspectRatio: '16:9 atau 4:5',
         acceptsVideo: true
       },
       {
         key: 'heroVideo',
         label: 'Video Latar Sinematik Hero (Opsional)',
-        description: 'Unggah video prewedding (.mp4 / .webm) untuk diputar otomatis di Section Video Hero (menggantikan video default)',
+        description: 'Unggah video prewedding (.mp4 / .webm) jika ingin latar bergerak di Section 01 Pembuka (jika dikosongkan, otomatis menampilkan Foto Hero di atas)',
         aspectRatio: '16:9',
         acceptsVideo: true,
         videoOnly: true
@@ -57,21 +57,52 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       {
         key: 'bridePortrait',
         label: 'Foto Mempelai Wanita (The Bride)',
-        description: 'Potret tunggal mempelai wanita beresolusi tinggi',
+        description: 'Potret mempelai wanita pada Section 02 Mempelai & Keluarga',
         aspectRatio: '3:4'
       },
       {
         key: 'groomPortrait',
         label: 'Foto Mempelai Pria (The Groom)',
-        description: 'Potret tunggal mempelai pria beresolusi tinggi',
+        description: 'Potret mempelai pria pada Section 02 Mempelai & Keluarga',
         aspectRatio: '3:4'
       },
       {
         key: 'galleryImages',
-        label: 'Galeri Momen Editorial (Bebas Jumlah)',
-        description: 'Unggah foto-foto momen perayaan tanpa batasan kuota kaku',
-        aspectRatio: '3:4 atau 4:3',
+        label: 'Galeri Momen Editorial (Bebas Jumlah · Tanpa Batas Minimal/Maksimal)',
+        description: 'Unggah seluruh foto prewedding/momen perayaan sebanyak apa pun. Otomatis tampil di Galeri Momen (Section 07) sekaligus menjadi sumber foto Panel Kiri Desktop, Spotlight, & Penutup.',
+        aspectRatio: 'Bebas (3:4 / 4:3 / 16:9)',
         isMultiple: true
+      },
+      {
+        key: 'leftPanelImages',
+        label: 'Koleksi Foto Panel Kiri Desktop / Monograf 35mm (Bebas Jumlah · Opsional)',
+        description: 'Unggah foto khusus untuk Panel Kiri (Kuratorial, Klise Proof, Reel Sinema, & Spotlight). Jika dikosongkan, Panel Kiri otomatis menampilkan seluruh foto asli yang diupload admin di atas.',
+        aspectRatio: '4:3 atau 16:9',
+        isMultiple: true
+      },
+      {
+        key: 'spotlightImage',
+        label: 'Foto Pembatas Momen / Spotlight (Section 04 · Opsional)',
+        description: 'Foto latar penuh pada jeda puitis Section 04 Momen (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '3:4 atau 16:9'
+      },
+      {
+        key: 'closingImage',
+        label: 'Foto Latar Penutup / Closing (Section 11 · Opsional)',
+        description: 'Foto latar penuh pada bagian akhir ucapan terima kasih Section 11 (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '3:4 atau 16:9'
+      },
+      {
+        key: 'qrisImageUrl',
+        label: 'Barcode QRIS Tanda Kasih (Section 08 · Opsional)',
+        description: 'Gambar kode QRIS untuk modal Tampilkan QRIS pada bagian Tanda Kasih',
+        aspectRatio: '1:1'
+      },
+      {
+        key: 'waxSealEmblem',
+        label: 'Emblem Segel Lilin Pembuka & Monograf (Opsional)',
+        description: 'Gambar segel/monogram bulat pada tombol Buka Undangan dan kolofon Panel Kiri',
+        aspectRatio: '1:1'
       }
     ],
     defaultData: {
@@ -141,17 +172,36 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
         aspectRatio: '3:4'
       },
       {
-        key: 'qrisImageUrl',
-        label: 'Barcode QRIS Tanda Kasih',
-        description: 'Gambar QRIS untuk penerimaan tanda kasih tamu instan',
-        aspectRatio: '1:1'
-      },
-      {
         key: 'galleryImages',
-        label: 'Galeri Kemewahan Resepsi (Bebas Jumlah)',
-        description: 'Foto-foto venue, cincin, dan kemewahan resepsi',
+        label: 'Galeri Kemewahan Resepsi (Bebas Jumlah · Tanpa Batas Minimal/Maksimal)',
+        description: 'Unggah seluruh foto venue, cincin, dan kemewahan resepsi sebanyak apa pun. Otomatis menjadi sumber foto Filmstrip Samping, Spotlight, & Penutup.',
         aspectRatio: '3:4 atau 1:1',
         isMultiple: true
+      },
+      {
+        key: 'leftPanelImages',
+        label: 'Koleksi Foto Filmstrip Panel Kiri & Kanan Desktop (Bebas Jumlah · Opsional)',
+        description: 'Unggah foto khusus untuk deretan filmstrip vertikal di kiri & kanan layar desktop. Jika dikosongkan, otomatis menampilkan seluruh foto asli yang diupload admin di atas.',
+        aspectRatio: '3:4',
+        isMultiple: true
+      },
+      {
+        key: 'spotlightImage',
+        label: 'Foto Pembatas Momen / Spotlight & Venue (Opsional)',
+        description: 'Foto latar untuk bagian Spotlight dan ilustrasi Venue (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '16:9 atau 3:4'
+      },
+      {
+        key: 'closingImage',
+        label: 'Foto Latar Penutup / Closing (Opsional)',
+        description: 'Foto latar penuh pada bagian akhir ucapan terima kasih (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '16:9 atau 3:4'
+      },
+      {
+        key: 'qrisImageUrl',
+        label: 'Barcode QRIS Tanda Kasih (Opsional)',
+        description: 'Gambar QRIS untuk penerimaan tanda kasih tamu instan',
+        aspectRatio: '1:1'
       }
     ],
     defaultData: {
@@ -215,10 +265,35 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       },
       {
         key: 'galleryImages',
-        label: 'Galeri Wipe-Reveal (Bebas Jumlah)',
-        description: 'Koleksi foto horizontal dan vertikal',
+        label: 'Galeri Wipe-Reveal (Bebas Jumlah · Tanpa Batas Minimal/Maksimal)',
+        description: 'Unggah seluruh koleksi foto horizontal dan vertikal sebanyak apa pun. Otomatis mengisi Galeri, Panggung Kiri Desktop, Spotlight, & Penutup.',
         aspectRatio: '4:5',
         isMultiple: true
+      },
+      {
+        key: 'leftPanelImages',
+        label: 'Koleksi Foto Panggung Kiri Desktop (Bebas Jumlah · Opsional)',
+        description: 'Unggah foto khusus untuk Panggung Kiri interaktif yang berganti mengikuti scroll bab. Jika dikosongkan, otomatis memakai foto asli dari Galeri/Hero di atas.',
+        aspectRatio: '4:5',
+        isMultiple: true
+      },
+      {
+        key: 'spotlightImage',
+        label: 'Foto Pembatas Momen / Spotlight (Opsional)',
+        description: 'Foto jeda puitis di antara rangkaian acara & galeri (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '16:9 atau 4:5'
+      },
+      {
+        key: 'closingImage',
+        label: 'Foto Latar Penutup / Closing (Opsional)',
+        description: 'Foto potret penutup pada bagian akhir ucapan terima kasih (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '4:5'
+      },
+      {
+        key: 'qrisImageUrl',
+        label: 'Barcode QRIS Tanda Kasih (Opsional)',
+        description: 'Gambar kode QRIS untuk bagian Tanda Kasih',
+        aspectRatio: '1:1'
       }
     ],
     defaultData: {
@@ -260,7 +335,7 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
     mediaSlots: [
       {
         key: 'waxSealEmblem',
-        label: 'Emblem Segel Lilin Emas',
+        label: 'Emblem Segel Lilin Emas (Opsional)',
         description: 'Segel lilin monogram pada sampul buku jurnal',
         aspectRatio: '1:1'
       },
@@ -285,10 +360,35 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       },
       {
         key: 'galleryImages',
-        label: 'Koleksi Lembar Foto Polaroid (Bebas Jumlah)',
-        description: 'Koleksi polaroid interaktif yang terangkat saat disentuh',
+        label: 'Koleksi Lembar Foto Polaroid (Bebas Jumlah · Tanpa Batas Minimal/Maksimal)',
+        description: 'Unggah seluruh koleksi foto polaroid sebanyak apa pun. Otomatis mengisi Galeri Polaroid, Panel Meja Kiri & Kanan Desktop, Momen, & Penutup.',
         aspectRatio: '1:1',
         isMultiple: true
+      },
+      {
+        key: 'leftPanelImages',
+        label: 'Koleksi Foto Panel Meja Kiri & Kanan Desktop (Bebas Jumlah · Opsional)',
+        description: 'Unggah foto khusus untuk lembar polaroid di sisi kiri & kanan meja desktop. Jika dikosongkan, otomatis menampilkan foto asli yang diupload admin di atas.',
+        aspectRatio: '1:1 atau 4:5',
+        isMultiple: true
+      },
+      {
+        key: 'spotlightImage',
+        label: 'Foto Momen & Sketsa Lokasi (Opsional)',
+        description: 'Foto jeda Momen & ilustrasi Venue (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '4:3 atau 1:1'
+      },
+      {
+        key: 'closingImage',
+        label: 'Foto Polaroid Penutup Jurnal (Opsional)',
+        description: 'Foto polaroid terakhir pada lembar penutup buku jurnal (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '1:1'
+      },
+      {
+        key: 'qrisImageUrl',
+        label: 'Barcode QRIS Tanda Kasih (Opsional)',
+        description: 'Gambar kode QRIS untuk bagian Tanda Kasih',
+        aspectRatio: '1:1'
       }
     ],
     defaultData: {
@@ -324,7 +424,7 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
     description: 'Sensasi rol film analog 35mm lengkap dengan perforasi film, reservasi tiket bioskop klasik, dan layar akhir TAMAT.',
     hasDresscode: false,
     hasFilmstrip: true,
-    hasStoryChapters: false,
+    hasStoryChapters: true,
     hasWaxSeal: false,
     mediaSlots: [
       {
@@ -344,29 +444,41 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       },
       {
         key: 'bridePortrait',
-        label: 'Frame Rol Mempelai Wanita (Larasati)',
+        label: 'Frame Rol Mempelai Wanita',
         description: 'Potret pengantin wanita bergaya analog retro',
         aspectRatio: '4:5'
       },
       {
         key: 'groomPortrait',
-        label: 'Frame Rol Mempelai Pria (Fajar)',
+        label: 'Frame Rol Mempelai Pria',
         description: 'Potret pengantin pria bergaya vintage blazer',
         aspectRatio: '4:5'
       },
       {
         key: 'filmstripImages',
-        label: 'Deretan Frame Filmstrip Klise (Bebas Jumlah)',
+        label: 'Deretan Frame Filmstrip Klise 35mm (Bebas Jumlah · Tanpa Batas Minimal/Maksimal)',
         description: 'Rangkaian foto klise film 35mm berlubang perforasi tanpa batas kuota',
         aspectRatio: '3:2',
         isMultiple: true
       },
       {
         key: 'galleryImages',
-        label: 'Papan Foto Polaroid Gabus (Corkboard)',
-        description: 'Foto momen tersemat jarum pentul merah di papan gabus',
+        label: 'Papan Foto Polaroid Gabus / Corkboard (Bebas Jumlah · Tanpa Batas Minimal/Maksimal)',
+        description: 'Unggah seluruh foto momen tersemat jarum pentul merah di papan gabus sebanyak apa pun',
         aspectRatio: '1:1',
         isMultiple: true
+      },
+      {
+        key: 'closingImage',
+        label: 'Frame Foto Penutup Layar Akhir / TAMAT (Opsional)',
+        description: 'Foto penutup sebelum kredit akhir TAMAT (jika dikosongkan, otomatis mengambil dari foto Galeri/Filmstrip yang diupload admin)',
+        aspectRatio: '3:2 atau 16:9'
+      },
+      {
+        key: 'qrisImageUrl',
+        label: 'Barcode QRIS Tanda Kasih (Opsional)',
+        description: 'Gambar kode QRIS untuk bagian Tanda Kasih',
+        aspectRatio: '1:1'
       }
     ],
     defaultData: {
@@ -428,10 +540,35 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       },
       {
         key: 'galleryImages',
-        label: 'Lembar Dokumentasi Galeri & Tampak (Bebas Jumlah)',
-        description: 'Foto-foto untuk Fullbleed, Tampak A/B, Linimasa Revisi, dan Galeri Masonry dengan sudut lipat kertas.',
+        label: 'Lembar Dokumentasi Galeri & Tampak (Bebas Jumlah · Tanpa Batas Minimal/Maksimal)',
+        description: 'Unggah seluruh foto prewedding sebanyak apa pun untuk Galeri Masonry, Tampak A/B, Panel Samping Cetak Biru, & Penutup.',
         aspectRatio: '3:4',
         isMultiple: true
+      },
+      {
+        key: 'leftPanelImages',
+        label: 'Koleksi Foto Panel Samping Cetak Biru Desktop (Bebas Jumlah · Opsional)',
+        description: 'Unggah foto khusus untuk bingkai arsitektur di sisi kiri & kanan layar desktop. Jika dikosongkan, otomatis memakai foto asli dari Galeri/Hero di atas.',
+        aspectRatio: '3:4 atau 4:3',
+        isMultiple: true
+      },
+      {
+        key: 'spotlightImage',
+        label: 'Foto Fullbleed & Tampak A/B (Opsional)',
+        description: 'Foto pembatas bentang penuh (Fullbleed / Elevation) di sela lembar cetak biru (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '16:9 atau 3:4'
+      },
+      {
+        key: 'closingImage',
+        label: 'Foto Latar Penutup / Closing Cetak Biru (Opsional)',
+        description: 'Foto latar pada lembar penutup akhir (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '3:4 atau 16:9'
+      },
+      {
+        key: 'qrisImageUrl',
+        label: 'Barcode QRIS Tanda Kasih (Opsional)',
+        description: 'Gambar kode QRIS untuk bagian Tanda Kasih',
+        aspectRatio: '1:1'
       }
     ],
     defaultData: {
@@ -492,10 +629,35 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       },
       {
         key: 'galleryImages',
-        label: 'Koleksi Kartu Pos & Snapshot Perjalanan (Bebas Jumlah)',
-        description: 'Foto-foto untuk Interlude, Grid Kartu Pos 01–06, Carousel 07–10, dan Pemandangan Parallax.',
+        label: 'Koleksi Kartu Pos & Snapshot Perjalanan (Bebas Jumlah · Tanpa Batas Minimal/Maksimal)',
+        description: 'Unggah seluruh foto perjalanan sebanyak apa pun untuk Grid Kartu Pos, Carousel, Panel Kartu Pos Kanan Desktop, Interlude, dan Penutup.',
         aspectRatio: '3:4 atau 4:3',
         isMultiple: true
+      },
+      {
+        key: 'leftPanelImages',
+        label: 'Koleksi Foto Panel Kartu Pos Kanan Desktop (Bebas Jumlah · Opsional)',
+        description: 'Unggah foto khusus untuk Panel Kartu Pos mengambang di sebelah kanan layar desktop. Jika dikosongkan, otomatis memakai foto asli dari Galeri/Hero di atas.',
+        aspectRatio: '3:4',
+        isMultiple: true
+      },
+      {
+        key: 'spotlightImage',
+        label: 'Foto Interlude & Pemandangan Parallax (Opsional)',
+        description: 'Foto lanskap pembatas perjalanan (Interlude & Full Plate) (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '16:9 atau 4:3'
+      },
+      {
+        key: 'closingImage',
+        label: 'Foto Latar Penutup Ekspedisi / Closing (Opsional)',
+        description: 'Foto latar penuh pada penutup akhir Atlas Cinta (jika dikosongkan, otomatis mengambil dari foto Galeri/Hero yang diupload admin)',
+        aspectRatio: '3:4 atau 16:9'
+      },
+      {
+        key: 'qrisImageUrl',
+        label: 'Barcode QRIS Tanda Kasih (Opsional)',
+        description: 'Gambar kode QRIS untuk bagian Tanda Kasih',
+        aspectRatio: '1:1'
       }
     ],
     defaultData: {

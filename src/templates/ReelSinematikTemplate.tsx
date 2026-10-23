@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
 import { isVideoUrl } from '../utils/cloudinaryUpload';
+import { collectAdminUploadedPhotos } from '../utils/templateMediaResolver';
 import { 
   useCountdown, 
   useGuestRecipient, 
@@ -116,9 +117,35 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
   const songTitle = customData?.songTitle || 'Lagu Senja Analog - 35mm Acoustic Tape';
   const audioUrl = customData?.audioUrl || '';
 
-  const customFilmImages = customData?.mediaSlots?.filmstripImages || customData?.mediaSlots?.galleryImages;
-  const galleryPolaroids = (customFilmImages && customFilmImages.length > 0)
-    ? customFilmImages.map((src, i) => ({
+  const allAdminUploadedImages = React.useMemo(
+    () => collectAdminUploadedPhotos(customData),
+    [customData]
+  );
+
+  const customGalleryList = React.useMemo(() => {
+    if (!customData) return [];
+    const gal = (customData.mediaSlots?.galleryImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    if (gal.length > 0) return gal;
+    const film = (customData.mediaSlots?.filmstripImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    if (film.length > 0) return film;
+    return allAdminUploadedImages;
+  }, [customData, allAdminUploadedImages]);
+
+  const customFilmList = React.useMemo(() => {
+    if (!customData) return [];
+    const film = (customData.mediaSlots?.filmstripImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    if (film.length > 0) return film;
+    return allAdminUploadedImages;
+  }, [customData, allAdminUploadedImages]);
+
+  const galleryPolaroids = customData
+    ? customGalleryList.map((src, i) => ({
         src,
         cap: `${String(i + 1).padStart(2, '0')} · Klise Sinematik #${i + 1}`,
         alt: `Frame Klise 35mm #${i + 1}`
@@ -131,23 +158,80 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
   const heroImage =
     !isVideoUrl(rawHeroMedia) && rawHeroMedia
       ? rawHeroMedia
-      : galleryPolaroids[0]?.src || '/images/editorial_couple_portrait_1790838636662.jpg';
-  const bridePortrait =
-    customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_veil_1790901501919.jpg';
-  const groomPortrait =
-    customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
+      : galleryPolaroids[0]?.src || allAdminUploadedImages[0] || (!customData ? '/images/editorial_couple_portrait_1790838636662.jpg' : '');
+  const bridePortrait = customData
+    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    : '/images/wedding_bride_veil_1790901501919.jpg';
+  const groomPortrait = customData
+    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    : '/images/editorial_groom_portrait_1790915490996.jpg';
+  const closingImage = customData
+    ? customData.mediaSlots?.closingImage || allAdminUploadedImages[allAdminUploadedImages.length - 1] || heroImage || ''
+    : '/images/wedding_dance_lights_1790901533590.jpg';
+  const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
 
-  const heroTiles = (customFilmImages && customFilmImages.length > 0)
-    ? Array.from({ length: 16 }, (_, idx) => customFilmImages[idx % customFilmImages.length])
+  const heroTiles = customData
+    ? customFilmList.length > 0
+      ? Array.from({ length: 16 }, (_, idx) => customFilmList[idx % customFilmList.length])
+      : []
     : HERO_TILES;
 
   const chapters = CHAPTERS.map((ch, idx) => ({
     ...ch,
-    photo:
-      customFilmImages && customFilmImages.length > 0
-        ? customFilmImages[idx % customFilmImages.length]
-        : ch.photo
+    photo: customData
+      ? customFilmList.length > 0
+        ? customFilmList[idx % customFilmList.length]
+        : heroImage || ''
+      : ch.photo
   }));
+
+  const storyMilestones = React.useMemo(() => {
+    const rawChapters = customData?.mediaSlots?.storyChapters;
+    if (Array.isArray(rawChapters)) {
+      if (rawChapters.length === 0) return [];
+      return rawChapters.map((ch, idx) => ({
+        chapter: ch.chapter || `SCENE ${String(idx + 1).padStart(2, '0')}`,
+        date: ch.date || '',
+        location: ch.location || `TAKE #${String(idx + 1).padStart(2, '0')}`,
+        title: ch.title || `Adegan ${idx + 1}`,
+        quote: ch.quote || '',
+        story: ch.story || '',
+        image:
+          ch.image && !isVideoUrl(ch.image)
+            ? ch.image
+            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+      }));
+    }
+    return [
+      {
+        chapter: 'SCENE 01',
+        date: '2020',
+        location: 'TAKE #01 · BANDUNG',
+        title: 'Pertemuan yang Tak Terencana',
+        quote: 'Toko Buku Tua',
+        story: 'Dua orang asing berebut naskah sastra klasik yang sama di rak pojok. Sebuah tawa canggung menjadi obrolan hangat berjam-jam di kedai kopi seberang jalan.',
+        image: customData ? allAdminUploadedImages[0] || '' : ''
+      },
+      {
+        chapter: 'SCENE 02',
+        date: '2023',
+        location: 'TAKE #02 · BRAGA',
+        title: 'Menyimpan Momen dalam Film',
+        quote: 'Kamera Analog',
+        story: 'Kami mulai mengoleksi gulungan film 35mm. Dari senja di bukit hingga langkah kaki di Braga, setiap detik terasa terlalu berharga untuk dilewatkan tanpa terekam.',
+        image: customData ? allAdminUploadedImages[1] || allAdminUploadedImages[0] || '' : ''
+      },
+      {
+        chapter: 'SCENE 03',
+        date: '2026',
+        location: 'TAKE #03 · WEDDING',
+        title: 'Lamaran & Menuju Hari Bahagia',
+        quote: 'Janji Suci',
+        story: 'Di hadapan orang tua dan keluarga terdekat, sebuah cincin disematkan. Babak baru resmi dimulai untuk kita nikmati bersama sampai rambut memutih.',
+        image: customData ? allAdminUploadedImages[2] || allAdminUploadedImages[0] || '' : ''
+      }
+    ];
+  }, [customData, allAdminUploadedImages]);
 
   // Gate / Double Door Cover State
   const [isGateOpen, setIsGateOpen] = useState(false);
@@ -1157,63 +1241,58 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
 
 
         {/* ============ SECTION TAMBAHAN: STORYBOARD ADEGAN PERJALANAN CINTA ============ */}
-        <section id="s-story" className="bg-[#EFE5D2] py-12 md:py-16" aria-label="Storyboard adegan cinta">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6">
-            <div className="text-center reel-reveal mb-8 md:mb-10">
-              <span className="reel-kicker">Storyboard Naskah</span>
-              <h2 className="text-2xl sm:text-3xl font-serif italic mt-2 text-[#211B14]">
-                Tiga Babak Adegan Kami
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {/* Scene 01 */}
-              <div className="p-5 sm:p-6 bg-[#FAF4E8] border border-[#D4AF6A]/60 rounded-xs shadow-xs reel-reveal flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between border-b border-[#D4AF6A]/30 pb-2 mb-3">
-                    <span className="font-['Courier_Prime',monospace] text-xs font-bold text-[#7B3B34]">SCENE 01 · 2020</span>
-                    <span className="text-xs font-['Caveat',cursive] text-[#211B14] text-base">Toko Buku Tua</span>
-                  </div>
-                  <h4 className="font-serif text-base sm:text-lg text-[#211B14] mb-2 font-medium">Pertemuan yang Tak Terencana</h4>
-                  <p className="text-xs sm:text-sm text-[#5A5343] leading-relaxed">
-                    Dua orang asing berebut naskah sastra klasik yang sama di rak pojok. Sebuah tawa canggung menjadi obrolan hangat berjam-jam di kedai kopi seberang jalan.
-                  </p>
-                </div>
-                <span className="block font-['Courier_Prime',monospace] text-[9px] text-[#A9782F] uppercase mt-4 text-right">TAKE #01 · BANDUNG</span>
+        {storyMilestones.length > 0 && (
+          <section id="s-story" className="bg-[#EFE5D2] py-12 md:py-16" aria-label="Storyboard adegan cinta">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6">
+              <div className="text-center reel-reveal mb-8 md:mb-10">
+                <span className="reel-kicker">Storyboard Naskah</span>
+                <h2 className="text-2xl sm:text-3xl font-serif italic mt-2 text-[#211B14]">
+                  Babak Adegan Kami
+                </h2>
               </div>
 
-              {/* Scene 02 */}
-              <div className="p-5 sm:p-6 bg-[#FAF4E8] border border-[#D4AF6A]/60 rounded-xs shadow-xs reel-reveal flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between border-b border-[#D4AF6A]/30 pb-2 mb-3">
-                    <span className="font-['Courier_Prime',monospace] text-xs font-bold text-[#7B3B34]">SCENE 02 · 2023</span>
-                    <span className="text-xs font-['Caveat',cursive] text-[#211B14] text-base">Kamera Analog</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {storyMilestones.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-5 sm:p-6 bg-[#FAF4E8] border border-[#D4AF6A]/60 rounded-xs shadow-xs reel-reveal flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between border-b border-[#D4AF6A]/30 pb-2 mb-3">
+                        <span className="font-['Courier_Prime',monospace] text-xs font-bold text-[#7B3B34]">
+                          {item.chapter}{item.date ? ` · ${item.date}` : ''}
+                        </span>
+                        {item.quote && (
+                          <span className="text-xs font-['Caveat',cursive] text-[#211B14] text-base">
+                            {item.quote}
+                          </span>
+                        )}
+                      </div>
+                      {item.image && (
+                        <div className="mb-3 rounded-xs overflow-hidden border border-[#D4AF6A]/50 bg-[#171310]">
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full aspect-[4/3] object-cover"
+                          />
+                        </div>
+                      )}
+                      <h4 className="font-serif text-base sm:text-lg text-[#211B14] mb-2 font-medium">
+                        {item.title}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-[#5A5343] leading-relaxed">
+                        {item.story}
+                      </p>
+                    </div>
+                    <span className="block font-['Courier_Prime',monospace] text-[9px] text-[#A9782F] uppercase mt-4 text-right">
+                      {item.location || `TAKE #${String(idx + 1).padStart(2, '0')}`}
+                    </span>
                   </div>
-                  <h4 className="font-serif text-base sm:text-lg text-[#211B14] mb-2 font-medium">Menyimpan Momen dalam Film</h4>
-                  <p className="text-xs sm:text-sm text-[#5A5343] leading-relaxed">
-                    Kami mulai mengoleksi gulungan film 35mm. Dari senja di bukit hingga langkah kaki di Braga, setiap detik terasa terlalu berharga untuk dilewatkan tanpa terekam.
-                  </p>
-                </div>
-                <span className="block font-['Courier_Prime',monospace] text-[9px] text-[#A9782F] uppercase mt-4 text-right">TAKE #02 · BRAGA</span>
-              </div>
-
-              {/* Scene 03 */}
-              <div className="p-5 sm:p-6 bg-[#FAF4E8] border border-[#D4AF6A]/60 rounded-xs shadow-xs reel-reveal flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between border-b border-[#D4AF6A]/30 pb-2 mb-3">
-                    <span className="font-['Courier_Prime',monospace] text-xs font-bold text-[#7B3B34]">SCENE 03 · 2026</span>
-                    <span className="text-xs font-['Caveat',cursive] text-[#211B14] text-base">Janji Suci</span>
-                  </div>
-                  <h4 className="font-serif text-base sm:text-lg text-[#211B14] mb-2 font-medium">Lamaran &amp; Menuju Hari Bahagia</h4>
-                  <p className="text-xs sm:text-sm text-[#5A5343] leading-relaxed">
-                    Di hadapan orang tua dan keluarga terdekat, sebuah cincin disematkan. Babak baru resmi dimulai untuk kita nikmati bersama sampai rambut memutih.
-                  </p>
-                </div>
-                <span className="block font-['Courier_Prime',monospace] text-[9px] text-[#A9782F] uppercase mt-4 text-right">TAKE #03 · WEDDING</span>
+                ))}
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ============ SECTION 5 (DINAMIS): WAKTU & TEMPAT (TIKET BIOSKOP + FLIP COUNTER) ============ */}
         <section id="s-waktu" className="bg-[#171310] text-[#F3EAD9] py-20" aria-label="Waktu dan tempat acara">
@@ -1507,6 +1586,19 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
                       </button>
                     </div>
                   )}
+
+                  {qrisImageUrl && (
+                    <div className="p-4 bg-white/90 border border-[#D4AF6A] rounded-xs text-center shadow-xs">
+                      <span className="font-['Courier_Prime',monospace] font-bold text-xs uppercase text-[#7B3B34] block mb-2">
+                        Barcode QRIS Tanda Kasih
+                      </span>
+                      <img
+                        src={qrisImageUrl}
+                        alt="Barcode QRIS"
+                        className="w-40 h-40 object-contain mx-auto border border-[#D4AF6A]/40 bg-white p-1.5 rounded-xs"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1662,11 +1754,13 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           <div className="absolute top-0 left-0 right-0 h-[10%] bg-black z-10 pointer-events-none" />
           <div className="absolute bottom-0 left-0 right-0 h-[10%] bg-black z-10 pointer-events-none" />
 
-          <img 
-            src="/images/wedding_dance_lights_1790901533590.jpg" 
-            alt="Penutup rol film" 
-            className="absolute inset-0 w-full h-full object-cover opacity-20 grayscale"
-          />
+          {closingImage && (
+            <img 
+              src={closingImage} 
+              alt="Penutup rol film" 
+              className="absolute inset-0 w-full h-full object-cover opacity-20 grayscale"
+            />
+          )}
 
           <div className="relative z-20 px-6 py-12 reel-reveal">
             <h2 className="text-4xl sm:text-5xl font-serif italic tracking-widest gold-text font-normal">

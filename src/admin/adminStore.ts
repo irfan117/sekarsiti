@@ -8,6 +8,7 @@ import {
   downloadGuestbookCsv
 } from './exportUtils';
 import { buildInvitationUrl } from '../utils/subdomainUtils';
+import { sanitizeAudioUrl } from '../utils/audioUrl';
 import { readPersistedJson, writePersistedJson } from '../utils/persistedStore';
 
 const ADMIN_ORDERS_STORAGE_KEY = 'sekarsiti_admin_orders_v1';
@@ -100,10 +101,7 @@ export class AdminStore {
               secondaryAccountNumber: item.secondary_account_number || '',
               secondaryAccountHolder: item.secondary_account_holder || '',
               songTitle: item.song_title || '',
-              audioUrl:
-                item.audio_url && !String(item.audio_url).includes('actions.google.com/sounds')
-                  ? item.audio_url
-                  : '',
+              audioUrl: sanitizeAudioUrl(item.audio_url),
               mediaSlots: item.media_slots || {},
               accessCode: item.access_code || item.slug || item.id,
               pinCode: item.pin_code || '1234',
@@ -375,10 +373,7 @@ export class AdminStore {
             secondaryAccountNumber: item.secondary_account_number || '',
             secondaryAccountHolder: item.secondary_account_holder || '',
             songTitle: item.song_title || '',
-            audioUrl:
-              item.audio_url && !String(item.audio_url).includes('actions.google.com/sounds')
-                ? item.audio_url
-                : '',
+            audioUrl: sanitizeAudioUrl(item.audio_url),
             mediaSlots: item.media_slots || {},
             accessCode: item.access_code || item.slug || item.id,
             pinCode: item.pin_code || cleanPin,

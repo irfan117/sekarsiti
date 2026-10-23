@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { safeCopyToClipboard } from '../utils/clipboardUtils';
 import { sanitizeAudioUrl } from '../utils/audioUrl';
+import { fetchMusicTracks } from '../services/musicService';
 import { requestRateLimitPermit } from '../utils/requestRateLimit';
 
 // 1. REUSABLE COUNTDOWN TIMER LOGIC
@@ -83,8 +84,49 @@ export function useAudioController(
 ) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [showAudioToast, setShowAudioToast] = useState(false);
+  const [fallbackAudioUrl, setFallbackAudioUrl] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const playableUrl = sanitizeAudioUrl(audioUrl);
+  const directUrl = sanitizeAudioUrl(audioUrl);
+  const playableUrl = directUrl || fallbackAudioUrl;
+
+  // Cross-domain / subdomain fallback: if audioUrl is empty, resolve from Supabase music catalog / invitations
+  useEffect(() => {
+    if (directUrl) {
+      setFallbackAudioUrl('');
+      return;
+    }
+
+    let isMounted = true;
+    fetchMusicTracks()
+      .then((tracks) => {
+        if (!isMounted || !tracks || tracks.length === 0) return;
+        const normalizedTarget = (defaultSongTitle || '').trim().toLowerCase();
+        const matchedTrack =
+          tracks.find((t) => {
+            const fullLabel = `${t.title} - ${t.artist}`.toLowerCase();
+            const titleOnly = (t.title || '').toLowerCase();
+            return (
+              normalizedTarget &&
+              (fullLabel === normalizedTarget ||
+                fullLabel.includes(normalizedTarget) ||
+                normalizedTarget.includes(titleOnly))
+            );
+          }) ||
+          tracks.find((t) => (t.genre || '').toLowerCase().includes('template demo')) ||
+          tracks[0];
+
+        if (matchedTrack?.audio_url) {
+          setFallbackAudioUrl(sanitizeAudioUrl(matchedTrack.audio_url));
+        }
+      })
+      .catch(() => {
+        // Ignore fallback lookup errors
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [directUrl, defaultSongTitle]);
 
   useEffect(() => {
     return () => {

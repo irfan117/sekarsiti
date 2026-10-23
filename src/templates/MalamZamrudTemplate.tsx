@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
 import { isVideoUrl } from '../utils/cloudinaryUpload';
+import { collectAdminUploadedPhotos } from '../utils/templateMediaResolver';
 import { 
   useCountdown, 
   useGuestRecipient, 
@@ -220,9 +221,16 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
   // Lightbox Photo Modal state
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
-  // Gallery image assets (Diverse Authentic Wedding Photography - No web product mockups)
-  const galleryImages = customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
-    ? customData.mediaSlots.galleryImages
+  const allAdminUploadedImages = React.useMemo(
+    () => collectAdminUploadedPhotos(customData),
+    [customData]
+  );
+
+  // Gallery image assets: 100% dari upload admin saat customData aktif (bebas jumlah, tanpa minimal/maksimal)
+  const galleryImages = customData
+    ? customData.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
+      ? customData.mediaSlots.galleryImages.filter((u) => Boolean(u && !isVideoUrl(u)))
+      : allAdminUploadedImages
     : [
         '/images/editorial_couple_portrait_1790838636662.jpg',
         '/images/wedding_bride_veil_1790901501919.jpg',
@@ -235,14 +243,27 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
       ];
 
   const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
-  const heroVideoUrl =
-    customData?.mediaSlots?.heroVideo ||
-    (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '/videos/wedding-evening.mp4');
-  const heroImage = !isVideoUrl(rawHeroMedia) && rawHeroMedia ? rawHeroMedia : galleryImages[0];
+  const heroVideoUrl = customData
+    ? customData.mediaSlots?.heroVideo || (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '')
+    : '/videos/wedding-evening.mp4';
+  const heroImage =
+    !isVideoUrl(rawHeroMedia) && rawHeroMedia
+      ? rawHeroMedia
+      : galleryImages[0] || allAdminUploadedImages[0] || (!customData ? '/images/art_deco_emerald_couple_1790840336340.jpg' : '');
   const isCoverVideo =
     isVideoUrl(rawHeroMedia) || Boolean(customData?.mediaSlots?.heroVideo && !rawHeroMedia);
-  const bridePortrait = customData?.mediaSlots?.bridePortrait || galleryImages[1] || galleryImages[0];
-  const groomPortrait = customData?.mediaSlots?.groomPortrait || galleryImages[0];
+  const bridePortrait = customData
+    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    : '/images/wedding_bride_veil_1790901501919.jpg';
+  const groomPortrait = customData
+    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    : '/images/editorial_couple_portrait_1790838636662.jpg';
+  const spotlightImage = customData
+    ? customData.mediaSlots?.spotlightImage || galleryImages[1] || galleryImages[0] || heroImage || ''
+    : galleryImages[0];
+  const closingImage = customData
+    ? customData.mediaSlots?.closingImage || galleryImages[galleryImages.length - 1] || galleryImages[0] || heroImage || ''
+    : galleryImages[0];
   const quoteText = customData?.quoteText || 'Bunga melati tumbuh berseri, mekar indah di taman hati. Dua insan berjanji sehidup semati, menyatu dalam ikatan suci.';
   const quoteSource = customData?.quoteSource || 'Syair Kasih Klasik';
   const secondaryBankName = customData?.secondaryBankName;
@@ -250,25 +271,93 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
   const secondaryAccountHolder = customData?.secondaryAccountHolder;
   const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
 
-  // Continuous Filmstrip Photos for Left (Portraits & Moments) and Right (Details & Atmosphere)
-  const leftFilmstripPhotos = [
-    { src: heroImage, tag: `${brideName.toUpperCase()} & ${groomName.toUpperCase()} · 01`, caption: 'Mempelai Berbahagia' },
-    { src: bridePortrait, tag: 'THE BRIDE · 02', caption: 'Anggun Dalam Balutan Gaun' },
-    { src: groomPortrait, tag: 'THE GROOM · 03', caption: 'Keteguhan Janji Suci' },
-    { src: galleryImages[0] || '/images/wedding_dance_lights_1790901533590.jpg', tag: 'FIRST DANCE · 04', caption: 'Tarian Pertama di Bawah Cahaya' },
-    { src: galleryImages[1] || '/images/sage_outdoor_couple_portrait_1790919006777.jpg', tag: 'ROMANTIC MOMENT · 05', caption: 'Langkah Awal Bersama' },
-    { src: galleryImages[2] || '/images/art_deco_emerald_couple_1790840336340.jpg', tag: 'FOREVER AFTER · 06', caption: 'Cinta Seumur Hidup' },
-  ];
+  const panelSourcePhotos = React.useMemo(() => {
+    if (!customData) return [];
+    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
+  }, [customData, allAdminUploadedImages]);
 
-  const rightFilmstripPhotos = [
-    { src: '/images/art_deco_venue_details_1790840351864.jpg', tag: 'BALLROOM · 01', caption: 'Kemilau Lilin & Meja Jamuan' },
-    { src: '/images/wedding_shoes_jewelry_1790901548736.jpg', tag: 'DETAILS · 02', caption: 'Sepatu Sutra & Perhiasan Emas' },
-    { src: '/images/editorial_venue_rings_1790838653826.jpg', tag: 'RINGS · 03', caption: 'Cincin Emas di Atas Travertine' },
-    { src: '/images/wedding_table_botanical_1790833955186.jpg', tag: 'BLOOMS · 04', caption: 'Rangkaian Mawar & Daun Eukaliptus' },
-    { src: '/images/botanical_estate_venue_1790919022237.jpg', tag: 'EVENING GLOW · 05', caption: 'Suasana Temaram Resepsi' },
-    { src: '/images/brand_story_botanical_1790831303860.jpg', tag: 'PROMISE · 06', caption: 'Buku Janji & Momen Khidmat' },
-    { src: '/images/wedding_dance_lights_1790901533590.jpg', tag: 'SOIREE · 07', caption: 'Pesta Dansa di Bawah Lentera Emas' },
-  ];
+  // Continuous Filmstrip Photos for Left (Portraits & Moments) and Right (Details & Atmosphere)
+  const leftFilmstripPhotos = customData
+    ? panelSourcePhotos.map((src, idx) => ({
+        src,
+        tag: `${brideName.toUpperCase()} & ${groomName.toUpperCase()} · ${String(idx + 1).padStart(2, '0')}`,
+        caption: idx === 0 ? 'Mempelai Berbahagia' : `Momen Dokumentasi #${String(idx + 1).padStart(2, '0')}`
+      }))
+    : [
+        { src: heroImage, tag: `${brideName.toUpperCase()} & ${groomName.toUpperCase()} · 01`, caption: 'Mempelai Berbahagia' },
+        { src: bridePortrait, tag: 'THE BRIDE · 02', caption: 'Anggun Dalam Balutan Gaun' },
+        { src: groomPortrait, tag: 'THE GROOM · 03', caption: 'Keteguhan Janji Suci' },
+        { src: galleryImages[0] || '/images/wedding_dance_lights_1790901533590.jpg', tag: 'FIRST DANCE · 04', caption: 'Tarian Pertama di Bawah Cahaya' },
+        { src: galleryImages[1] || '/images/sage_outdoor_couple_portrait_1790919006777.jpg', tag: 'ROMANTIC MOMENT · 05', caption: 'Langkah Awal Bersama' },
+        { src: galleryImages[2] || '/images/art_deco_emerald_couple_1790840336340.jpg', tag: 'FOREVER AFTER · 06', caption: 'Cinta Seumur Hidup' },
+      ];
+
+  const rightFilmstripPhotos = customData
+    ? [...panelSourcePhotos].reverse().map((src, idx) => ({
+        src,
+        tag: `GALERI MALAM · ${String(idx + 1).padStart(2, '0')}`,
+        caption: `${resepsiVenue} · Frame ${String(idx + 1).padStart(2, '0')}`
+      }))
+    : [
+        { src: '/images/art_deco_venue_details_1790840351864.jpg', tag: 'BALLROOM · 01', caption: 'Kemilau Lilin & Meja Jamuan' },
+        { src: '/images/wedding_shoes_jewelry_1790901548736.jpg', tag: 'DETAILS · 02', caption: 'Sepatu Sutra & Perhiasan Emas' },
+        { src: '/images/editorial_venue_rings_1790838653826.jpg', tag: 'RINGS · 03', caption: 'Cincin Emas di Atas Travertine' },
+        { src: '/images/wedding_table_botanical_1790833955186.jpg', tag: 'BLOOMS · 04', caption: 'Rangkaian Mawar & Daun Eukaliptus' },
+        { src: '/images/botanical_estate_venue_1790919022237.jpg', tag: 'EVENING GLOW · 05', caption: 'Suasana Temaram Resepsi' },
+        { src: '/images/brand_story_botanical_1790831303860.jpg', tag: 'PROMISE · 06', caption: 'Buku Janji & Momen Khidmat' },
+        { src: '/images/wedding_dance_lights_1790901533590.jpg', tag: 'SOIREE · 07', caption: 'Pesta Dansa di Bawah Lentera Emas' },
+      ];
+
+  const storyMilestones = React.useMemo(() => {
+    const rawChapters = customData?.mediaSlots?.storyChapters;
+    if (Array.isArray(rawChapters)) {
+      if (rawChapters.length === 0) return [];
+      return rawChapters.map((ch, idx) => ({
+        chapter: ch.chapter || `BABAK ${String(idx + 1).padStart(2, '0')}`,
+        date: ch.date || '',
+        location: ch.location || '',
+        title: ch.title || `Babak ${idx + 1}`,
+        quote: ch.quote || '',
+        story: ch.story || '',
+        image:
+          ch.image && !isVideoUrl(ch.image)
+            ? ch.image
+            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+      }));
+    }
+    return [
+      {
+        chapter: 'BABAK 01',
+        date: 'Agustus 2019',
+        location: '',
+        title: 'Pertemuan Pertama',
+        quote: '',
+        story: 'Bertemu tanpa sengaja di sebuah acara kampus, dan sejak itu percakapan tak pernah berhenti.',
+        image: customData ? allAdminUploadedImages[0] || '' : ''
+      },
+      {
+        chapter: 'BABAK 02',
+        date: 'Desember 2022',
+        location: '',
+        title: 'Lamaran',
+        quote: '',
+        story: 'Di depan keluarga besar, sebuah janji sederhana disampaikan dan diterima dengan haru.',
+        image: customData ? allAdminUploadedImages[1] || allAdminUploadedImages[0] || '' : ''
+      },
+      {
+        chapter: 'BABAK 03',
+        date: 'Februari 2027',
+        location: '',
+        title: 'Hari Bahagia',
+        quote: '',
+        story: 'Babak baru dimulai — dua keluarga menjadi satu, disaksikan orang-orang tercinta.',
+        image: customData ? allAdminUploadedImages[2] || allAdminUploadedImages[0] || '' : ''
+      }
+    ];
+  }, [customData, allAdminUploadedImages]);
 
   // Active section tracking & Smooth Continuous Scroll Progress
   const [activeSectionId, setActiveSectionId] = useState('hero-video');
@@ -556,10 +645,10 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
                 THE GRAND RECEPTION
               </p>
               <h4 className="font-['Marcellus',serif] text-lg text-[#FBF3E4]">
-                Aryaduta Grand Ballroom
+                {resepsiVenue}
               </h4>
               <p className="text-xs text-[#EDE3C8]/70 tracking-widest font-mono">
-                XIV · II · MMXXVII
+                {eventDateFormatted}
               </p>
             </div>
 
@@ -744,25 +833,33 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           id="hero-video"
           className="relative min-h-[92vh] sm:min-h-screen flex flex-col justify-center items-center text-center p-6 overflow-hidden bg-[#0B0D10]"
         >
-          {/* Parallax Video Background */}
+          {/* Parallax Video or Photo Background */}
           <div 
             className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none will-change-transform"
             style={{
               transform: `translate3d(0, ${scrollY * 0.32}px, 0) scale(1.15)`,
             }}
           >
-            <video
-              key={heroVideoUrl}
-              src={heroVideoUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              poster={heroImage}
-              className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.10]"
-            >
-              <source src={heroVideoUrl} type="video/mp4" />
-            </video>
+            {heroVideoUrl ? (
+              <video
+                key={heroVideoUrl}
+                src={heroVideoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster={heroImage}
+                className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.10]"
+              >
+                <source src={heroVideoUrl} type="video/mp4" />
+              </video>
+            ) : heroImage ? (
+              <img
+                src={heroImage}
+                alt={`${brideName} & ${groomName}`}
+                className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.10]"
+              />
+            ) : null}
           </div>
 
           {/* Vignette Gradients for Luxury Art Deco Onyx & Emerald Ambiance */}
@@ -973,7 +1070,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             SIMPAN TANGGALNYA
           </p>
           <h3 className="font-['Marcellus',serif] text-3xl text-[#FBF3E4] mb-2">
-            Sabtu, 14 Februari 2027
+            {eventDateFormatted}
           </h3>
           <p className="text-xs text-[#EDE3C8]/80 max-w-xs mx-auto mb-10 leading-relaxed font-light">
             Malam resepsi bernuansa elegan di bawah kilau lampu temaram
@@ -1029,12 +1126,14 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         </section>
 
         {/* SECTION 4: LOKASI & PETA */}
-        <section id="lokasi" className="relative min-h-[64vh] flex items-end overflow-hidden">
-          <img 
-            src={galleryImages[1]} 
-            alt={resepsiVenue} 
-            className="absolute inset-0 w-full h-full object-cover filter brightness-[0.75]"
-          />
+        <section id="lokasi" className="relative min-h-[64vh] flex items-end overflow-hidden bg-[#0B0D10]">
+          {(spotlightImage || galleryImages[1] || galleryImages[0] || heroImage) && (
+            <img 
+              src={spotlightImage || galleryImages[1] || galleryImages[0] || heroImage} 
+              alt={resepsiVenue} 
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.75]"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/40 to-transparent" />
           
           <div className="relative z-10 w-full p-8 text-center text-[#FBF3E4] space-y-3">
@@ -1063,12 +1162,14 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         </section>
 
         {/* SECTION 5: SPOTLIGHT 1 */}
-        <section id="spotlight-1" className="relative min-h-[68vh] flex items-end overflow-hidden">
-          <img 
-            src={galleryImages[0]} 
-            alt="Spotlight 1" 
-            className="absolute inset-0 w-full h-full object-cover filter brightness-[0.75]"
-          />
+        <section id="spotlight-1" className="relative min-h-[68vh] flex items-end overflow-hidden bg-[#0B0D10]">
+          {(spotlightImage || galleryImages[0] || heroImage) && (
+            <img 
+              src={spotlightImage || galleryImages[0] || heroImage} 
+              alt="Spotlight 1" 
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.75]"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/35 to-transparent" />
           <div className="relative z-10 w-full p-8 text-center text-[#FBF3E4]">
             <p className="font-['Marcellus',serif] italic text-lg sm:text-xl leading-relaxed max-w-xs mx-auto">
@@ -1083,57 +1184,50 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             TURUT MENGUNDANG
           </p>
           <p className="text-xs sm:text-sm leading-relaxed max-w-xs mx-auto font-light text-[#FBF3E4]/90">
-            Keluarga Besar Wijaya &amp; Keluarga Besar Nugraha turut mengundang Bapak/Ibu/Saudara/i untuk berkenan hadir dan memberikan doa restu.
+            Keluarga Besar kedua mempelai turut mengundang Bapak/Ibu/Saudara/i untuk berkenan hadir dan memberikan doa restu.
           </p>
         </section>
 
         {/* SECTION 8: KISAH KAMI (Our Story Timeline) */}
-        <section id="our-story" className="py-20 px-6 sm:px-8 bg-[#EDE3C8]">
-          <h3 className="font-['Marcellus',serif] text-3xl text-center text-[#181512] mb-12">
-            Kisah Cinta Kami
-          </h3>
+        {storyMilestones.length > 0 && (
+          <section id="our-story" className="py-20 px-6 sm:px-8 bg-[#EDE3C8]">
+            <h3 className="font-['Marcellus',serif] text-3xl text-center text-[#181512] mb-12">
+              Kisah Cinta Kami
+            </h3>
 
-          <div className="relative max-w-xs mx-auto pl-6 border-l border-[#8C4A36]/40 space-y-10 text-left">
-            <div className="relative">
-              <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#8C4A36]" />
-              <span className="text-[10px] tracking-widest uppercase text-[#1E4438] block mb-1 font-semibold">
-                Agustus 2019
-              </span>
-              <h4 className="font-['Marcellus',serif] text-lg text-[#181512] mb-1">
-                Pertemuan Pertama
-              </h4>
-              <p className="text-xs text-[#181512]/85 leading-relaxed">
-                Bertemu tanpa sengaja di sebuah acara kampus, dan sejak itu percakapan tak pernah berhenti.
-              </p>
+            <div className="relative max-w-xs mx-auto pl-6 border-l border-[#8C4A36]/40 space-y-10 text-left">
+              {storyMilestones.map((item, idx) => (
+                <div key={idx} className="relative">
+                  <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#8C4A36]" />
+                  <span className="text-[10px] tracking-widest uppercase text-[#1E4438] block mb-1 font-semibold">
+                    {item.date || item.chapter}
+                  </span>
+                  <h4 className="font-['Marcellus',serif] text-lg text-[#181512] mb-1">
+                    {item.title}
+                  </h4>
+                  {item.image && (
+                    <div
+                      onClick={() => setSelectedPhoto(item.image)}
+                      className="my-2.5 rounded-lg overflow-hidden border border-[#8C4A36]/30 cursor-pointer shadow-sm"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full aspect-[4/3] object-cover hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+                  {item.quote && (
+                    <p className="text-xs italic text-[#8C4A36] mb-1">{item.quote}</p>
+                  )}
+                  <p className="text-xs text-[#181512]/85 leading-relaxed">
+                    {item.story}
+                  </p>
+                </div>
+              ))}
             </div>
-
-            <div className="relative">
-              <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#8C4A36]" />
-              <span className="text-[10px] tracking-widest uppercase text-[#1E4438] block mb-1 font-semibold">
-                Desember 2022
-              </span>
-              <h4 className="font-['Marcellus',serif] text-lg text-[#181512] mb-1">
-                Lamaran
-              </h4>
-              <p className="text-xs text-[#181512]/85 leading-relaxed">
-                Di depan keluarga besar, sebuah janji sederhana disampaikan dan diterima dengan haru.
-              </p>
-            </div>
-
-            <div className="relative">
-              <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#8C4A36]" />
-              <span className="text-[10px] tracking-widest uppercase text-[#1E4438] block mb-1 font-semibold">
-                Februari 2027
-              </span>
-              <h4 className="font-['Marcellus',serif] text-lg text-[#181512] mb-1">
-                Hari Bahagia
-              </h4>
-              <p className="text-xs text-[#181512]/85 leading-relaxed">
-                Babak baru dimulai — dua keluarga menjadi satu, disaksikan orang-orang tercinta.
-              </p>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* SECTION 9: DRESS CODE (Ketentuan Busana & Swatches) */}
         <section id="dresscode" className="py-20 px-6 sm:px-8 bg-[#12151A] text-[#FBF3E4] text-center">
@@ -1168,12 +1262,14 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         </section>
 
         {/* SECTION 10: SPOTLIGHT 2 */}
-        <section id="spotlight-2" className="relative min-h-[64vh] flex items-end overflow-hidden">
-          <img 
-            src={galleryImages[2]} 
-            alt="Spotlight 2" 
-            className="absolute inset-0 w-full h-full object-cover filter brightness-[0.72]"
-          />
+        <section id="spotlight-2" className="relative min-h-[64vh] flex items-end overflow-hidden bg-[#0B0D10]">
+          {(galleryImages[2] || spotlightImage || galleryImages[0] || heroImage) && (
+            <img 
+              src={galleryImages[2] || spotlightImage || galleryImages[0] || heroImage} 
+              alt="Spotlight 2" 
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.72]"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/35 to-transparent" />
           <div className="relative z-10 w-full p-8 text-center text-[#FBF3E4]">
             <p className="font-['Marcellus',serif] italic text-lg sm:text-xl leading-relaxed max-w-xs mx-auto">
@@ -1182,57 +1278,79 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           </div>
         </section>
 
-        {/* SECTION 11: GALERI (Photo Carousel) */}
-        <section id="gallery" className="py-20 bg-[#EDE3C8]">
-          <h3 className="font-['Marcellus',serif] text-3xl text-center text-[#181512] mb-8">
-            Galeri Momen
-          </h3>
+        {/* SECTION 11: GALERI (Photo Carousel & Grid Tanpa Batas) */}
+        {galleryImages.length > 0 && (
+          <section id="gallery" className="py-20 bg-[#EDE3C8]">
+            <h3 className="font-['Marcellus',serif] text-3xl text-center text-[#181512] mb-8">
+              Galeri Momen
+            </h3>
 
-          <div className="relative px-6">
-            <div 
-              onClick={() => setSelectedPhoto(galleryImages[carouselIndex])}
-              className="relative aspect-3/4 max-w-[320px] mx-auto overflow-hidden border border-[#8C4A36]/40 shadow-2xl cursor-pointer group bg-[#12151A]"
-            >
-              <img 
-                src={galleryImages[carouselIndex]} 
-                alt={`Galeri foto ${carouselIndex + 1}`} 
-                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span className="text-xs text-[#FBF3E4] bg-[#0B0D10]/80 px-4 py-1.5 rounded-full border border-[#C6A356]/40">
-                  Perbesar Foto
-                </span>
+            <div className="relative px-6">
+              <div 
+                onClick={() => setSelectedPhoto(galleryImages[carouselIndex] || galleryImages[0])}
+                className="relative aspect-3/4 max-w-[320px] mx-auto overflow-hidden border border-[#8C4A36]/40 shadow-2xl cursor-pointer group bg-[#12151A]"
+              >
+                <img 
+                  src={galleryImages[carouselIndex] || galleryImages[0]} 
+                  alt={`Galeri foto ${carouselIndex + 1}`} 
+                  className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="text-xs text-[#FBF3E4] bg-[#0B0D10]/80 px-4 py-1.5 rounded-full border border-[#C6A356]/40">
+                    Perbesar Foto
+                  </span>
+                </div>
               </div>
+
+              {/* Carousel Navigation Buttons */}
+              <div className="flex justify-center items-center gap-4 mt-6">
+                <button
+                  type="button"
+                  onClick={prevSlide}
+                  disabled={carouselIndex === 0}
+                  className="w-10 h-10 rounded-full border border-[#8C4A36]/60 flex items-center justify-center text-[#8C4A36] hover:bg-[#8C4A36]/15 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  aria-label="Foto sebelumnya"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                <span className="text-xs text-[#8C4A36] font-['Marcellus',serif]">
+                  {carouselIndex + 1} / {galleryImages.length}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={nextSlide}
+                  disabled={carouselIndex === galleryImages.length - 1}
+                  className="w-10 h-10 rounded-full border border-[#8C4A36]/60 flex items-center justify-center text-[#8C4A36] hover:bg-[#8C4A36]/15 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  aria-label="Foto berikutnya"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Thumbnail Grid (Mendukung jumlah foto tanpa batas) */}
+              {galleryImages.length > 1 && (
+                <div className="grid grid-cols-4 gap-2 max-w-[320px] mx-auto mt-6">
+                  {galleryImages.map((imgUrl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setCarouselIndex(idx)}
+                      className={`relative aspect-square overflow-hidden border transition-all cursor-pointer ${
+                        carouselIndex === idx
+                          ? 'border-[#C6A356] ring-2 ring-[#C6A356]/60 opacity-100'
+                          : 'border-[#8C4A36]/30 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={imgUrl} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-
-            {/* Carousel Navigation Buttons */}
-            <div className="flex justify-center items-center gap-4 mt-6">
-              <button
-                type="button"
-                onClick={prevSlide}
-                disabled={carouselIndex === 0}
-                className="w-10 h-10 rounded-full border border-[#8C4A36]/60 flex items-center justify-center text-[#8C4A36] hover:bg-[#8C4A36]/15 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer"
-                aria-label="Foto sebelumnya"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-
-              <span className="text-xs text-[#8C4A36] font-['Marcellus',serif]">
-                {carouselIndex + 1} / {galleryImages.length}
-              </span>
-
-              <button
-                type="button"
-                onClick={nextSlide}
-                disabled={carouselIndex === galleryImages.length - 1}
-                className="w-10 h-10 rounded-full border border-[#8C4A36]/60 flex items-center justify-center text-[#8C4A36] hover:bg-[#8C4A36]/15 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer"
-                aria-label="Foto berikutnya"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* SECTION 12: TANDA KASIH */}
         <section id="gift" className="py-20 px-6 sm:px-8 bg-[#EDE3C8] text-center border-t border-[#C6A356]/20">
@@ -1411,11 +1529,13 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
 
         {/* SECTION 15: PENUTUP */}
         <section id="closing" className="relative min-h-[78vh] flex items-center justify-center text-center p-8 overflow-hidden bg-[#0B0D10]">
-          <img 
-            src={galleryImages[0]} 
-            alt="Closing background" 
-            className="absolute inset-0 w-full h-full object-cover filter brightness-[0.35]"
-          />
+          {closingImage && (
+            <img 
+              src={closingImage} 
+              alt="Closing background" 
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.35]"
+            />
+          )}
           <div className="absolute inset-0 bg-[#0B0D10]/80" />
 
           <div className="relative z-10 text-[#FBF3E4] space-y-4 max-w-xs">

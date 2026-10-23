@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Music, Upload, Play, Pause, Plus, Check, Loader2 } from 'lucide-react';
+import { Music, Upload, Play, Pause, Plus, Check, Loader2, Link2 } from 'lucide-react';
 import {
   MusicTrack,
   fetchMusicTracks,
@@ -7,6 +7,7 @@ import {
   addMusicTrack,
   deleteMusicTrack,
   isPlayableAudioUrl,
+  sanitizeAudioUrl,
 } from '../../../services/musicService';
 import { isCloudinaryConfigured } from '../../../utils/cloudinaryUpload';
 
@@ -31,6 +32,7 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newArtist, setNewArtist] = useState('');
+  const [newDirectUrl, setNewDirectUrl] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -116,12 +118,54 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
       setShowUploadForm(false);
       setNewTitle('');
       setNewArtist('');
+      setNewDirectUrl('');
     } catch (err: any) {
       console.error(err);
       setUploadError(err?.message || 'Gagal mengunggah musik');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDirectUrlAdd = async () => {
+    const normalizedUrl = sanitizeAudioUrl(newDirectUrl);
+    if (!normalizedUrl) {
+      setUploadError('Masukkan URL audio langsung (.mp3/.m4a/.wav), URL Cloudinary, atau link Google Drive yang valid.');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const title = newTitle.trim() || 'Custom Audio Link';
+      const artist = newArtist.trim() || 'Custom Link';
+
+      if (addUploadsToCatalog) {
+        const newTrack = await addMusicTrack({
+          title,
+          artist,
+          audio_url: normalizedUrl,
+          genre: 'Custom Wedding',
+          source: 'admin',
+        });
+
+        setTracks((prev) => [newTrack, ...prev.filter((t) => t.id !== newTrack.id)]);
+        onSelect(`${newTrack.title} - ${newTrack.artist}`, newTrack.audio_url);
+      } else {
+        onSelect(`${title} - ${artist}`, normalizedUrl);
+      }
+
+      setShowUploadForm(false);
+      setNewTitle('');
+      setNewArtist('');
+      setNewDirectUrl('');
+    } catch (err: any) {
+      console.error(err);
+      setUploadError(err?.message || 'Gagal menyimpan link musik');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -212,7 +256,7 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
             />
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             <input
               ref={fileInputRef}
               type="file"
@@ -229,7 +273,7 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
               {isUploading ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C5A880]" />
-                  <span>Mengunggah ke Cloudinary...</span>
+                  <span>Memproses...</span>
                 </>
               ) : (
                 <>
@@ -238,6 +282,30 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
                 </>
               )}
             </button>
+          </div>
+
+          <div className="pt-2 border-t border-stone-200 space-y-1.5">
+            <span className="text-[10px] font-semibold text-stone-600 block">
+              Atau Tempel Link Audio Eksternal (Cloudinary / Google Drive / Direct MP3):
+            </span>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="url"
+                value={newDirectUrl}
+                onChange={(e) => setNewDirectUrl(e.target.value)}
+                placeholder="https://res.cloudinary.com/... atau link Google Drive"
+                className="flex-1 px-2.5 py-1.5 border border-stone-300 rounded text-xs focus:outline-none"
+              />
+              <button
+                type="button"
+                disabled={isUploading || !newDirectUrl.trim()}
+                onClick={handleDirectUrlAdd}
+                className="py-1.5 px-3 bg-stone-800 hover:bg-stone-900 text-white rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+              >
+                <Link2 className="w-3.5 h-3.5 text-[#C5A880]" />
+                <span>Simpan Link Lagu</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

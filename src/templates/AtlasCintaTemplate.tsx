@@ -11,6 +11,7 @@ import {
 import { AdminStore } from '../admin/adminStore';
 import { requestRateLimitPermit } from '../utils/requestRateLimit';
 import { isVideoUrl } from '../utils/cloudinaryUpload';
+import { collectAdminUploadedPhotos } from '../utils/templateMediaResolver';
 
 interface AtlasCintaTemplateProps {
   onBackToLanding: () => void;
@@ -130,14 +131,36 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
     customData?.songTitle || 'Atlas Perjalanan Senja - Acoustic Folk Guitar';
   const audioUrl = customData?.audioUrl || '';
 
-  // Media Slots
-  const rawGallery =
-    customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
-      ? customData.mediaSlots.galleryImages
-      : DEFAULT_ATLAS_GALLERY;
+  const allAdminUploadedImages = React.useMemo(
+    () => collectAdminUploadedPhotos(customData),
+    [customData]
+  );
 
-  const galleryPhotos = Array.from({ length: 10 }, (_, idx) => {
-    return rawGallery[idx % rawGallery.length];
+  // Media Slots: 100% dari upload admin saat customData aktif (bebas jumlah, tanpa minimal/maksimal)
+  const rawGallery = customData
+    ? customData.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
+      ? customData.mediaSlots.galleryImages.filter((u) => Boolean(u && !isVideoUrl(u)))
+      : allAdminUploadedImages
+    : DEFAULT_ATLAS_GALLERY;
+
+  const panelSourcePhotos = React.useMemo(() => {
+    if (!customData) return rawGallery;
+    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
+  }, [customData, allAdminUploadedImages, rawGallery]);
+
+  const pickPanelPhoto = (idx: number, fallback = '') => {
+    if (panelSourcePhotos.length > 0) {
+      return panelSourcePhotos[idx % panelSourcePhotos.length];
+    }
+    return fallback;
+  };
+
+  // Untuk atribut data-pane-image di berbagai section
+  const galleryPhotos = Array.from({ length: Math.max(rawGallery.length, 10) }, (_, idx) => {
+    return rawGallery.length > 0 ? rawGallery[idx % rawGallery.length] : '';
   });
 
   const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
@@ -146,34 +169,46 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
   const heroCoverBg =
     !isVideoUrl(rawHeroMedia) && rawHeroMedia
       ? rawHeroMedia
-      : '/images/atlas_cinta_hero_cover_1791177934302.jpg';
-  const bridePortraitPhoto =
-    customData?.mediaSlots?.bridePortrait ||
-    '/images/atlas_cinta_bride_portrait_1791177955237.jpg';
-  const groomPortraitPhoto =
-    customData?.mediaSlots?.groomPortrait ||
-    '/images/atlas_cinta_groom_portrait_1791177974718.jpg';
-  const interludeBg =
-    (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[0]) ||
-    '/images/atlas_cinta_interlude_landscape_1791177985962.jpg';
-  const parallaxBg =
-    (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[1]) ||
-    '/images/sage_outdoor_couple_portrait_1790919006777.jpg';
-  const fullPlatePhoto =
-    (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[2]) ||
-    '/images/atlas_cinta_bride_portrait_1791177955237.jpg';
-  const footerClosingBg =
-    (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[3]) ||
-    '/images/atlas_cinta_hero_cover_1791177934302.jpg';
+      : rawGallery[0] || allAdminUploadedImages[0] || (!customData ? '/images/atlas_cinta_hero_cover_1791177934302.jpg' : '');
+  const bridePortraitPhoto = customData
+    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    : '/images/atlas_cinta_bride_portrait_1791177955237.jpg';
+  const groomPortraitPhoto = customData
+    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    : '/images/atlas_cinta_groom_portrait_1791177974718.jpg';
+  const interludeBg = customData
+    ? customData.mediaSlots?.spotlightImage || pickPanelPhoto(0, heroCoverBg)
+    : '/images/atlas_cinta_interlude_landscape_1791177985962.jpg';
+  const parallaxBg = customData
+    ? pickPanelPhoto(1, customData.mediaSlots?.spotlightImage || heroCoverBg)
+    : '/images/sage_outdoor_couple_portrait_1790919006777.jpg';
+  const fullPlatePhoto = customData
+    ? pickPanelPhoto(2, bridePortraitPhoto || heroCoverBg)
+    : '/images/atlas_cinta_bride_portrait_1791177955237.jpg';
+  const footerClosingBg = customData
+    ? customData.mediaSlots?.closingImage || pickPanelPhoto(panelSourcePhotos.length - 1, heroCoverBg)
+    : '/images/atlas_cinta_hero_cover_1791177934302.jpg';
+  const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
 
-  const storyTrails =
-    customData?.mediaSlots?.storyChapters && customData.mediaSlots.storyChapters.length > 0
-      ? customData.mediaSlots.storyChapters.map((ch) => ({
-          date: ch.date,
-          title: ch.title,
-          description: ch.story
-        }))
-      : DEFAULT_STORY_TRAILS;
+  const storyTrails = React.useMemo(() => {
+    const rawChapters = customData?.mediaSlots?.storyChapters;
+    if (Array.isArray(rawChapters)) {
+      if (rawChapters.length === 0) return [];
+      return rawChapters.map((ch, idx) => ({
+        date: ch.date || ch.chapter || `TITIK ${String(idx + 1).padStart(2, '0')}`,
+        title: ch.title || `Babak ${idx + 1}`,
+        description: ch.story || '',
+        image:
+          ch.image && !isVideoUrl(ch.image)
+            ? ch.image
+            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+      }));
+    }
+    return DEFAULT_STORY_TRAILS.map((st, idx) => ({
+      ...st,
+      image: customData ? allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || '' : ''
+    }));
+  }, [customData, allAdminUploadedImages]);
 
   const dresscodeSwatches =
     customData?.mediaSlots?.dresscodeSwatches &&
@@ -2276,41 +2311,52 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
           </section>
 
           {/* ===================== SECTION 8 — JEJAK PERJALANAN / KISAH CINTA (DINAMIS) ===================== */}
-          <section id="kisah" data-section-type="dynamic" data-invitation-type="pernikahan">
-            <img
-              className="pane-source"
-              data-pane-image={galleryPhotos[6]}
-              data-pane-no="Titik 08"
-              data-pane-title="Jejak Perjalanan"
-              data-pane-meta="Rangkaian, 2018–2026"
-              alt=""
-            />
-            <div className="wrap">
-              <div className="eyebrow reveal">Titik 05 — Jejak Perjalanan</div>
-              <div
-                className="mono"
-                style={{
-                  fontSize: '0.64rem',
-                  color: 'var(--ink-soft)',
-                  marginBottom: '26px'
-                }}
-              >
-                Kisah Cinta Kami
-              </div>
-              <div data-dynamic-list="our_story" data-list-source="customer">
-                {storyTrails.map((st, idx) => (
-                  <div key={idx} className="trail-item reveal">
-                    <div className="dot" />
-                    <div>
-                      <div className="date mono">{st.date}</div>
-                      <h4>{st.title}</h4>
-                      <p>{st.description}</p>
+          {storyTrails.length > 0 && (
+            <section id="kisah" data-section-type="dynamic" data-invitation-type="pernikahan">
+              <img
+                className="pane-source"
+                data-pane-image={pickPanelPhoto(6, heroCoverBg)}
+                data-pane-no="Titik 08"
+                data-pane-title="Jejak Perjalanan"
+                data-pane-meta="Rangkaian, 2018–2026"
+                alt=""
+              />
+              <div className="wrap">
+                <div className="eyebrow reveal">Titik 05 — Jejak Perjalanan</div>
+                <div
+                  className="mono"
+                  style={{
+                    fontSize: '0.64rem',
+                    color: 'var(--ink-soft)',
+                    marginBottom: '26px'
+                  }}
+                >
+                  Kisah Cinta Kami
+                </div>
+                <div data-dynamic-list="our_story" data-list-source="customer">
+                  {storyTrails.map((st, idx) => (
+                    <div key={idx} className="trail-item reveal">
+                      <div className="dot" />
+                      <div>
+                        <div className="date mono">{st.date}</div>
+                        <h4>{st.title}</h4>
+                        {st.image && (
+                          <div className="my-2.5 overflow-hidden rounded-xs border border-[#1F2A3C]/20 shadow-xs max-w-[260px]">
+                            <img
+                              src={st.image}
+                              alt={st.title}
+                              className="w-full aspect-[4/3] object-cover"
+                            />
+                          </div>
+                        )}
+                        <p>{st.description}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* ===================== SECTION 9 — DIVIDER KOMPAS (STATIS) ===================== */}
           <section
@@ -2340,106 +2386,109 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
             </svg>
           </section>
 
-          {/* ===================== SECTION 10 — KARTU POS / GALERI (DINAMIS) ===================== */}
-          <section
-            id="galeri"
-            data-section-type="dynamic"
-            data-invitation-type="pernikahan"
-          >
-            <div className="head wrap reveal">
-              <div className="eyebrow">Titik 07 — Kartu Pos</div>
-              <h2
-                className="serif"
-                style={{ fontSize: 'clamp(1.65rem,6vw,2.1rem)', fontStyle: 'italic' }}
-              >
-                Galeri Kami
-              </h2>
-            </div>
-
-            <div className="plate-grid">
-              {[
-                { idx: 0, cls: 'tall', no: '01' },
-                { idx: 1, cls: 'wide', no: '02' },
-                { idx: 2, cls: 'wide', no: '03' },
-                { idx: 3, cls: 'tall', no: '04' },
-                { idx: 4, cls: 'tall', no: '05' },
-                { idx: 5, cls: 'wide', no: '06' }
-              ].map((item) => (
-                <figure key={item.no} className={`${item.cls} reveal-scale`}>
-                  <img
-                    src={galleryPhotos[item.idx]}
-                    alt={`Kartu Pos ${item.no}`}
-                    referrerPolicy="no-referrer"
-                    data-photo-slot={`gallery_plate_${item.no}`}
-                    data-slot-type="dynamic-gallery"
-                    data-pane-no="Titik 10"
-                    data-pane-title={`Kartu Pos — ${item.no}`}
-                    data-pane-meta="Fotografi, 2026"
-                  />
-                  <figcaption>{item.no}</figcaption>
-                </figure>
-              ))}
-            </div>
-
-            <div className="carousel-wrap reveal">
-              <div className="carousel-head">
-                <div
-                  className="mono"
-                  style={{ fontSize: '0.62rem', color: 'var(--ink-soft)' }}
+          {/* ===================== SECTION 10 — KARTU POS / GALERI (DINAMIS · BEBAS JUMLAH) ===================== */}
+          {rawGallery.length > 0 && (
+            <section
+              id="galeri"
+              data-section-type="dynamic"
+              data-invitation-type="pernikahan"
+            >
+              <div className="head wrap reveal">
+                <div className="eyebrow">Titik 07 — Kartu Pos</div>
+                <h2
+                  className="serif"
+                  style={{ fontSize: 'clamp(1.65rem,6vw,2.1rem)', fontStyle: 'italic' }}
                 >
-                  Geser untuk melihat lebih banyak
+                  Galeri Kami
+                </h2>
+              </div>
+
+              <div className="plate-grid">
+                {(customData ? rawGallery : rawGallery.slice(0, 6)).map((src, idx) => {
+                  const clsPattern = ['tall', 'wide', 'wide', 'tall', 'tall', 'wide'];
+                  const cls = clsPattern[idx % clsPattern.length];
+                  const no = String(idx + 1).padStart(2, '0');
+                  return (
+                    <figure key={`${no}-${idx}`} className={`${cls} reveal-scale`}>
+                      <img
+                        src={src}
+                        alt={`Kartu Pos ${no}`}
+                        referrerPolicy="no-referrer"
+                        data-photo-slot={`gallery_plate_${no}`}
+                        data-slot-type="dynamic-gallery"
+                        data-pane-no="Titik 10"
+                        data-pane-title={`Kartu Pos — ${no}`}
+                        data-pane-meta="Fotografi, 2026"
+                      />
+                      <figcaption>{no}</figcaption>
+                    </figure>
+                  );
+                })}
+              </div>
+
+              {(customData ? rawGallery.length > 1 : true) && (
+                <div className="carousel-wrap reveal">
+                  <div className="carousel-head">
+                    <div
+                      className="mono"
+                      style={{ fontSize: '0.62rem', color: 'var(--ink-soft)' }}
+                    >
+                      Geser untuk melihat lebih banyak
+                    </div>
+                    <div className="carousel-nav">
+                      <button
+                        type="button"
+                        id="carPrev"
+                        aria-label="Sebelumnya"
+                        onClick={() => scrollCarousel(-1)}
+                      >
+                        &#8592;
+                      </button>
+                      <button
+                        type="button"
+                        id="carNext"
+                        aria-label="Berikutnya"
+                        onClick={() => scrollCarousel(1)}
+                      >
+                        &#8594;
+                      </button>
+                    </div>
+                  </div>
+                  <div className="carousel-track" id="carTrack" ref={carTrackRef}>
+                    {(customData ? rawGallery : rawGallery.slice(6, 10)).map((src, idx) => {
+                      const no = String((customData ? idx : idx + 6) + 1).padStart(2, '0');
+                      return (
+                        <figure key={`car-${no}-${idx}`}>
+                          <img
+                            src={src}
+                            alt={`Kartu Pos ${no}`}
+                            referrerPolicy="no-referrer"
+                            data-photo-slot={`gallery_plate_${no}`}
+                            data-slot-type="dynamic-gallery"
+                            data-pane-no="Titik 10"
+                            data-pane-title={`Kartu Pos — ${no}`}
+                            data-pane-meta="Fotografi, 2026"
+                          />
+                          <figcaption>{no}</figcaption>
+                        </figure>
+                      );
+                    })}
+                  </div>
+                  <div className="carousel-dots" id="carDots">
+                    {Array.from(
+                      { length: Math.min(8, (customData ? rawGallery : rawGallery.slice(6, 10)).length) },
+                      (_, dotIdx) => (
+                        <i
+                          key={dotIdx}
+                          className={activeCarouselDot === dotIdx ? 'active' : ''}
+                        />
+                      )
+                    )}
+                  </div>
                 </div>
-                <div className="carousel-nav">
-                  <button
-                    type="button"
-                    id="carPrev"
-                    aria-label="Sebelumnya"
-                    onClick={() => scrollCarousel(-1)}
-                  >
-                    &#8592;
-                  </button>
-                  <button
-                    type="button"
-                    id="carNext"
-                    aria-label="Berikutnya"
-                    onClick={() => scrollCarousel(1)}
-                  >
-                    &#8594;
-                  </button>
-                </div>
-              </div>
-              <div className="carousel-track" id="carTrack" ref={carTrackRef}>
-                {[
-                  { idx: 6, no: '07' },
-                  { idx: 7, no: '08' },
-                  { idx: 8, no: '09' },
-                  { idx: 9, no: '10' }
-                ].map((item) => (
-                  <figure key={item.no}>
-                    <img
-                      src={galleryPhotos[item.idx]}
-                      alt={`Kartu Pos ${item.no}`}
-                      referrerPolicy="no-referrer"
-                      data-photo-slot={`gallery_plate_${item.no}`}
-                      data-slot-type="dynamic-gallery"
-                      data-pane-no="Titik 10"
-                      data-pane-title={`Kartu Pos — ${item.no}`}
-                      data-pane-meta="Fotografi, 2026"
-                    />
-                    <figcaption>{item.no}</figcaption>
-                  </figure>
-                ))}
-              </div>
-              <div className="carousel-dots" id="carDots">
-                {[0, 1, 2, 3].map((dotIdx) => (
-                  <i
-                    key={dotIdx}
-                    className={activeCarouselDot === dotIdx ? 'active' : ''}
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
+              )}
+            </section>
+          )}
 
           {/* ===================== SECTION 11 — PARALLAX BAND / PEMANDANGAN (STATIS) ===================== */}
           <section
@@ -2550,6 +2599,19 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
                     </>
                   )}
                 </button>
+
+                {qrisImageUrl && (
+                  <div className="mt-4 pt-4 border-t border-[#1F2A3C]/15">
+                    <p className="text-xs font-['Courier_Prime',monospace] uppercase tracking-wider text-[#1F2A3C] mb-2">
+                      Scan Barcode QRIS
+                    </p>
+                    <img
+                      src={qrisImageUrl}
+                      alt="Barcode QRIS"
+                      className="w-40 h-40 object-contain mx-auto border border-[#1F2A3C]/20 bg-white p-1.5 rounded-xs"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </section>

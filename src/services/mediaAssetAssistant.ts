@@ -13,6 +13,9 @@ export interface ParsedInvitationMedia {
   heroVideo?: string;
   bridePortrait?: string;
   groomPortrait?: string;
+  spotlightImage?: string;
+  closingImage?: string;
+  leftPanelImages?: string[];
   galleryImages?: string[];
   filmstripImages?: string[];
   qrisImageUrl?: string;
@@ -232,10 +235,9 @@ export function smartPlaceAssets(
   placedMedia: ParsedInvitationMedia & { galleryImages: string[] };
   placements: AssetPlacementReport[];
 } {
-  const fallback = TEMPLATE_FALLBACK_ASSETS[targetTemplateId] || TEMPLATE_FALLBACK_ASSETS['ruang-rasa'];
   const placements: AssetPlacementReport[] = [];
 
-  // 1. Satukan seluruh kandidat foto ke pool terpadu
+  // 1. Satukan seluruh kandidat foto asli yang diupload ke pool terpadu (tanpa stok dummy)
   const pool: string[] = [];
   const addToPool = (urls?: string | string[]) => {
     if (!urls) return;
@@ -251,6 +253,9 @@ export function smartPlaceAssets(
   addToPool(rawMedia.heroImage);
   addToPool(rawMedia.bridePortrait);
   addToPool(rawMedia.groomPortrait);
+  addToPool(rawMedia.spotlightImage);
+  addToPool(rawMedia.closingImage);
+  addToPool(rawMedia.leftPanelImages);
   addToPool(rawMedia.galleryImages);
   addToPool(rawMedia.filmstripImages);
   addToPool(discoveredUrls);
@@ -264,10 +269,14 @@ export function smartPlaceAssets(
 
   const placed: ParsedInvitationMedia & { galleryImages: string[] } = {
     gdriveFolderUrl: rawMedia.gdriveFolderUrl,
+    heroVideo: rawMedia.heroVideo,
+    spotlightImage: rawMedia.spotlightImage,
+    closingImage: rawMedia.closingImage,
+    leftPanelImages: rawMedia.leftPanelImages,
     galleryImages: []
   };
 
-  // 2. Alokasikan Foto Sampul (Hero)
+  // 2. Alokasikan Foto Sampul (Hero) hanya dari aset asli yang diupload
   if (rawMedia.heroImage && normalizeMediaUrl(rawMedia.heroImage)) {
     placed.heroImage = normalizeMediaUrl(rawMedia.heroImage);
     placements.push({
@@ -288,19 +297,10 @@ export function smartPlaceAssets(
         reason: 'Sistem memilih foto terbaik dari kumpulan unggahan sebagai latar pembuka utama.',
         isCustom: true
       });
-    } else {
-      placed.heroImage = fallback.heroImage;
-      placements.push({
-        slotKey: 'heroImage',
-        slotLabel: 'Foto Sampul (Hero)',
-        url: fallback.heroImage,
-        reason: 'Menggunakan foto kuratorial default Sekarsiti bertema template.',
-        isCustom: false
-      });
     }
   }
 
-  // 3. Alokasikan Potret Mempelai Wanita
+  // 3. Alokasikan Potret Mempelai Wanita hanya dari aset asli yang diupload
   if (rawMedia.bridePortrait && normalizeMediaUrl(rawMedia.bridePortrait)) {
     placed.bridePortrait = normalizeMediaUrl(rawMedia.bridePortrait);
     placements.push({
@@ -324,19 +324,10 @@ export function smartPlaceAssets(
         reason: 'Sistem mengalokasikan foto potret mempelai wanita secara cerdas dari pool unggahan.',
         isCustom: true
       });
-    } else {
-      placed.bridePortrait = fallback.bridePortrait;
-      placements.push({
-        slotKey: 'bridePortrait',
-        slotLabel: 'Potret Mempelai Wanita',
-        url: fallback.bridePortrait,
-        reason: 'Menggunakan potret anggun kuratorial Sekarsiti.',
-        isCustom: false
-      });
     }
   }
 
-  // 4. Alokasikan Potret Mempelai Pria
+  // 4. Alokasikan Potret Mempelai Pria hanya dari aset asli yang diupload
   if (rawMedia.groomPortrait && normalizeMediaUrl(rawMedia.groomPortrait)) {
     placed.groomPortrait = normalizeMediaUrl(rawMedia.groomPortrait);
     placements.push({
@@ -360,15 +351,6 @@ export function smartPlaceAssets(
         reason: 'Sistem mengalokasikan foto potret mempelai pria secara cerdas dari pool unggahan.',
         isCustom: true
       });
-    } else {
-      placed.groomPortrait = fallback.groomPortrait;
-      placements.push({
-        slotKey: 'groomPortrait',
-        slotLabel: 'Potret Mempelai Pria',
-        url: fallback.groomPortrait,
-        reason: 'Menggunakan potret jas klasik kuratorial Sekarsiti.',
-        isCustom: false
-      });
     }
   }
 
@@ -386,11 +368,10 @@ export function smartPlaceAssets(
     });
   }
 
-  // 6. Alokasikan Segel Lilin (Khusus template Jurnal Dua Hati / suasana)
+  // 6. Alokasikan Segel Lilin
   if (targetTemplateId === 'suasana' || rawMedia.waxSealEmblem) {
     const waxCandidate = (rawMedia.waxSealEmblem && normalizeMediaUrl(rawMedia.waxSealEmblem))
-      || pool.find(isWax)
-      || fallback.waxSealEmblem;
+      || pool.find(isWax);
     if (waxCandidate) {
       placed.waxSealEmblem = waxCandidate;
       placements.push({
@@ -398,42 +379,37 @@ export function smartPlaceAssets(
         slotLabel: 'Segel Lilin Emas Monogram',
         url: waxCandidate,
         reason: 'Ditempatkan sebagai segel interaktif pembuka buku jurnal.',
-        isCustom: waxCandidate !== fallback.waxSealEmblem
+        isCustom: true
       });
     }
   }
 
-  // 7. Alokasikan Rol Klise 35mm (Khusus template Reel Sinematik / lembayung)
+  // 7. Alokasikan Rol Klise 35mm (Khusus template Reel Sinematik / lembayung) tanpa batas jumlah
   if (targetTemplateId === 'lembayung' || (rawMedia.filmstripImages && rawMedia.filmstripImages.length > 0)) {
     let filmstripList: string[] = [];
     if (rawMedia.filmstripImages && rawMedia.filmstripImages.length > 0) {
       filmstripList = parseMultipleMediaUrls(rawMedia.filmstripImages);
     } else if (pool.length > 0) {
-      filmstripList = [...pool].slice(0, 8);
-      if (filmstripList.length < 4 && fallback.filmstripImages) {
-        filmstripList = [...filmstripList, ...fallback.filmstripImages.slice(filmstripList.length, 5)];
-      }
-    } else if (fallback.filmstripImages) {
-      filmstripList = [...fallback.filmstripImages];
+      filmstripList = [...pool];
     }
     placed.filmstripImages = filmstripList;
-    placements.push({
-      slotKey: 'filmstripImages',
-      slotLabel: 'Rol Filmstrip Klise 35mm',
-      url: filmstripList[0] || '',
-      reason: `Sistem mengalokasikan ${filmstripList.length} frame foto ke dalam rol klise sinematik bergerak.`,
-      isCustom: filmstripList.some(u => pool.includes(u))
-    });
+    if (filmstripList.length > 0) {
+      placements.push({
+        slotKey: 'filmstripImages',
+        slotLabel: 'Rol Filmstrip Klise 35mm',
+        url: filmstripList[0] || '',
+        reason: `Sistem mengalokasikan ${filmstripList.length} frame foto ke dalam rol klise sinematik bergerak.`,
+        isCustom: true
+      });
+    }
   }
 
-  // 8. Alokasikan Galeri Momen (Wajib ada dan merangkul seluruh foto klien)
+  // 8. Alokasikan Galeri Momen (Merangkul seluruh foto asli yang diunggah klien, tanpa batasan jumlah)
   let galleryList: string[] = [];
   if (rawMedia.galleryImages && rawMedia.galleryImages.length > 0) {
     galleryList = parseMultipleMediaUrls(rawMedia.galleryImages);
   } else if (pool.length > 0) {
     galleryList = [...pool];
-  } else {
-    galleryList = [...fallback.galleryImages];
   }
 
   for (const photo of pool) {
@@ -443,13 +419,15 @@ export function smartPlaceAssets(
   }
 
   placed.galleryImages = galleryList;
-  placements.push({
-    slotKey: 'galleryImages',
-    slotLabel: 'Galeri Momen Dokumentasi',
-    url: galleryList[0] || '',
-    reason: `Sistem menyematkan ${galleryList.length} foto ke album galeri tanpa membuang foto klien.`,
-    isCustom: galleryList.some(u => pool.includes(u))
-  });
+  if (galleryList.length > 0) {
+    placements.push({
+      slotKey: 'galleryImages',
+      slotLabel: 'Galeri Momen Dokumentasi',
+      url: galleryList[0] || '',
+      reason: `Sistem menyematkan ${galleryList.length} foto ke album galeri tanpa membuang foto klien.`,
+      isCustom: true
+    });
+  }
 
   return { placedMedia: placed, placements };
 }

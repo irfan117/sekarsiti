@@ -85,13 +85,12 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
       songTitle: templateDefaults.songTitle || 'Until I Found You - Stephen Sanchez',
       audioUrl: templateDefaults.audioUrl || '',
       mediaSlots: {
-        heroImage: '/images/editorial_couple_portrait_1790838636662.jpg',
-        bridePortrait: '/images/wedding_bride_veil_1790901501919.jpg',
-        groomPortrait: '/images/editorial_groom_portrait_1790915490996.jpg',
-        galleryImages: [
-          '/images/editorial_couple_portrait_1790838636662.jpg',
-          '/images/wedding_vows_bouquet_1790901516667.jpg'
-        ]
+        heroImage: '',
+        bridePortrait: '',
+        groomPortrait: '',
+        galleryImages: [],
+        leftPanelImages: [],
+        storyChapters: []
       },
       guestbookEntries: [],
       rsvpList: []
@@ -116,20 +115,33 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
       if (currentSlots.heroImage) pool.push(currentSlots.heroImage);
       if (currentSlots.bridePortrait) pool.push(currentSlots.bridePortrait);
       if (currentSlots.groomPortrait) pool.push(currentSlots.groomPortrait);
+      if (currentSlots.spotlightImage) pool.push(currentSlots.spotlightImage);
+      if (currentSlots.closingImage) pool.push(currentSlots.closingImage);
       if (currentSlots.qrisImageUrl) pool.push(currentSlots.qrisImageUrl);
       if (currentSlots.waxSealEmblem) pool.push(currentSlots.waxSealEmblem);
+      if (Array.isArray(currentSlots.leftPanelImages)) pool.push(...currentSlots.leftPanelImages);
       if (Array.isArray(currentSlots.galleryImages)) pool.push(...currentSlots.galleryImages);
       if (Array.isArray(currentSlots.filmstripImages)) pool.push(...currentSlots.filmstripImages);
+      if (Array.isArray(currentSlots.storyChapters)) {
+        currentSlots.storyChapters.forEach((ch) => {
+          if (ch?.image) pool.push(ch.image);
+        });
+      }
 
       const { placedMedia } = smartPlaceAssets(currentSlots, newTemplateId, pool);
 
       const nextTemplate = TEMPLATE_REGISTRY[newTemplateId];
+      const hasCustomAudio = Boolean(prev.audioUrl && prev.audioUrl.trim());
 
       return {
         ...prev,
         templateId: newTemplateId,
-        songTitle: nextTemplate?.defaultData?.songTitle || prev.songTitle || 'Until I Found You - Stephen Sanchez',
-        audioUrl: nextTemplate?.defaultData?.audioUrl || prev.audioUrl || '',
+        songTitle: hasCustomAudio
+          ? prev.songTitle || nextTemplate?.defaultData?.songTitle || 'Until I Found You - Stephen Sanchez'
+          : nextTemplate?.defaultData?.songTitle || prev.songTitle || 'Until I Found You - Stephen Sanchez',
+        audioUrl: hasCustomAudio
+          ? prev.audioUrl
+          : nextTemplate?.defaultData?.audioUrl || prev.audioUrl || '',
         mediaSlots: {
           ...prev.mediaSlots,
           ...placedMedia,
@@ -147,10 +159,18 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
     if (currentSlots.heroImage) pool.push(currentSlots.heroImage);
     if (currentSlots.bridePortrait) pool.push(currentSlots.bridePortrait);
     if (currentSlots.groomPortrait) pool.push(currentSlots.groomPortrait);
+    if (currentSlots.spotlightImage) pool.push(currentSlots.spotlightImage);
+    if (currentSlots.closingImage) pool.push(currentSlots.closingImage);
     if (currentSlots.qrisImageUrl) pool.push(currentSlots.qrisImageUrl);
     if (currentSlots.waxSealEmblem) pool.push(currentSlots.waxSealEmblem);
+    if (Array.isArray(currentSlots.leftPanelImages)) pool.push(...currentSlots.leftPanelImages);
     if (Array.isArray(currentSlots.galleryImages)) pool.push(...currentSlots.galleryImages);
     if (Array.isArray(currentSlots.filmstripImages)) pool.push(...currentSlots.filmstripImages);
+    if (Array.isArray(currentSlots.storyChapters)) {
+      currentSlots.storyChapters.forEach((ch) => {
+        if (ch?.image) pool.push(ch.image);
+      });
+    }
 
     const { placedMedia } = smartPlaceAssets(currentSlots, selectedTemplateId, pool);
 
@@ -174,7 +194,7 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
     setHasUnsavedChanges(true);
   };
 
-  const handleMediaSlotChange = (slotKey: string, newValue: string | string[]) => {
+  const handleMediaSlotChange = (slotKey: string, newValue: any) => {
     setFormData(prev => ({
       ...prev,
       mediaSlots: {

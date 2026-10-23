@@ -4,9 +4,9 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { uploadAudioToCloudinary, isCloudinaryConfigured } from '../utils/cloudinaryUpload';
 import { readPersistedJson, writePersistedJson } from '../utils/persistedStore';
-import { isPlayableAudioUrl } from '../utils/audioUrl';
+import { isPlayableAudioUrl, sanitizeAudioUrl, normalizeAudioUrl } from '../utils/audioUrl';
 
-export { isBrokenAudioUrl, isPlayableAudioUrl, sanitizeAudioUrl } from '../utils/audioUrl';
+export { isBrokenAudioUrl, isPlayableAudioUrl, sanitizeAudioUrl, normalizeAudioUrl } from '../utils/audioUrl';
 
 export interface MusicTrack {
   id: string;
@@ -77,21 +77,45 @@ export async function fetchMusicTracks(): Promise<MusicTrack[]> {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('music_tracks')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const [musicRes, invRes] = await Promise.all([
+      supabase
+        .from('music_tracks')
+        .select('*')
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('invitations')
+        .select('id, song_title, audio_url, template_id, created_at')
+        .not('audio_url', 'is', null)
+    ]);
 
-    if (error) {
-      console.warn('Gagal mengambil music_tracks dari Supabase:', error.message);
-      return localTracks;
-    }
+    const remotePlayable: MusicTrack[] = (musicRes.data || [])
+      .map((track: MusicTrack) => ({
+        ...track,
+        audio_url: sanitizeAudioUrl(track.audio_url)
+      }))
+      .filter((track: MusicTrack) => isPlayableAudioUrl(track.audio_url));
 
-    const remotePlayable = (data || []).filter((track: MusicTrack) =>
-      isPlayableAudioUrl(track.audio_url)
-    );
+    // Pulihkan juga lagu yang sudah tersimpan di tabel invitations agar katalog
+    // tetap utuh meskipun domain utama berubah, diakses dari subdomain, atau tabel music_tracks kosong
+    const harvestedFromInvitations: MusicTrack[] = (invRes.data || [])
+      .filter((row: any) => isPlayableAudioUrl(row?.audio_url))
+      .map((row: any) => {
+        const rawTitle = String(row.song_title || 'Musik Undangan').trim();
+        const parts = rawTitle.split(/\s+-\s+/);
+        const title = parts[0]?.trim() || rawTitle;
+        const artist = parts.slice(1).join(' - ').trim() || 'Koleksi Undangan';
+        return {
+          id: `inv-track-${row.id}`,
+          title,
+          artist,
+          audio_url: sanitizeAudioUrl(row.audio_url),
+          genre: row.template_id ? `Template: ${row.template_id}` : 'Wedding',
+          source: 'admin' as const,
+          created_at: row.created_at
+        };
+      });
 
-    const merged = mergeTracks(localTracks, remotePlayable);
+    const merged = mergeTracks(remotePlayable, harvestedFromInvitations, localTracks);
     writeLocalTracks(merged);
     return merged;
   } catch (err) {
@@ -126,14 +150,15 @@ export async function uploadMusicToCloudinary(file: File): Promise<string> {
 export async function addMusicTrack(
   track: Omit<MusicTrack, 'id' | 'created_at'>
 ): Promise<MusicTrack> {
-  if (!isPlayableAudioUrl(track.audio_url)) {
+  const normalizedUrl = sanitizeAudioUrl(track.audio_url);
+  if (!isPlayableAudioUrl(normalizedUrl)) {
     throw new Error('URL audio tidak valid. Upload ulang file musik.');
   }
 
   const payload = {
     title: track.title.trim() || 'Lagu Custom',
     artist: track.artist.trim() || 'Custom Upload',
-    audio_url: track.audio_url,
+    audio_url: normalizedUrl,
     genre: track.genre || 'Romantic',
     source: track.source || 'admin',
   };

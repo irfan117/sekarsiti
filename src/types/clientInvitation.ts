@@ -12,6 +12,8 @@ export interface StoryChapterData {
   chapter: string;
   title: string;
   date: string;
+  location?: string;
+  quote?: string;
   story: string;
   image: string;
 }
@@ -74,11 +76,14 @@ export interface ClientInvitationData {
     heroVideo?: string;
     bridePortrait?: string;
     groomPortrait?: string;
+    spotlightImage?: string;
+    closingImage?: string;
+    leftPanelImages?: string[]; // Koleksi foto khusus Panel Kiri / Arsip Monograf (bebas jumlah)
     galleryImages: string[]; // Bebas jumlah foto galeri
     filmstripImages?: string[]; // Khusus Reel Sinematik 35mm
     storyChapters?: StoryChapterData[]; // Khusus Editorial & Sage
     dresscodeSwatches?: DresscodeSwatch[]; // Khusus Malam Zamrud & Jurnal
-    waxSealEmblem?: string; // Khusus Jurnal Dua Hati
+    waxSealEmblem?: string; // Khusus Jurnal Dua Hati & Editorial
     qrisImageUrl?: string; // Khusus Malam Zamrud & Editorial
   };
 

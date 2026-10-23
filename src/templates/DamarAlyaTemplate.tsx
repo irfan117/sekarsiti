@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ArrowLeft, MessageCircle, Disc3, Disc, Calendar, Sparkles, Gift } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
 import { isVideoUrl } from '../utils/cloudinaryUpload';
+import { collectAdminUploadedPhotos } from '../utils/templateMediaResolver';
 import { 
   useCountdown, 
   useGuestRecipient, 
@@ -64,9 +65,19 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
   const songTitle = customData?.songTitle || 'Until I Found You - Acoustic Strings';
   const audioUrl = customData?.audioUrl || '';
 
+  const allAdminUploadedImages = useMemo(
+    () => collectAdminUploadedPhotos(customData),
+    [customData]
+  );
+
   const galleryImages = useMemo(() => {
-    const customGallery = customData?.mediaSlots?.galleryImages;
-    if (customGallery && customGallery.length > 0) return customGallery;
+    if (customData) {
+      const customGallery = customData.mediaSlots?.galleryImages?.filter(
+        (u) => Boolean(u && !isVideoUrl(u))
+      );
+      if (customGallery && customGallery.length > 0) return customGallery;
+      return allAdminUploadedImages;
+    }
     return [
       '/images/wedding_bride_veil_1790901501919.jpg',
       '/images/wedding_shoes_jewelry_1790901548736.jpg',
@@ -75,7 +86,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
       '/images/editorial_venue_rings_1790838653826.jpg',
       '/images/art_deco_emerald_couple_1790840336340.jpg',
     ];
-  }, [customData?.mediaSlots?.galleryImages]);
+  }, [customData, allAdminUploadedImages]);
 
   const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
   const heroVideoUrl =
@@ -83,28 +94,96 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
   const heroImage =
     !isVideoUrl(rawHeroMedia) && rawHeroMedia
       ? rawHeroMedia
-      : galleryImages[0] || '/images/wedding_couple_portrait_1790833906470.jpg';
-  const bridePortrait = customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_portrait_1790833939171.jpg';
-  const groomPortrait = customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
+      : galleryImages[0] || allAdminUploadedImages[0] || (!customData ? '/images/wedding_couple_portrait_1790833906470.jpg' : '');
+  const bridePortrait = customData
+    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    : '/images/wedding_bride_portrait_1790833939171.jpg';
+  const groomPortrait = customData
+    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    : '/images/editorial_groom_portrait_1790915490996.jpg';
+  const spotlightImage = customData
+    ? customData.mediaSlots?.spotlightImage || galleryImages[0] || heroImage || ''
+    : galleryImages[0] || heroImage;
+  const closingImage = customData
+    ? customData.mediaSlots?.closingImage || galleryImages[galleryImages.length - 1] || galleryImages[0] || heroImage || ''
+    : galleryImages[2] || heroImage;
+  const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
+
+  const stageSourcePhotos = useMemo(() => {
+    if (!customData) return galleryImages;
+    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
+  }, [customData, allAdminUploadedImages, galleryImages]);
+
+  const pickStagePhoto = (idx: number, fallback: string) => {
+    if (stageSourcePhotos.length > 0) {
+      return stageSourcePhotos[idx % stageSourcePhotos.length];
+    }
+    return fallback;
+  };
 
   // Dynamic Stage Config: panel gambar sticky mengikuti section aktif saat scroll
   const stageConfig = useMemo(
     () => [
-      { id: 'sec-hero-couple', key: 'hero-couple', image: heroImage, text: `${groomName} & ${brideName}, menghitung hari.` },
-      { id: 'sec-opening', key: 'opening', image: galleryImages[0] || heroImage, text: 'Tenteram dalam satu ikatan suci.' },
-      { id: 'sec-couple', key: 'couple', image: groomPortrait, text: `${groomName} & ${brideName}, mempelai yang berbahagia.` },
-      { id: 'sec-story', key: 'story', image: galleryImages[1] || bridePortrait, text: 'Kisah yang bermula dari kedai kopi kecil.' },
-      { id: 'sec-spotlight-1', key: 'spotlight1', image: galleryImages[2] || heroImage, text: 'Berjalan berdampingan, satu tujuan.' },
-      { id: 'sec-schedule', key: 'schedule', image: galleryImages[3] || groomPortrait, text: 'Akad dan resepsi, dua janji dalam satu hari.' },
-      { id: 'sec-gallery', key: 'gallery', image: galleryImages[4] || bridePortrait, text: 'Setiap foto membuka diri, satu per satu.' },
-      { id: 'sec-spotlight-2', key: 'spotlight2', image: galleryImages[5] || heroImage, text: 'Waktu berhenti sejenak untuk kami berdua.' },
-      { id: 'sec-gift', key: 'gift', image: galleryImages[0] || heroImage, text: 'Doa restu Anda adalah hadiah paling berarti.' },
-      { id: 'sec-guestbook', key: 'guestbook', image: galleryImages[1] || bridePortrait, text: 'Setiap ucapan, kami simpan sebagai doa.' },
-      { id: 'sec-rsvp', key: 'rsvp', image: galleryImages[2] || groomPortrait, text: 'Kehadiran Anda melengkapi hari kami.' },
-      { id: 'sec-closing', key: 'closing', image: galleryImages[3] || heroImage, text: 'Terima kasih telah menjadi bagian dari kisah ini.' },
+      { id: 'sec-hero-couple', key: 'hero-couple', image: heroImage || pickStagePhoto(0, ''), text: `${groomName} & ${brideName}, menghitung hari.` },
+      { id: 'sec-opening', key: 'opening', image: pickStagePhoto(0, heroImage), text: 'Tenteram dalam satu ikatan suci.' },
+      { id: 'sec-couple', key: 'couple', image: groomPortrait || pickStagePhoto(1, heroImage), text: `${groomName} & ${brideName}, mempelai yang berbahagia.` },
+      { id: 'sec-story', key: 'story', image: pickStagePhoto(1, bridePortrait), text: 'Kisah perjalanan kami berdua.' },
+      { id: 'sec-spotlight-1', key: 'spotlight1', image: spotlightImage || pickStagePhoto(2, heroImage), text: 'Berjalan berdampingan, satu tujuan.' },
+      { id: 'sec-schedule', key: 'schedule', image: pickStagePhoto(3, groomPortrait), text: 'Akad dan resepsi, dua janji dalam satu hari.' },
+      { id: 'sec-gallery', key: 'gallery', image: pickStagePhoto(4, bridePortrait), text: 'Setiap foto membuka diri, satu per satu.' },
+      { id: 'sec-spotlight-2', key: 'spotlight2', image: pickStagePhoto(5, spotlightImage || heroImage), text: 'Waktu berhenti sejenak untuk kami berdua.' },
+      { id: 'sec-gift', key: 'gift', image: pickStagePhoto(0, heroImage), text: 'Doa restu Anda adalah hadiah paling berarti.' },
+      { id: 'sec-guestbook', key: 'guestbook', image: pickStagePhoto(1, bridePortrait), text: 'Setiap ucapan, kami simpan sebagai doa.' },
+      { id: 'sec-rsvp', key: 'rsvp', image: pickStagePhoto(2, groomPortrait), text: 'Kehadiran Anda melengkapi hari kami.' },
+      { id: 'sec-closing', key: 'closing', image: closingImage || pickStagePhoto(3, heroImage), text: 'Terima kasih telah menjadi bagian dari kisah ini.' },
     ],
-    [brideName, groomName, bridePortrait, groomPortrait, galleryImages, heroImage]
+    [brideName, groomName, bridePortrait, groomPortrait, stageSourcePhotos, heroImage, spotlightImage, closingImage]
   );
+
+  const storyMilestones = useMemo(() => {
+    const rawChapters = customData?.mediaSlots?.storyChapters;
+    if (Array.isArray(rawChapters)) {
+      if (rawChapters.length === 0) return [];
+      return rawChapters.map((ch, idx) => ({
+        date: ch.date || ch.chapter || `BABAK ${String(idx + 1).padStart(2, '0')}`,
+        title: ch.title || `Babak ${idx + 1}`,
+        story: ch.story || '',
+        image:
+          ch.image && !isVideoUrl(ch.image)
+            ? ch.image
+            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+      }));
+    }
+    return [
+      {
+        date: 'Agustus 2019',
+        title: 'Pertemuan Pertama',
+        story: 'Bertemu tanpa sengaja di sebuah kedai kopi kecil dekat kampus, saat hujan sore tak kunjung reda.',
+        image: customData
+          ? allAdminUploadedImages[0] || ''
+          : '/images/brand_story_botanical_1790831303860.jpg'
+      },
+      {
+        date: 'Februari 2022',
+        title: 'Menjadi Sepasang',
+        story: 'Setelah tiga tahun saling mengenal, kami memutuskan untuk melangkah bersama sebagai sepasang kekasih.',
+        image: customData
+          ? allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+          : '/images/wedding_ring_exchange_1790833922500.jpg'
+      },
+      {
+        date: 'Mei 2026',
+        title: 'Lamaran',
+        story: `${groomName} melamar ${brideName} di tepi danau saat senja, disaksikan keluarga terdekat.`,
+        image: customData
+          ? allAdminUploadedImages[2] || allAdminUploadedImages[0] || ''
+          : '/images/wedding_vows_bouquet_1790901516667.jpg'
+      }
+    ];
+  }, [customData, allAdminUploadedImages, groomName, brideName]);
 
   // Cover gate state: isCoverOpened controls unsealing, isCoverDismissed removes the gate
   const [isCoverOpened, setIsCoverOpened] = useState(false);
@@ -1008,63 +1087,41 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
           </section>
 
           {/* ============ 5. KISAH CINTA ============ */}
-          <section 
-            className="inv-section story" 
-            data-section-type="dynamic" 
-            data-invitation-type="pernikahan" 
-            id="sec-story" 
-            data-stage-key="story" 
-            data-stage-image="/images/wedding_vows_bouquet_1790901516667.jpg" 
-            data-stage-text="Kisah yang bermula dari kedai kopi kecil."
-          >
-            <div className="section-inner center">
-              <p className="eyebrow reveal">Kisah Cinta Kami</p>
-              <div className="story-entries" data-dynamic-list="our_story" data-list-source="customer">
-                <div className="story-entry reveal" data-list-item-template>
-                  <p className="story-date" data-list-item-field="date">Agustus 2019</p>
-                  <p className="story-title" data-list-item-field="title">Pertemuan Pertama</p>
-                  <p data-list-item-field="description">Bertemu tanpa sengaja di sebuah kedai kopi kecil dekat kampus, saat hujan sore tak kunjung reda.</p>
-                  <div className="story-photo">
-                    <img 
-                      src="/images/brand_story_botanical_1790831303860.jpg" 
-                      alt="Kisah 1" 
-                      data-list-item-field="photo" 
-                      data-photo-slot="story-1" 
-                      data-slot-type="dynamic-gallery" 
-                    />
-                  </div>
-                </div>
-                <div className="story-entry reveal reveal-delay-1" data-list-item-template>
-                  <p className="story-date" data-list-item-field="date">Februari 2022</p>
-                  <p className="story-title" data-list-item-field="title">Menjadi Sepasang</p>
-                  <p data-list-item-field="description">Setelah tiga tahun saling mengenal, kami memutuskan untuk melangkah bersama sebagai sepasang kekasih.</p>
-                  <div className="story-photo">
-                    <img 
-                      src="/images/wedding_ring_exchange_1790833922500.jpg" 
-                      alt="Kisah 2" 
-                      data-list-item-field="photo" 
-                      data-photo-slot="story-2" 
-                      data-slot-type="dynamic-gallery" 
-                    />
-                  </div>
-                </div>
-                <div className="story-entry reveal reveal-delay-2" data-list-item-template>
-                  <p className="story-date" data-list-item-field="date">Mei 2026</p>
-                  <p className="story-title" data-list-item-field="title">Lamaran</p>
-                  <p data-list-item-field="description">Damar melamar Alya di tepi danau saat senja, disaksikan keluarga terdekat.</p>
-                  <div className="story-photo">
-                    <img 
-                      src="/images/wedding_vows_bouquet_1790901516667.jpg" 
-                      alt="Kisah 3" 
-                      data-list-item-field="photo" 
-                      data-photo-slot="story-3" 
-                      data-slot-type="dynamic-gallery" 
-                    />
-                  </div>
+          {storyMilestones.length > 0 && (
+            <section 
+              className="inv-section story" 
+              data-section-type="dynamic" 
+              data-invitation-type="pernikahan" 
+              id="sec-story" 
+              data-stage-key="story" 
+              data-stage-image={storyMilestones[0]?.image || heroImage} 
+              data-stage-text="Kisah perjalanan kami berdua."
+            >
+              <div className="section-inner center">
+                <p className="eyebrow reveal">Kisah Cinta Kami</p>
+                <div className="story-entries" data-dynamic-list="our_story" data-list-source="customer">
+                  {storyMilestones.map((item, idx) => (
+                    <div key={idx} className="story-entry reveal" data-list-item-template>
+                      <p className="story-date" data-list-item-field="date">{item.date}</p>
+                      <p className="story-title" data-list-item-field="title">{item.title}</p>
+                      <p data-list-item-field="description">{item.story}</p>
+                      {item.image && (
+                        <div className="story-photo">
+                          <img 
+                            src={item.image} 
+                            alt={item.title} 
+                            data-list-item-field="photo" 
+                            data-photo-slot={`story-${idx + 1}`} 
+                            data-slot-type="dynamic-gallery" 
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* ============ 6. SPOTLIGHT 1 ============ */}
           <section 
@@ -1072,17 +1129,19 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-section-type="static" 
             id="sec-spotlight-1" 
             data-stage-key="spotlight1" 
-            data-stage-image={galleryImages[0] || heroImage} 
+            data-stage-image={spotlightImage} 
             data-stage-text="Berjalan berdampingan, satu tujuan."
           >
-            <div className="spotlight-media">
-              <img 
-                src={galleryImages[0] || heroImage} 
-                alt={`Momen ${groomName} dan ${brideName}`} 
-                data-photo-slot="spotlight-1" 
-                data-slot-type="static-background" 
-              />
-            </div>
+            {spotlightImage && (
+              <div className="spotlight-media">
+                <img 
+                  src={spotlightImage} 
+                  alt={`Momen ${groomName} dan ${brideName}`} 
+                  data-photo-slot="spotlight-1" 
+                  data-slot-type="static-background" 
+                />
+              </div>
+            )}
             <div className="spotlight-caption reveal">
               <span>Sekeping Momen</span>
               <p>“Berjalan berdampingan, satu tujuan.”</p>
@@ -1096,7 +1155,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-invitation-type="pernikahan" 
             id="sec-schedule" 
             data-stage-key="schedule" 
-            data-stage-image="/images/botanical_estate_venue_1790919022237.jpg" 
+            data-stage-image={galleryImages[1] || heroImage} 
             data-stage-text="Akad dan resepsi, dua janji dalam satu hari."
           >
             <div className="section-inner">
@@ -1126,31 +1185,33 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
           </section>
 
           {/* ============ 8. GALERI ============ */}
-          <section 
-            className="inv-section gallery" 
-            data-section-type="dynamic" 
-            data-invitation-type="pernikahan" 
-            id="sec-gallery" 
-            data-stage-key="gallery" 
-            data-stage-image="/images/wedding_table_botanical_1790833955186.jpg" 
-            data-stage-text="Setiap foto membuka diri, satu per satu."
-          >
-            <div className="section-inner">
-              <p className="eyebrow reveal center">Galeri</p>
-              <div className="wipe-stack" id="wipeStack">
-                {galleryImages.map((img, idx) => (
-                  <div key={idx} className="wipe-item">
-                    <img 
-                      src={img} 
-                      alt={`Galeri foto ${idx + 1}`} 
-                      data-photo-slot={`gallery-${idx + 1}`} 
-                      data-slot-type="dynamic-gallery" 
-                    />
-                  </div>
-                ))}
+          {galleryImages.length > 0 && (
+            <section 
+              className="inv-section gallery" 
+              data-section-type="dynamic" 
+              data-invitation-type="pernikahan" 
+              id="sec-gallery" 
+              data-stage-key="gallery" 
+              data-stage-image={galleryImages[0] || heroImage} 
+              data-stage-text="Setiap foto membuka diri, satu per satu."
+            >
+              <div className="section-inner">
+                <p className="eyebrow reveal center">Galeri</p>
+                <div className="wipe-stack" id="wipeStack">
+                  {galleryImages.map((img, idx) => (
+                    <div key={idx} className="wipe-item">
+                      <img 
+                        src={img} 
+                        alt={`Galeri foto ${idx + 1}`} 
+                        data-photo-slot={`gallery-${idx + 1}`} 
+                        data-slot-type="dynamic-gallery" 
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* ============ 9. SPOTLIGHT 2 ============ */}
           <section 
@@ -1158,17 +1219,19 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-section-type="static" 
             id="sec-spotlight-2" 
             data-stage-key="spotlight2" 
-            data-stage-image={galleryImages[1] || heroImage} 
+            data-stage-image={galleryImages[1] || spotlightImage || heroImage} 
             data-stage-text="Waktu berhenti sejenak untuk kami berdua."
           >
-            <div className="spotlight-media">
-              <img 
-                src={galleryImages[1] || heroImage} 
-                alt={`Momen ${groomName} dan ${brideName}`} 
-                data-photo-slot="spotlight-2" 
-                data-slot-type="static-background" 
-              />
-            </div>
+            {(galleryImages[1] || spotlightImage || heroImage) && (
+              <div className="spotlight-media">
+                <img 
+                  src={galleryImages[1] || spotlightImage || heroImage} 
+                  alt={`Momen ${groomName} dan ${brideName}`} 
+                  data-photo-slot="spotlight-2" 
+                  data-slot-type="static-background" 
+                />
+              </div>
+            )}
             <div className="spotlight-caption reveal">
               <span>Sekeping Momen</span>
               <p>“Waktu berhenti sejenak untuk kami berdua.”</p>
@@ -1182,7 +1245,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-invitation-type="pernikahan" 
             id="sec-gift" 
             data-stage-key="gift" 
-            data-stage-image="/images/editorial_venue_rings_1790838653826.jpg" 
+            data-stage-image={galleryImages[0] || heroImage} 
             data-stage-text="Doa restu Anda adalah hadiah paling berarti."
           >
             <div className="section-inner center">
@@ -1200,6 +1263,16 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
                 >
                   {isCopied('damar-bank') ? 'Tersalin!' : 'Salin Nomor Rekening'}
                 </button>
+                {qrisImageUrl && (
+                  <div className="mt-4 pt-4 border-t border-[#414A35]/15">
+                    <p className="text-xs font-medium text-[#414A35] mb-2">Scan QRIS Tanda Kasih</p>
+                    <img
+                      src={qrisImageUrl}
+                      alt="Barcode QRIS"
+                      className="w-40 h-40 object-contain mx-auto rounded-lg border border-[#414A35]/20 bg-white p-1.5"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -1211,7 +1284,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-invitation-type="pernikahan" 
             id="sec-guestbook" 
             data-stage-key="guestbook" 
-            data-stage-image="/images/brand_story_botanical_1790831303860.jpg" 
+            data-stage-image={galleryImages[1] || bridePortrait} 
             data-stage-text="Setiap ucapan, kami simpan sebagai doa."
           >
             <div className="section-inner">
@@ -1259,7 +1332,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-invitation-type="pernikahan" 
             id="sec-rsvp" 
             data-stage-key="rsvp" 
-            data-stage-image="/images/wedding_shoes_jewelry_1790901548736.jpg" 
+            data-stage-image={galleryImages[2] || groomPortrait} 
             data-stage-text="Kehadiran Anda melengkapi hari kami."
           >
             <div className="section-inner center">
@@ -1348,17 +1421,19 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-section-type="static" 
             id="sec-closing" 
             data-stage-key="closing" 
-            data-stage-image={galleryImages[2] || heroImage} 
+            data-stage-image={closingImage} 
             data-stage-text="Terima kasih telah menjadi bagian dari kisah ini."
           >
-            <div className="closing-bg">
-              <img 
-                src={galleryImages[2] || heroImage} 
-                alt="Foto penutup" 
-                data-photo-slot="closing-bg" 
-                data-slot-type="static-background" 
-              />
-            </div>
+            {closingImage && (
+              <div className="closing-bg">
+                <img 
+                  src={closingImage} 
+                  alt="Foto penutup" 
+                  data-photo-slot="closing-bg" 
+                  data-slot-type="static-background" 
+                />
+              </div>
+            )}
             <div className="closing-inner">
               <span className="quote-mark reveal">“</span>
               <h2 className="reveal reveal-delay-1" data-dynamic-field="custom:closing_note">

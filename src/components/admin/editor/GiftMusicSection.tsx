@@ -3,7 +3,11 @@ import { ClientInvitationData } from '../../../types/clientInvitation';
 import { CreditCard, Quote, Music, Upload, Loader2 } from 'lucide-react';
 import { MusicSelector } from './MusicSelector';
 import { TEMPLATE_REGISTRY } from '../../../admin/templateRegistry';
-import { uploadMusicToCloudinary, addMusicTrack } from '../../../services/musicService';
+import {
+  uploadMusicToCloudinary,
+  addMusicTrack,
+  fetchMusicTracks,
+} from '../../../services/musicService';
 
 interface GiftMusicSectionProps {
   formData: ClientInvitationData;
@@ -32,6 +36,35 @@ export const GiftMusicSection: React.FC<GiftMusicSectionProps> = ({
     const templateDefaults = TEMPLATE_REGISTRY[selectedTemplateId]?.defaultData;
     setDemoSongTitle(templateDefaults?.songTitle || '');
     setDemoAudioUrl(templateDefaults?.audioUrl || '');
+
+    if (!templateDefaults?.audioUrl) {
+      let isMounted = true;
+      fetchMusicTracks()
+        .then((tracks) => {
+          if (!isMounted || !tracks) return;
+          const templateTag = `template demo (${selectedTemplateId.toLowerCase()})`;
+          const matched =
+            tracks.find((t) => (t.genre || '').toLowerCase() === templateTag) ||
+            tracks.find(
+              (t) =>
+                templateDefaults?.songTitle &&
+                t.title.toLowerCase() === templateDefaults.songTitle.toLowerCase()
+            );
+          if (matched?.audio_url) {
+            TEMPLATE_REGISTRY[selectedTemplateId].defaultData = {
+              ...TEMPLATE_REGISTRY[selectedTemplateId].defaultData,
+              songTitle: matched.title || templateDefaults?.songTitle || '',
+              audioUrl: matched.audio_url,
+            };
+            setDemoSongTitle(matched.title || templateDefaults?.songTitle || '');
+            setDemoAudioUrl(matched.audio_url);
+          }
+        })
+        .catch(() => {});
+      return () => {
+        isMounted = false;
+      };
+    }
   }, [selectedTemplateId]);
 
   const handleDemoTitleChange = (nextTitle: string) => {
@@ -58,12 +91,12 @@ export const GiftMusicSection: React.FC<GiftMusicSectionProps> = ({
       const uploadedUrl = await uploadMusicToCloudinary(file);
       const safeTitle = demoSongTitle.trim() || file.name.replace(/\.[^/.]+$/, '') || 'Demo Template Music';
 
-      // Juga masukkan ke katalog agar bisa dipilih ulang di undangan lain
+      // Juga masukkan ke katalog agar bisa dipilih ulang di undangan lain & tersimpan lintas domain/subdomain
       await addMusicTrack({
         title: safeTitle,
         artist: 'Demo Template',
         audio_url: uploadedUrl,
-        genre: 'Template Demo',
+        genre: `Template Demo (${selectedTemplateId})`,
         source: 'admin',
       }).catch((err) => console.warn('Gagal menambah ke katalog musik:', err));
 

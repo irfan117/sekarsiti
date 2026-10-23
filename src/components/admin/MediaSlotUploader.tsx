@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Upload, X, Plus, Image as ImageIcon, Film, Link2, Check, Loader2 } from 'lucide-react';
+import { Upload, X, Plus, Image as ImageIcon, Film, Link2, Check, Loader2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MediaSlotDefinition } from '../../admin/templateRegistry';
 import { normalizeMediaUrl, parseMultipleMediaUrls } from '../../services/mediaAssetAssistant';
 import { uploadToCloudinary, isCloudinaryConfigured, isVideoUrl } from '../../utils/cloudinaryUpload';
@@ -39,6 +39,7 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInputValue, setUrlInputValue] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgressText, setUploadProgressText] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Single vs Multiple
@@ -55,10 +56,15 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
     setUploadError(null);
     setIsUploading(true);
 
+    const fileList = Array.from(files);
     const uploadedUrls: string[] = [];
 
     try {
-      for (const file of Array.from(files)) {
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        setUploadProgressText(
+          fileList.length > 1 ? `Mengunggah ${i + 1}/${fileList.length}...` : 'Mengunggah...'
+        );
         if (isCloudinaryConfigured) {
           const cloudinaryUrl = await uploadToCloudinary(file);
           uploadedUrls.push(cloudinaryUrl);
@@ -85,6 +91,7 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
       setUploadError(err?.message || 'Gagal mengunggah file.');
     } finally {
       setIsUploading(false);
+      setUploadProgressText('');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -120,6 +127,24 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
     if (isMultiple) {
       const updated = currentImages.filter((_, idx) => idx !== indexToRemove);
       onChange(updated);
+    } else {
+      onChange('');
+    }
+  };
+
+  const handleMoveImage = (index: number, direction: -1 | 1) => {
+    if (!isMultiple) return;
+    const targetIdx = index + direction;
+    if (targetIdx < 0 || targetIdx >= currentImages.length) return;
+    const next = [...currentImages];
+    const [moved] = next.splice(index, 1);
+    next.splice(targetIdx, 0, moved);
+    onChange(next);
+  };
+
+  const handleClearAll = () => {
+    if (isMultiple) {
+      onChange([]);
     } else {
       onChange('');
     }
@@ -197,6 +222,28 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
                   {isVid && <Film className="w-2.5 h-2.5 text-amber-300" />}
                   <span>{isVid ? `VIDEO #${idx + 1}` : `#${idx + 1}`}</span>
                 </span>
+                {isMultiple && currentImages.length > 1 && (
+                  <div className="absolute bottom-1 right-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      disabled={idx === 0}
+                      onClick={() => handleMoveImage(idx, -1)}
+                      className="p-0.5 bg-black/70 hover:bg-black text-white rounded disabled:opacity-30 cursor-pointer"
+                      title="Geser ke kiri"
+                    >
+                      <ChevronLeft className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={idx === currentImages.length - 1}
+                      onClick={() => handleMoveImage(idx, 1)}
+                      className="p-0.5 bg-black/70 hover:bg-black text-white rounded disabled:opacity-30 cursor-pointer"
+                      title="Geser ke kanan"
+                    >
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -276,12 +323,14 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
           )}
           <span>
             {isUploading
-              ? 'Mengunggah...'
+              ? uploadProgressText || 'Mengunggah...'
               : slot.videoOnly
                 ? 'Unggah Video'
                 : slot.acceptsVideo
                   ? 'Unggah Foto / Video'
-                  : 'Unggah File'}
+                  : isMultiple
+                    ? 'Unggah Foto (Bisa Pilih Banyak Sekaligus)'
+                    : 'Unggah File'}
           </span>
         </button>
 
@@ -346,9 +395,21 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
           </div>
         </div>
 
+        {isMultiple && currentImages.length > 0 && (
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="inline-flex items-center gap-1 py-1.5 px-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-lg text-[11px] font-medium transition-colors cursor-pointer whitespace-nowrap"
+            title="Hapus semua foto pada slot ini"
+          >
+            <Trash2 className="w-3 h-3" />
+            <span>Kosongkan ({currentImages.length})</span>
+          </button>
+        )}
+
         {isMultiple && (
           <span className="text-[10px] text-[#8C867C] ml-auto font-mono tabular-nums">
-            {currentImages.length} foto terpilih
+            {currentImages.length} file terpasang (bebas jumlah · tanpa batas)
           </span>
         )}
       </div>
