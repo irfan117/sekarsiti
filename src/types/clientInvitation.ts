@@ -71,6 +71,7 @@ export interface ClientInvitationData {
   // Template-Specific Media Slots (Bebas tanpa batasan kaku umum)
   mediaSlots: {
     heroImage?: string;
+    heroVideo?: string;
     bridePortrait?: string;
     groomPortrait?: string;
     galleryImages: string[]; // Bebas jumlah foto galeri

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ArrowLeft, MessageCircle, Disc3, Disc, Calendar, Sparkles, Gift } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
+import { isVideoUrl } from '../utils/cloudinaryUpload';
 import { 
   useCountdown, 
   useGuestRecipient, 
@@ -63,10 +64,6 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
   const songTitle = customData?.songTitle || 'Until I Found You - Acoustic Strings';
   const audioUrl = customData?.audioUrl || '';
 
-  const heroImage = customData?.mediaSlots?.heroImage || '/images/wedding_couple_portrait_1790833906470.jpg';
-  const bridePortrait = customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_portrait_1790833939171.jpg';
-  const groomPortrait = customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
-
   const galleryImages = useMemo(() => {
     const customGallery = customData?.mediaSlots?.galleryImages;
     if (customGallery && customGallery.length > 0) return customGallery;
@@ -79,6 +76,16 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
       '/images/art_deco_emerald_couple_1790840336340.jpg',
     ];
   }, [customData?.mediaSlots?.galleryImages]);
+
+  const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
+  const heroVideoUrl =
+    customData?.mediaSlots?.heroVideo || (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '');
+  const heroImage =
+    !isVideoUrl(rawHeroMedia) && rawHeroMedia
+      ? rawHeroMedia
+      : galleryImages[0] || '/images/wedding_couple_portrait_1790833906470.jpg';
+  const bridePortrait = customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_portrait_1790833939171.jpg';
+  const groomPortrait = customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
 
   // Dynamic Stage Config: panel gambar sticky mengikuti section aktif saat scroll
   const stageConfig = useMemo(
@@ -759,12 +766,25 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
           data-section-type="static"
         >
           <div className="cover-bg-wrap">
-            <img 
-              ref={coverImgRef}
-              id="coverParallaxImg" 
-              src={heroImage} 
-              alt={`Foto sampul ${groomName} dan ${brideName}`} 
-            />
+            {heroVideoUrl ? (
+              <video
+                key={heroVideoUrl}
+                src={heroVideoUrl}
+                poster={heroImage}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover brightness-[0.62] contrast-[1.06] saturate-[1.08]"
+              />
+            ) : (
+              <img 
+                ref={coverImgRef}
+                id="coverParallaxImg" 
+                src={heroImage} 
+                alt={`Foto sampul ${groomName} dan ${brideName}`} 
+              />
+            )}
           </div>
 
           <div className="cover-frame-box">
@@ -854,12 +874,25 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-stage-text={`${groomName} & ${brideName}, menghitung hari.`}
           >
             <div className="hero-couple-bg">
-              <img 
-                src={heroImage} 
-                alt={`Foto ${groomName} dan ${brideName}`} 
-                data-photo-slot="couple-full" 
-                data-slot-type="dynamic-cover" 
-              />
+              {heroVideoUrl ? (
+                <video
+                  key={heroVideoUrl}
+                  src={heroVideoUrl}
+                  poster={heroImage}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img 
+                  src={heroImage} 
+                  alt={`Foto ${groomName} dan ${brideName}`} 
+                  data-photo-slot="couple-full" 
+                  data-slot-type="dynamic-cover" 
+                />
+              )}
             </div>
             <div className="hero-couple-header">
               <div className="hero-crest">
@@ -1039,13 +1072,13 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-section-type="static" 
             id="sec-spotlight-1" 
             data-stage-key="spotlight1" 
-            data-stage-image="/images/editorial_couple_portrait_1790838636662.jpg" 
+            data-stage-image={galleryImages[0] || heroImage} 
             data-stage-text="Berjalan berdampingan, satu tujuan."
           >
             <div className="spotlight-media">
               <img 
-                src="/images/editorial_couple_portrait_1790838636662.jpg" 
-                alt="Momen Damar dan Alya" 
+                src={galleryImages[0] || heroImage} 
+                alt={`Momen ${groomName} dan ${brideName}`} 
                 data-photo-slot="spotlight-1" 
                 data-slot-type="static-background" 
               />
@@ -1125,13 +1158,13 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-section-type="static" 
             id="sec-spotlight-2" 
             data-stage-key="spotlight2" 
-            data-stage-image="/images/sage_outdoor_couple_portrait_1790919006777.jpg" 
+            data-stage-image={galleryImages[1] || heroImage} 
             data-stage-text="Waktu berhenti sejenak untuk kami berdua."
           >
             <div className="spotlight-media">
               <img 
-                src="/images/sage_outdoor_couple_portrait_1790919006777.jpg" 
-                alt="Momen Damar dan Alya" 
+                src={galleryImages[1] || heroImage} 
+                alt={`Momen ${groomName} dan ${brideName}`} 
                 data-photo-slot="spotlight-2" 
                 data-slot-type="static-background" 
               />
@@ -1315,12 +1348,12 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             data-section-type="static" 
             id="sec-closing" 
             data-stage-key="closing" 
-            data-stage-image="/images/wedding_dance_lights_1790901533590.jpg" 
+            data-stage-image={galleryImages[2] || heroImage} 
             data-stage-text="Terima kasih telah menjadi bagian dari kisah ini."
           >
             <div className="closing-bg">
               <img 
-                src="/images/wedding_dance_lights_1790901533590.jpg" 
+                src={galleryImages[2] || heroImage} 
                 alt="Foto penutup" 
                 data-photo-slot="closing-bg" 
                 data-slot-type="static-background" 

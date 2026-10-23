@@ -17,6 +17,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
+import { isVideoUrl } from '../utils/cloudinaryUpload';
 import { 
   useCountdown, 
   useGuestRecipient, 
@@ -233,8 +234,14 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         '/images/wedding_shoes_jewelry_1790901548736.jpg'
       ];
 
-  const heroImage = customData?.mediaSlots?.heroImage || galleryImages[0];
-  const bridePortrait = customData?.mediaSlots?.bridePortrait || galleryImages[1];
+  const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
+  const heroVideoUrl =
+    customData?.mediaSlots?.heroVideo ||
+    (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '/videos/wedding-evening.mp4');
+  const heroImage = !isVideoUrl(rawHeroMedia) && rawHeroMedia ? rawHeroMedia : galleryImages[0];
+  const isCoverVideo =
+    isVideoUrl(rawHeroMedia) || Boolean(customData?.mediaSlots?.heroVideo && !rawHeroMedia);
+  const bridePortrait = customData?.mediaSlots?.bridePortrait || galleryImages[1] || galleryImages[0];
   const groomPortrait = customData?.mediaSlots?.groomPortrait || galleryImages[0];
   const quoteText = customData?.quoteText || 'Bunga melati tumbuh berseri, mekar indah di taman hati. Dua insan berjanji sehidup semati, menyatu dalam ikatan suci.';
   const quoteSource = customData?.quoteSource || 'Syair Kasih Klasik';
@@ -245,12 +252,12 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
 
   // Continuous Filmstrip Photos for Left (Portraits & Moments) and Right (Details & Atmosphere)
   const leftFilmstripPhotos = [
-    { src: '/images/editorial_couple_portrait_1790838636662.jpg', tag: 'KIRANA & ADHITYA · 01', caption: 'Mempelai Berbahagia' },
-    { src: '/images/wedding_bride_veil_1790901501919.jpg', tag: 'THE BRIDE · 02', caption: 'Anggun Dalam Balutan Gaun' },
-    { src: '/images/wedding_vows_bouquet_1790901516667.jpg', tag: 'HOLY VOWS · 03', caption: 'Janji Suci & Buket Bunga' },
-    { src: '/images/wedding_dance_lights_1790901533590.jpg', tag: 'FIRST DANCE · 04', caption: 'Tarian Pertama di Bawah Cahaya' },
-    { src: '/images/sage_outdoor_couple_portrait_1790919006777.jpg', tag: 'ROMANTIC MOMENT · 05', caption: 'Langkah Awal Bersama' },
-    { src: '/images/art_deco_emerald_couple_1790840336340.jpg', tag: 'FOREVER AFTER · 06', caption: 'Cinta Seumur Hidup' },
+    { src: heroImage, tag: `${brideName.toUpperCase()} & ${groomName.toUpperCase()} · 01`, caption: 'Mempelai Berbahagia' },
+    { src: bridePortrait, tag: 'THE BRIDE · 02', caption: 'Anggun Dalam Balutan Gaun' },
+    { src: groomPortrait, tag: 'THE GROOM · 03', caption: 'Keteguhan Janji Suci' },
+    { src: galleryImages[0] || '/images/wedding_dance_lights_1790901533590.jpg', tag: 'FIRST DANCE · 04', caption: 'Tarian Pertama di Bawah Cahaya' },
+    { src: galleryImages[1] || '/images/sage_outdoor_couple_portrait_1790919006777.jpg', tag: 'ROMANTIC MOMENT · 05', caption: 'Langkah Awal Bersama' },
+    { src: galleryImages[2] || '/images/art_deco_emerald_couple_1790840336340.jpg', tag: 'FOREVER AFTER · 06', caption: 'Cinta Seumur Hidup' },
   ];
 
   const rightFilmstripPhotos = [
@@ -634,10 +641,23 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           style={{ perspective: '1200px' }}
         >
           {/* Cover background with luxury vignette */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center filter brightness-[0.40] scale-105"
-            style={{ backgroundImage: `url(${galleryImages[0]})` }}
-          />
+          {isCoverVideo ? (
+            <video
+              key={heroVideoUrl}
+              src={heroVideoUrl}
+              poster={heroImage}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.40] scale-105 pointer-events-none"
+            />
+          ) : (
+            <div 
+              className="absolute inset-0 bg-cover bg-center filter brightness-[0.40] scale-105"
+              style={{ backgroundImage: `url(${heroImage})` }}
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10]/95 via-[#0B0D10]/80 to-[#0B0D10]/90" />
 
           {/* The Art Deco Envelope Pocket Body */}
@@ -732,14 +752,16 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             }}
           >
             <video
+              key={heroVideoUrl}
+              src={heroVideoUrl}
               autoPlay
               loop
               muted
               playsInline
-              poster={galleryImages[0]}
+              poster={heroImage}
               className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.10]"
             >
-              <source src="/videos/wedding-evening.mp4" type="video/mp4" />
+              <source src={heroVideoUrl} type="video/mp4" />
             </video>
           </div>
 

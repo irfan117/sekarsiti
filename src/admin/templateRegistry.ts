@@ -7,6 +7,8 @@ export interface MediaSlotDefinition {
   aspectRatio: string;
   recommendedCount?: string;
   isMultiple?: boolean;
+  acceptsVideo?: boolean;
+  videoOnly?: boolean;
 }
 
 export interface TemplateDefinition {
@@ -40,8 +42,17 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       {
         key: 'heroImage',
         label: 'Foto / Poster Video Hero',
-        description: 'Tampil sebagai latar sinematik pertama di sampul dan pembuka',
-        aspectRatio: '16:9'
+        description: 'Tampil sebagai latar sinematik pertama di sampul dan pembuka (bisa unggah Foto maupun Video MP4/WebM)',
+        aspectRatio: '16:9',
+        acceptsVideo: true
+      },
+      {
+        key: 'heroVideo',
+        label: 'Video Latar Sinematik Hero (Opsional)',
+        description: 'Unggah video prewedding (.mp4 / .webm) untuk diputar otomatis di Section Video Hero (menggantikan video default)',
+        aspectRatio: '16:9',
+        acceptsVideo: true,
+        videoOnly: true
       },
       {
         key: 'bridePortrait',
@@ -104,9 +115,18 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
     mediaSlots: [
       {
         key: 'heroImage',
-        label: 'Foto Hero Onyx Art Deco',
-        description: 'Latar pembuka suasana malam megah ballroom',
-        aspectRatio: '16:9'
+        label: 'Foto / Poster Video Hero Onyx Art Deco',
+        description: 'Latar pembuka suasana malam megah ballroom (bisa unggah Foto maupun Video MP4/WebM)',
+        aspectRatio: '16:9',
+        acceptsVideo: true
+      },
+      {
+        key: 'heroVideo',
+        label: 'Video Latar Hero Malam Zamrud (Opsional)',
+        description: 'Unggah video prewedding (.mp4 / .webm) untuk diputar otomatis di Section Video Hero',
+        aspectRatio: '16:9',
+        acceptsVideo: true,
+        videoOnly: true
       },
       {
         key: 'bridePortrait',
@@ -176,9 +196,10 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
     mediaSlots: [
       {
         key: 'heroImage',
-        label: 'Foto Hero Sage Outdoor',
-        description: 'Potret pasangan di alam terbuka bertema sage green',
-        aspectRatio: '16:9'
+        label: 'Foto / Video Hero Sage Outdoor',
+        description: 'Potret atau video pasangan di alam terbuka bertema sage green',
+        aspectRatio: '16:9',
+        acceptsVideo: true
       },
       {
         key: 'bridePortrait',
@@ -245,9 +266,10 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       },
       {
         key: 'heroImage',
-        label: 'Foto Pembuka Lembar Jurnal',
-        description: 'Potret berlatar piringan hitam dan halaman bergaris',
-        aspectRatio: '16:9'
+        label: 'Foto / Video Pembuka Lembar Jurnal',
+        description: 'Potret atau video pembuka pada sampul dan halaman pertama buku jurnal',
+        aspectRatio: '16:9',
+        acceptsVideo: true
       },
       {
         key: 'bridePortrait',
@@ -307,9 +329,18 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
     mediaSlots: [
       {
         key: 'heroImage',
-        label: 'Frame Rol Film Pembuka (35mm)',
-        description: 'Frame film utama dengan grain dan efek analog hangat',
-        aspectRatio: '3:2'
+        label: 'Frame Rol Film / Video Pembuka (35mm)',
+        description: 'Frame foto atau video utama dengan grain dan efek analog hangat',
+        aspectRatio: '3:2',
+        acceptsVideo: true
+      },
+      {
+        key: 'heroVideo',
+        label: 'Video Klise Sinematik Pembuka (Opsional)',
+        description: 'Unggah video prewedding (.mp4 / .webm) untuk diputar sebagai latar layar sinema pembuka',
+        aspectRatio: '16:9',
+        acceptsVideo: true,
+        videoOnly: true
       },
       {
         key: 'bridePortrait',
@@ -378,9 +409,10 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
     mediaSlots: [
       {
         key: 'heroImage',
-        label: 'Foto Sampul Hero Cetak Biru',
-        description: 'Foto sampul utama pasangan dengan efek gerak pelan (Ken Burns).',
-        aspectRatio: '3:4'
+        label: 'Foto / Video Sampul Hero Cetak Biru',
+        description: 'Foto atau video sampul utama pasangan dengan efek gerak pelan (Ken Burns).',
+        aspectRatio: '3:4',
+        acceptsVideo: true
       },
       {
         key: 'groomPortrait',
@@ -441,9 +473,10 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
     mediaSlots: [
       {
         key: 'heroImage',
-        label: 'Foto Sampul Hero Atlas (Titik 01)',
-        description: 'Latar pembuka perjalanan dengan animasi rute pesawat terbang.',
-        aspectRatio: '3:4'
+        label: 'Foto / Video Sampul Hero Atlas (Titik 01)',
+        description: 'Latar foto atau video pembuka perjalanan dengan animasi rute pesawat terbang.',
+        aspectRatio: '3:4',
+        acceptsVideo: true
       },
       {
         key: 'bridePortrait',

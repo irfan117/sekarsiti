@@ -28,6 +28,7 @@ import {
 import { ClientInvitationData } from '../types/clientInvitation';
 import { useAudioController } from '../hooks/useInvitationCore';
 import { requestRateLimitPermit } from '../utils/requestRateLimit';
+import { isVideoUrl } from '../utils/cloudinaryUpload';
 
 interface PrintPlateHerbariumTemplateProps {
   onBackToLanding: () => void;
@@ -124,30 +125,36 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
         '/images/art_deco_venue_details_1790840351864.jpg'
       ];
 
-  const heroImage = customData?.mediaSlots?.heroImage || galleryImages[0];
-  const bridePortrait = customData?.mediaSlots?.bridePortrait || galleryImages[1];
+  const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
+  const heroVideoUrl =
+    customData?.mediaSlots?.heroVideo ||
+    (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '/videos/wedding-cinematic.mp4');
+  const heroImage = !isVideoUrl(rawHeroMedia) && rawHeroMedia ? rawHeroMedia : galleryImages[0];
+  const isCoverVideo =
+    isVideoUrl(rawHeroMedia) || Boolean(customData?.mediaSlots?.heroVideo && !rawHeroMedia);
+  const bridePortrait = customData?.mediaSlots?.bridePortrait || galleryImages[1] || galleryImages[0];
   const groomPortrait = customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
 
   // Curatorial photos for Left Exhibition Companion (Rich 18+ High-Fidelity Plates)
   const defaultCompanionPlates = [
     { 
-      src: '/images/editorial_couple_portrait_1790838636662.jpg', 
+      src: heroImage, 
       plate: '01', 
       title: `${brideName} & ${groomName}`, 
       meta: 'Dokumentasi 35mm · Sanur Paviliun',
       spec: 'Summilux 50mm · f/2.0 · ISO 100'
     },
     { 
-      src: '/images/wedding_bride_veil_1790901501919.jpg', 
+      src: bridePortrait, 
       plate: '02', 
-      title: 'Pesona Sutra & Veil Pengantin', 
+      title: `Mempelai Wanita · ${brideName}`, 
       meta: 'Gaun Adat Modern · Studio Sekarsiti',
       spec: 'Noctilux 75mm · f/1.4 · ISO 160'
     },
     { 
-      src: '/images/editorial_groom_portrait_1790915490996.jpg', 
+      src: groomPortrait, 
       plate: '03', 
-      title: 'Sang Mempelai Pria (The Groom)', 
+      title: `Mempelai Pria · ${groomName}`, 
       meta: 'Setelan Wol Noir · Ruang Tenang',
       spec: 'Elmarit 28mm · f/2.8 · ISO 200'
     },
@@ -1059,10 +1066,23 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           }`}
         >
           {/* Subtle Ambient Vignette */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center filter brightness-[0.22] blur-sm pointer-events-none"
-            style={{ backgroundImage: `url(${heroImage})` }}
-          />
+          {isCoverVideo ? (
+            <video
+              key={heroVideoUrl}
+              src={heroVideoUrl}
+              poster={heroImage}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.22] blur-sm pointer-events-none"
+            />
+          ) : (
+            <div 
+              className="absolute inset-0 bg-cover bg-center filter brightness-[0.22] blur-sm pointer-events-none"
+              style={{ backgroundImage: `url(${heroImage})` }}
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-b from-[#111110] via-[#111110]/80 to-[#111110] pointer-events-none" />
 
           {/* Top Editorial Masthead (Border-free) */}
@@ -1137,7 +1157,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
               {/* Monogram Seal */}
               <div className="w-16 h-16 rounded-full overflow-hidden shadow-2xl p-0.5 bg-[#C5A880]/40">
                 <img 
-                  src="/images/wax_seal_gold_monogram_1790915522548.jpg" 
+                  src={customData?.mediaSlots?.waxSealEmblem || "/images/wax_seal_gold_monogram_1790915522548.jpg"} 
                   alt="Segel Lilin Emas" 
                   className="w-full h-full object-cover rounded-full filter contrast-[1.08]"
                 />
@@ -1176,14 +1196,16 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
             }}
           >
             <video
+              key={heroVideoUrl}
+              src={heroVideoUrl}
               autoPlay
               loop
               muted
               playsInline
-              poster={galleryImages[0]}
+              poster={heroImage}
               className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.10]"
             >
-              <source src="/videos/wedding-cinematic.mp4" type="video/mp4" />
+              <source src={heroVideoUrl} type="video/mp4" />
             </video>
           </div>
 

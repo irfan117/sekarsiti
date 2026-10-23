@@ -17,6 +17,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
+import { isVideoUrl } from '../utils/cloudinaryUpload';
 import { 
   useCountdown, 
   useGuestRecipient, 
@@ -101,6 +102,34 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
   const galleryPhotos = (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0)
     ? customData.mediaSlots.galleryImages.map((src, i) => ({ src, alt: `Lembar Polaroid #${i + 1}` }))
     : GALLERY_PHOTOS;
+
+  const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
+  const heroVideoUrl =
+    customData?.mediaSlots?.heroVideo || (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '');
+  const heroImage =
+    !isVideoUrl(rawHeroMedia) && rawHeroMedia
+      ? rawHeroMedia
+      : galleryPhotos[0]?.src || '/images/editorial_couple_portrait_1790838636662.jpg';
+  const bridePortrait =
+    customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_veil_1790901501919.jpg';
+  const groomPortrait =
+    customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
+
+  const sectionPhotos: Record<string, string> = {
+    ...SECTION_PHOTOS,
+    cover: heroImage,
+    couple: heroImage,
+    'moment-1': galleryPhotos[0]?.src || SECTION_PHOTOS['moment-1'],
+    datetime: bridePortrait,
+    lokasi: galleryPhotos[1]?.src || SECTION_PHOTOS.lokasi,
+    turut: groomPortrait,
+    'our-story': galleryPhotos[2]?.src || SECTION_PHOTOS['our-story'],
+    'moment-2': galleryPhotos[3]?.src || galleryPhotos[0]?.src || SECTION_PHOTOS['moment-2'],
+    dresscode: bridePortrait,
+    'moment-3': galleryPhotos[4]?.src || galleryPhotos[1]?.src || SECTION_PHOTOS['moment-3'],
+    gallery: galleryPhotos[0]?.src || SECTION_PHOTOS.gallery,
+    closing: heroImage
+  };
 
   // 3D Journal Cover swing open state
   const [isCoverOpening, setIsCoverOpening] = useState(false);
@@ -242,7 +271,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
   };
 
   const handleNextSlide = () => {
-    setCarouselIdx(prev => Math.min(GALLERY_PHOTOS.length - 1, prev + 1));
+    setCarouselIdx(prev => Math.min(galleryPhotos.length - 1, prev + 1));
   };
 
   // Google Calendar URL
@@ -250,9 +279,9 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
 
   // Left & Right mirror photo calculation
   const curIndex = SECTION_ORDER.indexOf(activeSectionId);
-  const leftPhoto = SECTION_PHOTOS[activeSectionId] || SECTION_PHOTOS.couple;
+  const leftPhoto = sectionPhotos[activeSectionId] || sectionPhotos.couple;
   const nextSectionId = SECTION_ORDER[(curIndex + 1) % SECTION_ORDER.length];
-  const rightPhoto = SECTION_PHOTOS[nextSectionId] || SECTION_PHOTOS['moment-1'];
+  const rightPhoto = sectionPhotos[nextSectionId] || sectionPhotos['moment-1'];
 
   return (
     <div className="jurnal-dua-hati-wrapper relative min-h-screen bg-[#1F1D19] text-[#1F1D19] font-['Newsreader',Georgia,serif] selection:bg-[#D8C9A3]/40 selection:text-[#1F1D19]">
@@ -1081,11 +1110,24 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
               <div className={`gate-shade ${isCoverOpening ? 'is-opening' : ''}`} aria-hidden="true" />
               <section id="cover" className={`section section--cover ${isCoverOpening ? 'is-opening' : ''}`}>
                 <div className="cover-photo-frame">
-                  <img 
-                    className="cover-bg" 
-                    src="/images/editorial_couple_portrait_1790838636662.jpg" 
-                    alt={`Sampul Jurnal ${brideName} & ${groomName}`}
-                  />
+                  {heroVideoUrl ? (
+                    <video
+                      key={heroVideoUrl}
+                      className="cover-bg"
+                      src={heroVideoUrl}
+                      poster={heroImage}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                    />
+                  ) : (
+                    <img 
+                      className="cover-bg" 
+                      src={heroImage} 
+                      alt={`Sampul Jurnal ${brideName} & ${groomName}`}
+                    />
+                  )}
                 </div>
                 
                 <div className="cover-top">
@@ -1158,10 +1200,23 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
 
             {/* Couple Archival Photo Frame */}
             <div className="couple-photo-frame mx-4 sm:mx-6 border border-[#D8C9A3]/80">
-              <img 
-                src="/images/art_deco_emerald_couple_1790840336340.jpg" 
-                alt={`Foto pasangan mempelai ${brideName} & ${groomName}`} 
-              />
+              {heroVideoUrl ? (
+                <video
+                  key={heroVideoUrl}
+                  src={heroVideoUrl}
+                  poster={heroImage}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img 
+                  src={heroImage} 
+                  alt={`Foto pasangan mempelai ${brideName} & ${groomName}`} 
+                />
+              )}
               <div className="absolute bottom-3 left-4 z-10">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1F1D19]/80 backdrop-blur-xs text-[#D8C9A3] text-[10px] uppercase tracking-widest font-['Bricolage_Grotesque',sans-serif] rounded-xs">
                   FIG. 01 · {brideName.toUpperCase()} &amp; {groomName.toUpperCase()}
@@ -1177,6 +1232,13 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
 
               {/* Mempelai Wanita */}
               <div className="space-y-3 pb-6 border-b border-[#D8C9A3]/40 reveal in-view">
+                <div className="w-28 h-28 rounded-sm overflow-hidden border-4 border-[#F8F5EC] shadow-md -rotate-2 mb-3">
+                  <img
+                    src={bridePortrait}
+                    alt={`Potret ${brideFullName}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 <span className="text-[11px] font-['Bricolage_Grotesque',sans-serif] font-semibold text-[#55653F] tracking-widest uppercase">
                   MEMPELAI WANITA
                 </span>
@@ -1209,6 +1271,13 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
 
               {/* Mempelai Pria */}
               <div className="space-y-3 pb-6 border-b border-[#D8C9A3]/40 reveal in-view">
+                <div className="w-28 h-28 rounded-sm overflow-hidden border-4 border-[#F8F5EC] shadow-md rotate-2 mb-3">
+                  <img
+                    src={groomPortrait}
+                    alt={`Potret ${groomFullName}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 <span className="text-[11px] font-['Bricolage_Grotesque',sans-serif] font-semibold text-[#55653F] tracking-widest uppercase">
                   MEMPELAI PRIA
                 </span>
@@ -1246,7 +1315,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             <img 
               loading="lazy" 
               className="moment-bg" 
-              src="/images/wedding_couple_portrait_1790833906470.jpg" 
+              src={galleryPhotos[0]?.src || '/images/wedding_couple_portrait_1790833906470.jpg'} 
               alt="Momen Cahaya Sore" 
             />
             <div className="moment-caption reveal">
@@ -1353,7 +1422,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             <img 
               loading="lazy" 
               className="moment-bg" 
-              src="/images/wedding_dance_lights_1790901533590.jpg" 
+              src={galleryPhotos[1]?.src || '/images/wedding_dance_lights_1790901533590.jpg'} 
               alt="Momen Tawa yang Sama" 
             />
             <div className="moment-caption reveal">
@@ -1381,7 +1450,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             <img 
               loading="lazy" 
               className="moment-bg" 
-              src="/images/sage_outdoor_couple_portrait_1790919006777.jpg" 
+              src={galleryPhotos[2]?.src || '/images/sage_outdoor_couple_portrait_1790919006777.jpg'} 
               alt="Momen Menuju Rumah" 
             />
             <div className="moment-caption reveal">
@@ -1538,7 +1607,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
             <img 
               loading="lazy" 
               className="closing-bg" 
-              src="/images/editorial_venue_rings_1790838653826.jpg" 
+              src={heroImage} 
               alt="Penutup Jurnal" 
             />
             <div className="closing-content reveal">

@@ -8,6 +8,26 @@ export const isCloudinaryConfigured = Boolean(
   import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
 );
 
+/**
+ * Mengecek apakah sebuah URL atau data URI merupakan file video
+ */
+export function isVideoUrl(url?: string | null): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith('data:video/')) return true;
+  if (/\/video\/upload\//i.test(trimmed)) return true;
+  return /\.(mp4|webm|mov|m4v|ogv)(\?.*|#.*)?$/i.test(trimmed);
+}
+
+/**
+ * Mengecek apakah objek File merupakan file video
+ */
+export function isVideoFile(file: File): boolean {
+  if (file.type && file.type.startsWith('video/')) return true;
+  return /\.(mp4|webm|mov|m4v|ogv)$/i.test(file.name || '');
+}
+
 function getCloudinaryUploadConfig() {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -21,14 +41,44 @@ function getCloudinaryUploadConfig() {
 
 export async function uploadToCloudinary(file: File): Promise<string> {
   const { cloudName, uploadPreset } = getCloudinaryUploadConfig();
+  const isVideo = isVideoFile(file);
 
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', uploadPreset);
+  const buildFormData = () => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    return formData;
+  };
+
+  if (isVideo) {
+    const endpoints = [
+      `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+    ];
+
+    let lastError = 'Gagal mengunggah video ke Cloudinary.';
+    for (const endpoint of endpoints) {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: buildFormData(),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const url = (data.secure_url || data.url) as string | undefined;
+        if (url) return url;
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        lastError = errData?.error?.message || `Gagal mengunggah video (${response.status}).`;
+      }
+    }
+
+    throw new Error(lastError);
+  }
 
   const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
     method: 'POST',
-    body: formData,
+    body: buildFormData(),
   });
 
   if (!response.ok) {
@@ -143,6 +193,7 @@ export async function convertAudioFileToWebm(file: File): Promise<File> {
  */
 export function getOptimizedImageUrl(url: string, width = 1200, quality = 'auto'): string {
   if (!url || typeof url !== 'string') return '';
+  if (isVideoUrl(url)) return url;
 
   // Jika URL berasal dari Cloudinary
   if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {

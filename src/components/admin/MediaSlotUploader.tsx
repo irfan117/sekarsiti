@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Upload, X, Plus, Image as ImageIcon, Link2, Check, Loader2 } from 'lucide-react';
+import { Upload, X, Plus, Image as ImageIcon, Film, Link2, Check, Loader2 } from 'lucide-react';
 import { MediaSlotDefinition } from '../../admin/templateRegistry';
 import { normalizeMediaUrl, parseMultipleMediaUrls } from '../../services/mediaAssetAssistant';
-import { uploadToCloudinary, isCloudinaryConfigured } from '../../utils/cloudinaryUpload';
+import { uploadToCloudinary, isCloudinaryConfigured, isVideoUrl } from '../../utils/cloudinaryUpload';
 
 // Library of high-res authentic wedding photos ready for quick pick
 const ASSET_LIBRARY = [
@@ -17,6 +17,11 @@ const ASSET_LIBRARY = [
   { label: 'Pasangan Outdoor Sage Botanical', src: '/images/sage_outdoor_couple_portrait_1790919006777.jpg' },
   { label: 'Resepsi Onyx Emerald Art Deco', src: '/images/art_deco_emerald_couple_1790840336340.jpg' },
   { label: 'Segel Lilin Emas Monogram KA', src: '/images/wax_seal_gold_monogram_1790915522548.jpg' },
+];
+
+const VIDEO_LIBRARY = [
+  { label: 'Video Sinematik Pasangan (Editorial Daylight)', src: '/videos/wedding-cinematic.mp4' },
+  { label: 'Video Sinematik Resepsi Malam (Evening Ballroom)', src: '/videos/wedding-evening.mp4' },
 ];
 
 interface MediaSlotUploaderProps {
@@ -125,8 +130,17 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold text-[#181816] tracking-wide flex items-center gap-1.5">
-            <ImageIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+            {slot.videoOnly ? (
+              <Film className="w-3.5 h-3.5 text-[#C5A880]" />
+            ) : (
+              <ImageIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+            )}
             <span>{slot.label}</span>
+            {slot.acceptsVideo && (
+              <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100/80 text-amber-800 border border-amber-300/60">
+                {slot.videoOnly ? 'Video MP4/WebM' : 'Foto / Video'}
+              </span>
+            )}
           </p>
           <p className="text-[11px] text-[#78756E] mt-0.5">
             {slot.description}
@@ -144,33 +158,48 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
         </p>
       )}
 
-      {/* Render Current Uploaded / Selected Images */}
+      {/* Render Current Uploaded / Selected Images or Videos */}
       {currentImages.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-          {currentImages.map((src, idx) => (
-            <div 
-              key={idx} 
-              className="group relative aspect-[4/3] rounded-lg overflow-hidden bg-stone-200/70 border border-[#E8E4DD] shadow-2xs"
-            >
-              <img 
-                src={src} 
-                alt={`${slot.label} ${idx + 1}`} 
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
-              />
-              <button
-                type="button"
-                onClick={() => handleRemoveImage(idx)}
-                className="absolute top-1.5 right-1.5 p-1 bg-black/70 hover:bg-red-600 text-white rounded-full transition-colors opacity-90 group-hover:opacity-100 cursor-pointer"
-                title="Hapus foto ini"
+          {currentImages.map((src, idx) => {
+            const isVid = isVideoUrl(src);
+            return (
+              <div 
+                key={idx} 
+                className="group relative aspect-[4/3] rounded-lg overflow-hidden bg-stone-200/70 border border-[#E8E4DD] shadow-2xs"
               >
-                <X className="w-3 h-3" />
-              </button>
-              <span className="absolute bottom-1 left-1.5 text-[9px] font-mono tabular-nums text-white/90 bg-black/60 px-1.5 rounded">
-                #{idx + 1}
-              </span>
-            </div>
-          ))}
+                {isVid ? (
+                  <video
+                    src={src}
+                    muted
+                    loop
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img 
+                    src={src} 
+                    alt={`${slot.label} ${idx + 1}`} 
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(idx)}
+                  className="absolute top-1.5 right-1.5 p-1 bg-black/70 hover:bg-red-600 text-white rounded-full transition-colors opacity-90 group-hover:opacity-100 cursor-pointer"
+                  title="Hapus media ini"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+                <span className="absolute bottom-1 left-1.5 text-[9px] font-mono tabular-nums text-white/90 bg-black/60 px-1.5 rounded flex items-center gap-1">
+                  {isVid && <Film className="w-2.5 h-2.5 text-amber-300" />}
+                  <span>{isVid ? `VIDEO #${idx + 1}` : `#${idx + 1}`}</span>
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -180,14 +209,16 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
           <label className="block text-[11px] font-medium text-stone-700">
             {isMultiple
               ? 'Tempel 1 atau beberapa link Google Drive / URL foto, pisahkan dengan koma:'
-              : 'Tempel link Google Drive atau URL gambar:'}
+              : slot.acceptsVideo
+                ? 'Tempel link Google Drive atau URL langsung gambar / video (.mp4 / .webm):'
+                : 'Tempel link Google Drive atau URL gambar:'}
           </label>
           <div className="flex items-center gap-2">
             <input
               type="text"
               value={urlInputValue}
               onChange={(e) => setUrlInputValue(e.target.value)}
-              placeholder="https://drive.google.com/open?id=... atau URL foto"
+              placeholder={slot.acceptsVideo ? 'https://... (.jpg / .mp4 / .webm) atau link GDrive' : 'https://drive.google.com/open?id=... atau URL foto'}
               className="flex-1 px-3 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-mono text-stone-800 focus:outline-none focus:border-[#C5A880]"
             />
             <button
@@ -210,7 +241,7 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
             </button>
           </div>
           <p className="text-[10px] text-stone-500">
-            Otomatis mengubah tautan <span className="font-mono">drive.google.com/open?id=...</span> menjadi gambar langsung. Pastikan akses file GDrive disetel ke &quot;Anyone with the link&quot;.
+            Otomatis mengubah tautan <span className="font-mono">drive.google.com/open?id=...</span> menjadi gambar langsung, atau mendukung URL langsung file video <span className="font-mono">.mp4 / .webm</span>.
           </p>
         </div>
       )}
@@ -220,7 +251,13 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
         <input 
           ref={fileInputRef}
           type="file" 
-          accept="image/*" 
+          accept={
+            slot.videoOnly
+              ? 'video/mp4,video/webm,video/quicktime,video/*'
+              : slot.acceptsVideo
+                ? 'image/*,video/mp4,video/webm,video/quicktime,video/*'
+                : 'image/*'
+          } 
           multiple={isMultiple}
           onChange={handleFileChange}
           className="hidden" 
@@ -237,7 +274,15 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
           ) : (
             <Upload className="w-3.5 h-3.5 text-[#C5A880]" />
           )}
-          <span>{isUploading ? 'Mengunggah...' : 'Unggah File'}</span>
+          <span>
+            {isUploading
+              ? 'Mengunggah...'
+              : slot.videoOnly
+                ? 'Unggah Video'
+                : slot.acceptsVideo
+                  ? 'Unggah Foto / Video'
+                  : 'Unggah File'}
+          </span>
         </button>
 
         <button
@@ -259,21 +304,45 @@ export const MediaSlotUploader: React.FC<MediaSlotUploaderProps> = ({
             <span>Pilih dari Galeri Sekarsiti</span>
           </button>
 
-          <div className="hidden group-hover:block absolute left-0 bottom-full mb-1 z-30 w-72 max-h-56 overflow-y-auto bg-white border border-[#E5E0D8] rounded-xl shadow-xl p-2 space-y-1">
-            <p className="text-[10px] font-semibold text-[#8C867C] px-2 py-1 tracking-wider">
-              Pustaka Foto Pre-wedding Sekarsiti
-            </p>
-            {ASSET_LIBRARY.map((asset, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => handleSelectFromLibrary(asset.src)}
-                className="w-full flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-[#FAF7F2] text-left transition-colors cursor-pointer text-xs"
-              >
-                <img src={asset.src} alt={asset.label} referrerPolicy="no-referrer" className="w-9 h-9 object-cover rounded shrink-0 border border-[#E5E0D8]" />
-                <span className="text-[11px] text-[#242321] truncate">{asset.label}</span>
-              </button>
-            ))}
+          <div className="hidden group-hover:block absolute left-0 bottom-full mb-1 z-30 w-72 max-h-64 overflow-y-auto bg-white border border-[#E5E0D8] rounded-xl shadow-xl p-2 space-y-1">
+            {slot.acceptsVideo && (
+              <>
+                <p className="text-[10px] font-semibold text-[#8C867C] px-2 py-1 tracking-wider">
+                  Pustaka Video Sinematik Sekarsiti
+                </p>
+                {VIDEO_LIBRARY.map((vid, i) => (
+                  <button
+                    key={`vid-${i}`}
+                    type="button"
+                    onClick={() => handleSelectFromLibrary(vid.src)}
+                    className="w-full flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-[#FAF7F2] text-left transition-colors cursor-pointer text-xs"
+                  >
+                    <div className="w-9 h-9 rounded shrink-0 border border-[#E5E0D8] bg-stone-900 flex items-center justify-center text-amber-300">
+                      <Film className="w-4 h-4" />
+                    </div>
+                    <span className="text-[11px] text-[#242321] truncate">{vid.label}</span>
+                  </button>
+                ))}
+              </>
+            )}
+            {!slot.videoOnly && (
+              <>
+                <p className="text-[10px] font-semibold text-[#8C867C] px-2 py-1 tracking-wider">
+                  Pustaka Foto Pre-wedding Sekarsiti
+                </p>
+                {ASSET_LIBRARY.map((asset, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleSelectFromLibrary(asset.src)}
+                    className="w-full flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-[#FAF7F2] text-left transition-colors cursor-pointer text-xs"
+                  >
+                    <img src={asset.src} alt={asset.label} referrerPolicy="no-referrer" className="w-9 h-9 object-cover rounded shrink-0 border border-[#E5E0D8]" />
+                    <span className="text-[11px] text-[#242321] truncate">{asset.label}</span>
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         </div>
 

@@ -10,6 +10,7 @@ import {
 } from '../hooks/useInvitationCore';
 import { AdminStore } from '../admin/adminStore';
 import { requestRateLimitPermit } from '../utils/requestRateLimit';
+import { isVideoUrl } from '../utils/cloudinaryUpload';
 
 interface AtlasCintaTemplateProps {
   onBackToLanding: () => void;
@@ -139,9 +140,13 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
     return rawGallery[idx % rawGallery.length];
   });
 
+  const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
+  const heroVideoUrl =
+    customData?.mediaSlots?.heroVideo || (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '');
   const heroCoverBg =
-    customData?.mediaSlots?.heroImage ||
-    '/images/atlas_cinta_hero_cover_1791177934302.jpg';
+    !isVideoUrl(rawHeroMedia) && rawHeroMedia
+      ? rawHeroMedia
+      : '/images/atlas_cinta_hero_cover_1791177934302.jpg';
   const bridePortraitPhoto =
     customData?.mediaSlots?.bridePortrait ||
     '/images/atlas_cinta_bride_portrait_1791177955237.jpg';
@@ -1926,17 +1931,30 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
           {/* ===================== SECTION 1 — HERO / TITIK AWAL (STATIS) ===================== */}
           <section id="hero" data-section-type="static">
             <div className="bg-layer">
-              <img
-                className="js-parallax"
-                src={heroCoverBg}
-                alt={`${brideName} & ${groomName}`}
-                referrerPolicy="no-referrer"
-                data-photo-slot="hero_cover_bg"
-                data-slot-type="static-background"
-                data-pane-no="Titik 01"
-                data-pane-title="Awal Perjalanan"
-                data-pane-meta={eventDateFormatted}
-              />
+              {heroVideoUrl ? (
+                <video
+                  key={heroVideoUrl}
+                  className="js-parallax w-full h-full object-cover"
+                  src={heroVideoUrl}
+                  poster={heroCoverBg}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+              ) : (
+                <img
+                  className="js-parallax"
+                  src={heroCoverBg}
+                  alt={`${brideName} & ${groomName}`}
+                  referrerPolicy="no-referrer"
+                  data-photo-slot="hero_cover_bg"
+                  data-slot-type="static-background"
+                  data-pane-no="Titik 01"
+                  data-pane-title="Awal Perjalanan"
+                  data-pane-meta={eventDateFormatted}
+                />
+              )}
             </div>
             <div className="bg-scrim" />
             <div className="scroll-cue">
@@ -2011,6 +2029,14 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
                   e.currentTarget.style.transform = '';
                 }}
               >
+                <div className="w-28 h-36 mb-4 overflow-hidden border-4 border-[#F2E9D8] shadow-md rounded-xs">
+                  <img
+                    src={bridePortraitPhoto}
+                    alt={`Potret ${brideFullName}`}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 <div className="role mono">Mempelai Wanita</div>
                 <h2 data-dynamic-field="bride_name">{brideFullName}</h2>
                 <p className="parents">
@@ -2031,6 +2057,14 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
                   e.currentTarget.style.transform = '';
                 }}
               >
+                <div className="w-28 h-36 mb-4 overflow-hidden border-4 border-[#F2E9D8] shadow-md rounded-xs">
+                  <img
+                    src={groomPortraitPhoto}
+                    alt={`Potret ${groomFullName}`}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 <div className="role mono">Mempelai Pria</div>
                 <h2 data-dynamic-field="groom_name">{groomFullName}</h2>
                 <p className="parents">

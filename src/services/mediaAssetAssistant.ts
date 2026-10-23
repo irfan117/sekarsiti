@@ -10,6 +10,7 @@ export interface AssetPlacementReport {
 
 export interface ParsedInvitationMedia {
   heroImage?: string;
+  heroVideo?: string;
   bridePortrait?: string;
   groomPortrait?: string;
   galleryImages?: string[];
@@ -207,10 +208,11 @@ export const TEMPLATE_FALLBACK_ASSETS: Record<TemplateId, {
     ]
   },
   'atlas-cinta': {
-    heroImage: '/images/atlas_cinta_couple_hero_1791177959089.jpg',
-    bridePortrait: '/images/atlas_cinta_bride_portrait_1791177989392.jpg',
+    heroImage: '/images/atlas_cinta_hero_cover_1791177934302.jpg',
+    bridePortrait: '/images/atlas_cinta_bride_portrait_1791177955237.jpg',
     groomPortrait: '/images/atlas_cinta_groom_portrait_1791177974718.jpg',
     galleryImages: [
+      '/images/atlas_cinta_interlude_landscape_1791177985962.jpg',
       '/images/editorial_couple_portrait_1790838636662.jpg',
       '/images/wedding_bride_veil_1790901501919.jpg',
       '/images/wedding_vows_bouquet_1790901516667.jpg'

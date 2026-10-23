@@ -20,6 +20,7 @@ import {
   Send
 } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
+import { isVideoUrl } from '../utils/cloudinaryUpload';
 import { 
   useCountdown, 
   useGuestRecipient, 
@@ -123,6 +124,30 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
         alt: `Frame Klise 35mm #${i + 1}`
       }))
     : GALLERY_POLAROIDS;
+
+  const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
+  const heroVideoUrl =
+    customData?.mediaSlots?.heroVideo || (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '');
+  const heroImage =
+    !isVideoUrl(rawHeroMedia) && rawHeroMedia
+      ? rawHeroMedia
+      : galleryPolaroids[0]?.src || '/images/editorial_couple_portrait_1790838636662.jpg';
+  const bridePortrait =
+    customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_veil_1790901501919.jpg';
+  const groomPortrait =
+    customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg';
+
+  const heroTiles = (customFilmImages && customFilmImages.length > 0)
+    ? Array.from({ length: 16 }, (_, idx) => customFilmImages[idx % customFilmImages.length])
+    : HERO_TILES;
+
+  const chapters = CHAPTERS.map((ch, idx) => ({
+    ...ch,
+    photo:
+      customFilmImages && customFilmImages.length > 0
+        ? customFilmImages[idx % customFilmImages.length]
+        : ch.photo
+  }));
 
   // Gate / Double Door Cover State
   const [isGateOpen, setIsGateOpen] = useState(false);
@@ -847,11 +872,24 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
         <div className="flex-1 flex flex-col overflow-y-auto px-3 py-4 gap-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* Foto hero mempelai */}
           <div className="relative">
-            <img
-              src={customData?.mediaSlots?.heroImage || '/images/editorial_couple_portrait_1790838636662.jpg'}
-              alt={`Foto ${brideName} & ${groomName}`}
-              className="w-full aspect-[3/4] object-cover grayscale-[20%] sepia-[15%]"
-            />
+            {heroVideoUrl ? (
+              <video
+                key={heroVideoUrl}
+                src={heroVideoUrl}
+                poster={heroImage}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full aspect-[3/4] object-cover grayscale-[20%] sepia-[15%]"
+              />
+            ) : (
+              <img
+                src={heroImage}
+                alt={`Foto ${brideName} & ${groomName}`}
+                className="w-full aspect-[3/4] object-cover grayscale-[20%] sepia-[15%]"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-[#0D0A08]/60 via-transparent to-transparent pointer-events-none" />
             <div className="absolute bottom-2 left-0 right-0 text-center">
               <span className="font-['Pinyon_Script',cursive] text-[#DFC084] text-sm leading-none">{brideName} &amp; {groomName}</span>
@@ -861,7 +899,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           {/* Potret wanita */}
           <div className="relative overflow-hidden">
             <img
-              src={customData?.mediaSlots?.bridePortrait || '/images/wedding_bride_veil_1790901501919.jpg'}
+              src={bridePortrait}
               alt={`Potret ${brideName}`}
               className="w-full aspect-square object-cover grayscale-[30%]"
             />
@@ -871,7 +909,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           {/* Potret pria */}
           <div className="relative overflow-hidden">
             <img
-              src={customData?.mediaSlots?.groomPortrait || '/images/editorial_groom_portrait_1790915490996.jpg'}
+              src={groomPortrait}
               alt={`Potret ${groomName}`}
               className="w-full aspect-square object-cover grayscale-[30%]"
             />
@@ -919,18 +957,31 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           className="min-h-[100svh] relative overflow-hidden flex items-center justify-center bg-[#171310] text-[#F3EAD9]"
           aria-label="Pembuka"
         >
-          {/* 16-Tile Analog Photo Grid */}
-          <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 gap-1 opacity-45 pointer-events-none" aria-hidden="true">
-            {HERO_TILES.map((t, idx) => (
-              <div key={idx} className={`w-full h-full overflow-hidden ${idx % 2 === 1 ? 'scale-[1.03]' : ''}`}>
-                <img 
-                  src={t} 
-                  alt="" 
-                  className="w-full h-full object-cover grayscale-[45%] sepia-[20%] contrast-[1.05]"
-                />
-              </div>
-            ))}
-          </div>
+          {/* 16-Tile Analog Photo Grid or Fullscreen Reel Video */}
+          {heroVideoUrl ? (
+            <video
+              key={heroVideoUrl}
+              src={heroVideoUrl}
+              poster={heroImage}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover opacity-55 grayscale-[30%] sepia-[15%] contrast-[1.05] pointer-events-none"
+            />
+          ) : (
+            <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 gap-1 opacity-45 pointer-events-none" aria-hidden="true">
+              {heroTiles.map((t, idx) => (
+                <div key={idx} className={`w-full h-full overflow-hidden ${idx % 2 === 1 ? 'scale-[1.03]' : ''}`}>
+                  <img 
+                    src={t} 
+                    alt="" 
+                    className="w-full h-full object-cover grayscale-[45%] sepia-[20%] contrast-[1.05]"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Golden hairline frame & Radial Vignette */}
           <div className="absolute inset-4 border border-[#D4AF6A]/45 z-10 pointer-events-none" />
@@ -965,13 +1016,26 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
             
             {/* Dual-Column Editorial Layout for Desktop */}
             <div className="mx-auto px-4 max-w-xl">
-              {/* Polaroid Photo */}
+              {/* Polaroid Photo / Video */}
               <div className="reel-polaroid w-[min(76vw,320px)] mx-auto mt-6 -rotate-2">
-                <img 
-                  src={customData?.mediaSlots?.heroImage || '/images/editorial_couple_portrait_1790838636662.jpg'} 
-                  alt={`Foto pasangan mempelai ${groomName} & ${brideName}`} 
-                  className="aspect-4/5"
-                />
+                {isVideoUrl(rawHeroMedia) ? (
+                  <video
+                    key={rawHeroMedia}
+                    src={rawHeroMedia}
+                    poster={heroImage}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full aspect-4/5 object-cover"
+                  />
+                ) : (
+                  <img 
+                    src={heroImage} 
+                    alt={`Foto pasangan mempelai ${groomName} & ${brideName}`} 
+                    className="aspect-4/5"
+                  />
+                )}
                 <p className="cap">— selamanya, mulai hari ini —</p>
               </div>
 
@@ -1171,14 +1235,14 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
                       ADMIT ONE · AKAD NIKAH
                     </span>
                     <p className="text-2xl sm:text-3xl font-serif italic text-[#F3EAD9] mt-3">
-                      Sabtu, 9 Oktober 2027
+                      {eventDateFormatted}
                     </p>
                     <p className="text-sm font-['Courier_Prime',monospace] text-[#DFC084] mt-2">
-                      Pukul 08.00 – 09.30 WIB
+                      Pukul {akadTime}
                     </p>
                   </div>
                   <div className="mt-4 pt-3 border-t border-[#D4AF6A]/20">
-                    <span className="text-[10px] font-mono text-[#F3EAD9]/60 uppercase tracking-widest block">SEAT CODE: A-01 · PENGANTIN</span>
+                    <span className="text-[10px] font-mono text-[#F3EAD9]/60 uppercase tracking-widest block">SEAT CODE: A-01 · {akadVenue}</span>
                   </div>
                 </div>
 
@@ -1188,14 +1252,14 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
                       ADMIT ONE · RESEPSI PERNIKAHAN
                     </span>
                     <p className="text-2xl sm:text-3xl font-serif italic text-[#F3EAD9] mt-3">
-                      Sabtu, 9 Oktober 2027
+                      {eventDateFormatted}
                     </p>
                     <p className="text-sm font-['Courier_Prime',monospace] text-[#DFC084] mt-2">
-                      Pukul 10.00 – 13.00 WIB
+                      Pukul {resepsiTime}
                     </p>
                   </div>
                   <div className="mt-4 pt-3 border-t border-[#D4AF6A]/20">
-                    <span className="text-[10px] font-mono text-[#F3EAD9]/60 uppercase tracking-widest block">SEAT CODE: R-01 · VIP BALLROOM</span>
+                    <span className="text-[10px] font-mono text-[#F3EAD9]/60 uppercase tracking-widest block">SEAT CODE: R-01 · {resepsiVenue}</span>
                   </div>
                 </div>
               </div>
@@ -1210,16 +1274,16 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
                   LOKASI UTAMA
                 </span>
                 <p className="text-base text-[#F3EAD9] font-serif">
-                  Hotel Aryaduta Ballroom, Lantai 3
+                  {resepsiVenue}
                 </p>
                 <p className="text-xs text-[#F3EAD9]/80 mt-1 max-w-sm mx-auto">
-                  Jl. Sumatera No. 51, Citarum, Kec. Bandung Wetan, Kota Bandung, Jawa Barat
+                  {city}
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                 <a 
-                  href="https://maps.google.com/?q=Hotel+Aryaduta+Bandung" 
+                  href={mapsUrl} 
                   target="_blank" 
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#C99A4B] hover:bg-[#DFC084] text-[#171310] font-['Courier_Prime',monospace] text-xs uppercase font-bold rounded-xs transition-colors"
@@ -1650,7 +1714,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
             ref={filmstripTrackRef}
             className="flex-1 flex gap-2 lg:gap-3 overflow-x-auto py-2.5 px-2 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:justify-center items-center"
           >
-            {CHAPTERS.map((ch, idx) => (
+            {chapters.map((ch, idx) => (
               <div 
                 key={ch.id} 
                 onClick={() => handleScrollToSection(ch.id)}

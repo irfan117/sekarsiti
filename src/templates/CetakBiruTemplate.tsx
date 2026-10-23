@@ -10,6 +10,7 @@ import {
 } from '../hooks/useInvitationCore';
 import { AdminStore } from '../admin/adminStore';
 import { requestRateLimitPermit } from '../utils/requestRateLimit';
+import { isVideoUrl } from '../utils/cloudinaryUpload';
 
 interface CetakBiruTemplateProps {
   onBackToLanding: () => void;
@@ -127,9 +128,13 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
     return rawGallery[idx % rawGallery.length];
   }).slice(0, 10);
 
+  const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
+  const heroVideoUrl =
+    customData?.mediaSlots?.heroVideo || (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '');
   const heroCoverPhoto =
-    customData?.mediaSlots?.heroImage ||
-    '/images/blueprint_couple_hero_1791171076790.jpg';
+    !isVideoUrl(rawHeroMedia) && rawHeroMedia
+      ? rawHeroMedia
+      : '/images/blueprint_couple_hero_1791171076790.jpg';
   const groomPortraitPhoto =
     customData?.mediaSlots?.groomPortrait ||
     '/images/blueprint_groom_portrait_1791171047935.jpg';
@@ -137,8 +142,9 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
     customData?.mediaSlots?.bridePortrait ||
     '/images/blueprint_bride_portrait_1791171064118.jpg';
   const gateBgPhoto =
-    customData?.mediaSlots?.heroImage ||
-    '/images/blueprint_couple_candid_1791171089791.jpg';
+    !isVideoUrl(rawHeroMedia) && rawHeroMedia
+      ? rawHeroMedia
+      : '/images/blueprint_couple_candid_1791171089791.jpg';
   const fullbleed1Photo =
     (customData?.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages[0]) ||
     '/images/blueprint_couple_candid_1791171089791.jpg';
@@ -2008,10 +2014,23 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
             data-panel-source="couple-cover"
           >
             <div className="hero__cover-wrap">
-              <img
-                src={heroCoverPhoto}
-                alt={`Foto sampul ${groomName} & ${brideName}`}
-              />
+              {heroVideoUrl ? (
+                <video
+                  key={heroVideoUrl}
+                  src={heroVideoUrl}
+                  poster={heroCoverPhoto}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img
+                  src={heroCoverPhoto}
+                  alt={`Foto sampul ${groomName} & ${brideName}`}
+                />
+              )}
             </div>
             <div className="hero__grid" />
             <div className="hero__scrim" />
