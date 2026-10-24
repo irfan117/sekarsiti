@@ -12,10 +12,13 @@ import {
   UserCheck,
   Users,
   Globe,
-  FileText
+  FileText,
+  Archive,
+  Loader2
 } from 'lucide-react';
 import { ClientInvitationData, TemplateId } from '../../types/clientInvitation';
 import { TEMPLATE_REGISTRY } from '../../admin/templateRegistry';
+import { exportMemoryCapsuleZip } from '../../utils/exportMemoryCapsule';
 
 import { TemplateSelector } from './editor/TemplateSelector';
 import { ClientInfoSection } from './editor/ClientInfoSection';
@@ -100,10 +103,28 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
   const [activeTab, setActiveTab] = useState<EditorTab>('template');
   const [saveToast, setSaveToast] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isExportingCapsule, setIsExportingCapsule] = useState(false);
 
   const showEditorToast = (msg: string) => {
     setSaveToast(msg);
     setTimeout(() => setSaveToast(null), 3200);
+  };
+
+  const handleExportCapsule = async () => {
+    if (isExportingCapsule) return;
+    try {
+      setIsExportingCapsule(true);
+      showEditorToast('Membuat Kapsul Kenangan (.zip)...');
+      await exportMemoryCapsuleZip(formData, (status) => {
+        showEditorToast(status);
+      });
+      showEditorToast('Kapsul Kenangan berhasil diunduh! 🎁');
+    } catch (err) {
+      console.error(err);
+      showEditorToast('Gagal mengekspor Kapsul Kenangan.');
+    } finally {
+      setIsExportingCapsule(false);
+    }
   };
 
   // Template switch handler dengan penyesuaian aset cerdas otomatis
@@ -309,6 +330,21 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
 
           <button
             type="button"
+            onClick={handleExportCapsule}
+            disabled={isExportingCapsule}
+            className="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap disabled:opacity-50"
+            title="Download Paket Kapsul Kenangan (.ZIP) Offline WebP + Musik"
+          >
+            {isExportingCapsule ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-700" />
+            ) : (
+              <Archive className="w-3.5 h-3.5 text-amber-700" />
+            )}
+            <span>{isExportingCapsule ? 'Membuat ZIP...' : 'Kapsul Kenangan (.ZIP)'}</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => onPreview({ ...formData, templateId: selectedTemplateId })}
             className="px-4 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
           >
@@ -482,6 +518,21 @@ export const ClientOrderEditor: React.FC<ClientOrderEditorProps> = ({
         </button>
 
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleExportCapsule}
+            disabled={isExportingCapsule}
+            className="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap disabled:opacity-50"
+            title="Download Paket Kapsul Kenangan (.ZIP) Offline WebP + Musik"
+          >
+            {isExportingCapsule ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-700" />
+            ) : (
+              <Archive className="w-3.5 h-3.5 text-amber-700" />
+            )}
+            <span>{isExportingCapsule ? 'Membuat ZIP...' : 'Kapsul Kenangan (.ZIP)'}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => onPreview({ ...formData, templateId: selectedTemplateId })}

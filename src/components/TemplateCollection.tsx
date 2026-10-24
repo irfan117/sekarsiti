@@ -251,11 +251,14 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
 
                   </div>
 
-                  {/* Completion time */}
-                  <div className="flex items-center gap-2">
-                    <span className="block w-3 h-[1px] bg-[#C6A679]" />
-                    <span className="text-[11px] font-sans text-[#B0AB9E] tracking-wide">
-                      {template.completionTime}
+                  {/* Completion time & Included Value */}
+                  <div className="flex items-center justify-between gap-2 text-[11px] font-sans text-[#9C9891]">
+                    <div className="flex items-center gap-2">
+                      <span className="block w-3 h-[1px] bg-[#C6A679]" />
+                      <span>{template.completionTime}</span>
+                    </div>
+                    <span className="text-[10px] tracking-wide text-[#8C734B] font-medium">
+                      Termasuk Ruang Mempelai
                     </span>
                   </div>
 

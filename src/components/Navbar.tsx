@@ -5,7 +5,9 @@ interface NavbarProps {
   onSelectTemplateCTA: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onSelectTemplateCTA }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  onSelectTemplateCTA,
+}) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -34,12 +36,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectTemplateCTA }) => {
         </a>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8 text-[13px] font-sans font-medium text-[#716E68] tracking-wide">
+        <nav className="hidden md:flex items-center gap-7 text-[13px] font-sans font-medium text-[#716E68] tracking-wide">
           <a href="#koleksi" className="hover:text-[#181816] transition-colors duration-200">
             Koleksi
           </a>
+          <a href="#fitur" className="hover:text-[#181816] transition-colors duration-200">
+            Fitur &amp; Kapsul
+          </a>
           <a href="#cara-kerja" className="hover:text-[#181816] transition-colors duration-200">
             Cara Kerja
+          </a>
+          <a href="#faq" className="hover:text-[#181816] transition-colors duration-200">
+            FAQ
           </a>
           <a href="#tentang" className="hover:text-[#181816] transition-colors duration-200">
             Tentang
@@ -47,10 +55,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectTemplateCTA }) => {
         </nav>
 
         {/* CTA + Mobile toggle */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={onSelectTemplateCTA}
-            className="hidden sm:inline-flex items-center gap-1.5 px-5 py-2 text-[13px] font-sans font-semibold text-[#FAF9F6] bg-[#181816] hover:bg-[#C6A679] rounded-full transition-all duration-300 active:scale-[0.97] cursor-pointer whitespace-nowrap tracking-wide"
+            className="hidden sm:inline-flex items-center gap-1.5 px-5 py-2 text-[13px] font-sans font-semibold text-[#FAF9F6] bg-[#181816] hover:bg-[#C6A679] hover:text-[#181816] rounded-full transition-all duration-300 active:scale-[0.97] cursor-pointer whitespace-nowrap tracking-wide"
           >
             <span>Pesan Sekarang</span>
           </button>
@@ -69,14 +77,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectTemplateCTA }) => {
       {/* Mobile drawer */}
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ${
-          mobileMenuOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
+          mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div className="border-t border-[#E8E5DF] bg-[#FAF9F6] px-6 py-5 space-y-4">
           {[
-            { href: '#koleksi', label: 'Koleksi' },
+            { href: '#koleksi', label: 'Koleksi Desain' },
+            { href: '#fitur', label: 'Keistimewaan & Kapsul Kenangan' },
             { href: '#cara-kerja', label: 'Cara Kerja' },
-            { href: '#tentang', label: 'Tentang' },
+            { href: '#faq', label: 'Tanya Jawab' },
+            { href: '#tentang', label: 'Tentang Sekarsiti' },
           ].map(({ href, label }) => (
             <a
               key={href}
@@ -89,7 +99,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectTemplateCTA }) => {
           ))}
           <div className="pt-2">
             <button
-              onClick={() => { setMobileMenuOpen(false); onSelectTemplateCTA(); }}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onSelectTemplateCTA();
+              }}
               className="w-full text-center px-4 py-2.5 text-[13px] font-sans font-semibold text-[#FAF9F6] bg-[#181816] rounded-full transition-colors hover:bg-[#C6A679]"
             >
               Pesan Sekarang

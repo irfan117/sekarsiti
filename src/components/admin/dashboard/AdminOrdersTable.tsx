@@ -11,7 +11,9 @@ import {
   Copy,
   Trash2,
   Sparkles,
-  Link2
+  Link2,
+  Archive,
+  Loader2
 } from 'lucide-react';
 import { ClientInvitationData, OrderStatus } from '../../../types/clientInvitation';
 import { TEMPLATE_REGISTRY } from '../../../admin/templateRegistry';
@@ -39,6 +41,8 @@ interface AdminOrdersTableProps {
   onDuplicateOrder: (id: string) => void;
   onDeleteOrder: (id: string, clientName: string) => void;
   onCreatePortfolio?: (order: ClientInvitationData) => void;
+  onExportCapsule?: (order: ClientInvitationData) => void;
+  exportingOrderId?: string | null;
 }
 
 export const AdminOrdersTable: React.FC<AdminOrdersTableProps> = ({
@@ -60,7 +64,9 @@ export const AdminOrdersTable: React.FC<AdminOrdersTableProps> = ({
   onEditOrder,
   onDuplicateOrder,
   onDeleteOrder,
-  onCreatePortfolio
+  onCreatePortfolio,
+  onExportCapsule,
+  exportingOrderId
 }) => {
   return (
     <div className="space-y-4">
@@ -284,6 +290,22 @@ export const AdminOrdersTable: React.FC<AdminOrdersTableProps> = ({
                             title="Jadikan Portfolio Showcase Katalog"
                           >
                             <Sparkles className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
+                        {onExportCapsule && (
+                          <button
+                            type="button"
+                            onClick={() => onExportCapsule(order)}
+                            disabled={exportingOrderId === order.id}
+                            className="p-1.5 rounded-lg bg-amber-50 text-amber-800 hover:bg-amber-600 hover:text-white transition-colors cursor-pointer border border-amber-200 disabled:opacity-50"
+                            title="Export Kapsul Kenangan (.ZIP Offline WebP + Standalone HTML & Musik)"
+                          >
+                            {exportingOrderId === order.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Archive className="w-3.5 h-3.5" />
+                            )}
                           </button>
                         )}
 

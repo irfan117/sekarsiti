@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, CheckCircle2 } from 'lucide-react';
+import { Plus, CheckCircle2, Send, MessageCircle } from 'lucide-react';
 import { ClientInvitationData, OrderStatus } from '../../types/clientInvitation';
 import { PortfolioItemData } from '../../types/portfolio';
 import { AdminStore } from '../../admin/adminStore';
@@ -7,10 +7,12 @@ import { PortfolioStore } from '../../admin/portfolioStore';
 import { safeCopyToClipboard } from '../../utils/clipboardUtils';
 import { ClientOrderEditor } from './ClientOrderEditor';
 import { GuestLinkModal } from './GuestLinkModal';
+import { ShareOrderFormModal } from './ShareOrderFormModal';
 import { AdminSidebar } from './dashboard/AdminSidebar';
 import { AdminStatsCards } from './dashboard/AdminStatsCards';
 import { AdminOrdersTable, SortField } from './dashboard/AdminOrdersTable';
 import { AdminPortfolioView } from './AdminPortfolioView';
+import { exportMemoryCapsuleZip } from '../../utils/exportMemoryCapsule';
 
 interface AdminDashboardProps {
   onBackToLanding: () => void;
@@ -37,6 +39,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const [guestLinkOrder, setGuestLinkOrder] = useState<ClientInvitationData | null>(null);
+  const [isShareOrderModalOpen, setIsShareOrderModalOpen] = useState(false);
+  const [exportingOrderId, setExportingOrderId] = useState<string | null>(null);
 
   const importInputRef = useRef<HTMLInputElement>(null);
   const [feedbackToast, setFeedbackToast] = useState<string | null>(null);
@@ -83,6 +87,23 @@ Di dalam Portal Mempelai, Anda dapat langsung mengunggah foto prewedding/galeri,
     } catch (err) {
       console.error(err);
       alert('Gagal menjadikan undangan sebagai portfolio.');
+    }
+  };
+
+  const handleExportCapsule = async (order: ClientInvitationData) => {
+    if (exportingOrderId) return;
+    try {
+      setExportingOrderId(order.id);
+      showToast('Memproses Kapsul Kenangan (.zip)...');
+      await exportMemoryCapsuleZip(order, (status) => {
+        showToast(status);
+      });
+      showToast(`Kapsul Kenangan ${order.clientName} berhasil diunduh! 🎁`);
+    } catch (error) {
+      console.error('Export capsule error:', error);
+      showToast('Gagal membuat paket Kapsul Kenangan.');
+    } finally {
+      setExportingOrderId(null);
     }
   };
 
@@ -250,13 +271,25 @@ Di dalam Portal Mempelai, Anda dapat langsung mengunggah foto prewedding/galeri,
 
           <div className="flex items-center gap-2.5">
             {viewState === 'list' && (
-              <button
-                onClick={handleCreateNew}
-                className="px-4 py-2 bg-[#C5A880] hover:bg-[#b8986c] text-[#141413] rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer whitespace-nowrap"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Undangan Klien Baru</span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsShareOrderModalOpen(true)}
+                  className="px-3.5 py-2 bg-stone-100 hover:bg-emerald-600 hover:text-white border border-stone-200 text-stone-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
+                  title="Salin tautan formulir pemesanan & draf chat WhatsApp untuk dikirimkan ke calon klien"
+                >
+                  <Send className="w-3.5 h-3.5 text-emerald-600 group-hover:text-white" />
+                  <span>Kirim Link Form ke Klien</span>
+                </button>
+
+                <button
+                  onClick={handleCreateNew}
+                  className="px-4 py-2 bg-[#C5A880] hover:bg-[#b8986c] text-[#141413] rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Undangan Klien Baru</span>
+                </button>
+              </>
             )}
           </div>
         </header>
@@ -290,6 +323,8 @@ Di dalam Portal Mempelai, Anda dapat langsung mengunggah foto prewedding/galeri,
                 onDuplicateOrder={handleDuplicate}
                 onDeleteOrder={handleDelete}
                 onCreatePortfolio={handleCreatePortfolio}
+                onExportCapsule={handleExportCapsule}
+                exportingOrderId={exportingOrderId}
               />
             </div>
           ) : viewState === 'portfolio' ? (
@@ -356,6 +391,12 @@ Di dalam Portal Mempelai, Anda dapat langsung mengunggah foto prewedding/galeri,
         <GuestLinkModal
           invitation={guestLinkOrder}
           onClose={() => setGuestLinkOrder(null)}
+        />
+      )}
+
+      {isShareOrderModalOpen && (
+        <ShareOrderFormModal
+          onClose={() => setIsShareOrderModalOpen(false)}
         />
       )}
     </div>

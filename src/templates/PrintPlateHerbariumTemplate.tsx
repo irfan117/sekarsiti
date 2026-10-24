@@ -630,7 +630,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           TOP DEMO CONTROL BAR (Sticky Navigation for Sekarsiti)
           ============================================================ */}
       {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#161514]/95 backdrop-blur-md border-b border-[#2A2926] text-[#FAF7F2] px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs">
+        <header className="fixed top-0 left-0 right-0 z-[70] bg-[#161514]/95 backdrop-blur-md border-b border-[#2A2926] text-[#FAF7F2] px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs">
           <button
             onClick={onBackToLanding}
             className="flex items-center gap-1.5 text-[#C5A880] hover:text-white transition-colors font-medium cursor-pointer"

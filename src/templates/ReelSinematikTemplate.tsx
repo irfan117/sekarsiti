@@ -781,7 +781,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           Disembunyikan jika dalam mode Undangan Klien Nyata / Preview Admin
           ============================================================ */}
       {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#171310]/90 backdrop-blur-md border-b border-[#D4AF6A]/25 text-[#F3EAD9] px-4 sm:px-6 py-3 flex items-center justify-between text-xs">
+        <header className="fixed top-0 left-0 right-0 z-[70] bg-[#171310]/90 backdrop-blur-md border-b border-[#D4AF6A]/25 text-[#F3EAD9] px-4 sm:px-6 py-3 flex items-center justify-between text-xs">
           <button
             onClick={onBackToLanding}
             className="flex items-center gap-1.5 text-[#D4AF6A] hover:text-white transition-colors font-medium cursor-pointer"

@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ValueProposition } from './components/ValueProposition';
 import { TemplateCollection } from './components/TemplateCollection';
 import { HowItWorks } from './components/HowItWorks';
+import { SignatureFeatures } from './components/SignatureFeatures';
+import { EditorialFAQ } from './components/EditorialFAQ';
 import { BrandStory } from './components/BrandStory';
 import { FinalCTA } from './components/FinalCTA';
 import { Footer } from './components/Footer';
@@ -151,34 +153,13 @@ export default function App() {
     return !AdminStore.getById(detected);
   });
 
-  useEffect(() => {
-    const initialLookup = getSubdomain();
-
-    // Ambil order nyata dari database Supabase
-    AdminStore.initFromSupabase(Boolean(initialLookup)).then(() => {
-      const detectedSubdomain = getSubdomain();
-      const params = new URLSearchParams(window.location.search);
-      const clientLookup = detectedSubdomain || params.get('client');
-
-      if (clientLookup) {
-        const found = AdminStore.getById(clientLookup);
-        if (found) {
-          setClientPreviewData(found);
-          setCurrentView(resolveDemoViewFromId(found.templateId));
-        }
-      }
-      setIsResolvingClient(false);
-    }).catch(() => {
-      setIsResolvingClient(false);
-    });
-
+  const syncViewFromUrl = useCallback(() => {
     const detectedSubdomain = getSubdomain();
     if (detectedSubdomain) {
       const foundClient = AdminStore.getById(detectedSubdomain);
       if (foundClient) {
         setClientPreviewData(foundClient);
         setCurrentView(resolveDemoViewFromId(foundClient.templateId));
-        setIsResolvingClient(false);
         return;
       }
     }
@@ -195,6 +176,8 @@ export default function App() {
     if (portalParam || viewParam === 'portal') {
       setPortalInitialCode(portalParam || '');
       setPortalInitialPin(pinParam || '');
+      setClientPreviewData(null);
+      setIsAdminPreviewMode(false);
       setCurrentView('portal');
       return;
     }
@@ -202,11 +185,15 @@ export default function App() {
     if (orderParam || viewParam === 'order') {
       const selectedOrderTemplate = TEMPLATES.find((item) => item.id === orderParam);
       setSelectedTemplateForOrder(selectedOrderTemplate || TEMPLATES[0]);
+      setClientPreviewData(null);
+      setIsAdminPreviewMode(false);
       setCurrentView('order-form');
       return;
     }
 
     if (adminParam === 'true' || viewParam === 'admin') {
+      setClientPreviewData(null);
+      setIsAdminPreviewMode(false);
       setCurrentView('admin');
       return;
     }
@@ -221,9 +208,38 @@ export default function App() {
     }
 
     if (demoParam) {
+      setClientPreviewData(null);
+      setIsAdminPreviewMode(false);
       setCurrentView(resolveDemoViewFromId(demoParam));
+      return;
     }
+
+    // Default: Landing Page
+    setClientPreviewData(null);
+    setIsAdminPreviewMode(false);
+    setCurrentView('landing');
   }, []);
+
+  useEffect(() => {
+    const initialLookup = getSubdomain();
+
+    // Ambil order nyata dari database Supabase
+    AdminStore.initFromSupabase(Boolean(initialLookup)).then(() => {
+      syncViewFromUrl();
+      setIsResolvingClient(false);
+    }).catch(() => {
+      syncViewFromUrl();
+      setIsResolvingClient(false);
+    });
+
+    syncViewFromUrl();
+
+    // Listener navigasi browser (tombol back/forward & swipe back mobile)
+    window.addEventListener('popstate', syncViewFromUrl);
+    return () => {
+      window.removeEventListener('popstate', syncViewFromUrl);
+    };
+  }, [syncViewFromUrl]);
 
   const handleOpenOrderModal = (item?: InvitationItem) => {
     setSelectedTemplateForOrder(item || null);
@@ -259,11 +275,16 @@ export default function App() {
   };
 
   const handleBackToLanding = () => {
-    setCurrentView('landing');
     setClientPreviewData(null);
     setIsAdminPreviewMode(false);
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    window.history.pushState({}, '', '/');
+    const hasSearch = Boolean(window.location.search);
+    if (hasSearch && window.history.length > 1) {
+      window.history.back();
+    } else {
+      setCurrentView('landing');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      window.history.replaceState({}, '', '/');
+    }
   };
 
   const handleOpenAdmin = () => {
@@ -419,6 +440,7 @@ export default function App() {
         <Hero
           onExploreCollection={() => handleScrollToSection('koleksi')}
           onExploreHowItWorks={() => handleScrollToSection('cara-kerja')}
+          onExploreFeatures={() => handleScrollToSection('fitur')}
         />
         <ValueProposition />
         <TemplateCollection
@@ -464,12 +486,21 @@ export default function App() {
               }
             };
             setClientPreviewData(dummyInv);
-            setCurrentView(resolveDemoViewFromId(portfolioItem.templateId));
+            const targetDemo = resolveDemoViewFromId(portfolioItem.templateId);
+            setCurrentView(targetDemo);
+            const { querySlug } = DEMO_VIEW_CONFIG[targetDemo];
+            window.history.pushState({}, '', `/?demo=${querySlug}`);
+            window.scrollTo({ top: 0, behavior: 'instant' });
           }}
         />
+        <SignatureFeatures />
         <HowItWorks />
         <BrandStory />
-        <FinalCTA onExploreCollection={() => handleScrollToSection('koleksi')} />
+        <EditorialFAQ />
+        <FinalCTA
+          onExploreCollection={() => handleScrollToSection('koleksi')}
+          onContactWhatsApp={() => handleOpenOrderModal()}
+        />
       </main>
 
       <Footer

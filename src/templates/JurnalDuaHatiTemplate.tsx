@@ -1101,7 +1101,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
           TOP DEMO CONTROL BAR (Sticky Navigation for Sekarsiti)
           ============================================================ */}
       {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#1F1D19]/90 backdrop-blur-md border-b border-[#D8C9A3]/25 text-[#F8F5EC] px-4 sm:px-6 py-3 flex items-center justify-between text-xs">
+        <header className="fixed top-0 left-0 right-0 z-[70] bg-[#1F1D19]/90 backdrop-blur-md border-b border-[#D8C9A3]/25 text-[#F8F5EC] px-4 sm:px-6 py-3 flex items-center justify-between text-xs">
           <button
             onClick={onBackToLanding}
             className="flex items-center gap-1.5 text-[#D8C9A3] hover:text-white transition-colors font-medium cursor-pointer"

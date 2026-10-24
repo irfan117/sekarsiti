@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, 
+  ArrowUp,
   MessageCircle, 
   Copy, 
   Check, 
@@ -8,14 +9,26 @@ import {
   ExternalLink, 
   ChevronLeft, 
   ChevronRight,
+  ChevronDown,
   Disc3,
   Disc,
   Calendar,
   X,
   Edit2,
   Sparkles,
-  QrCode
+  QrCode,
+  Clock,
+  Compass,
+  ZoomIn,
+  Heart
 } from 'lucide-react';
+import { 
+  MotionStyles, 
+  Reveal, 
+  TickDigit, 
+  GoldDust, 
+  ScrollProgressBar 
+} from './malamZamrudMotion';
 import { ClientInvitationData } from '../types/clientInvitation';
 import { isVideoUrl } from '../utils/cloudinaryUpload';
 import { collectAdminUploadedPhotos } from '../utils/templateMediaResolver';
@@ -188,12 +201,12 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
     : [
         {
           name: 'Salsabila Putri',
-          message: 'Selamat menempuh hidup baru Kirana & Adhitya! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. Malam yang sungguh anggun dan berkesan. 🤍',
+          message: 'Selamat menempuh hidup baru Kirana & Adhitya. Semoga senantiasa diberkahi kebahagiaan, ketenteraman, dan cinta yang abadi dalam bahtera rumah tangga.',
           time: '1 jam yang lalu'
         },
         {
           name: 'Dimas & Nadia',
-          message: 'Selamat berbahagia sahabatku! Berkah senantiasa menyertai babak baru kalian.',
+          message: 'Selamat berbahagia sahabatku! Doa terbaik senantiasa menyertai babak baru kehidupan kalian.',
           time: '4 jam yang lalu'
         }
       ];
@@ -220,6 +233,48 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
 
   // Lightbox Photo Modal state
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+
+  // Interactive Dresscode Swatch state
+  const [activeSwatch, setActiveSwatch] = useState<'zamrud' | 'kuningan' | 'batatua' | 'gading'>('zamrud');
+
+  const SWATCH_DETAILS = {
+    zamrud: {
+      name: 'Hijau Zamrud',
+      subtitle: 'Emerald Green',
+      color: '#1E4438',
+      textColor: '#FBF3E4',
+      badge: 'Palet Utama',
+      forLadies: 'Gaun malam velvet/sutra, kebaya modern berona zamrud, atau dress bordir hijau botol.',
+      forGentlemen: 'Batik sutra berona gelap, jas malam klasik, atau dasi satin hijau zamrud.'
+    },
+    kuningan: {
+      name: 'Kuningan Antik',
+      subtitle: 'Vintage Brass Gold',
+      color: '#C6A356',
+      textColor: '#0B0D10',
+      badge: 'Aksen Kilau',
+      forLadies: 'Gaun satin champagne, perhiasan emas antik, atau aksen payet mewah.',
+      forGentlemen: 'Kemeja bernuansa warm gold, cufflink kuningan, atau dasi champagne.'
+    },
+    batatua: {
+      name: 'Bata Tua',
+      subtitle: 'Terracotta Rust',
+      color: '#8C4A36',
+      textColor: '#FBF3E4',
+      badge: 'Sentuhan Hangat',
+      forLadies: 'Kebaya brokat terakota hangat, gaun pleated marun muda, atau selendang tenun.',
+      forGentlemen: 'Kemeja batik bernuansa sogan/terakota, atau jas santai warna tanah.'
+    },
+    gading: {
+      name: 'Gading Lembut',
+      subtitle: 'Warm Ivory',
+      color: '#EDE3C8',
+      textColor: '#181512',
+      badge: 'Harmoni Netral',
+      forLadies: 'Gaun sutra krem gading, dress renda vintage, atau kerudung berona soft ivory.',
+      forGentlemen: 'Kemeja broken white premium atau beskap klasik berona gading.'
+    }
+  };
 
   const allAdminUploadedImages = React.useMemo(
     () => collectAdminUploadedPhotos(customData),
@@ -462,6 +517,22 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
     copyText(accountNumber, 'bank');
   };
 
+  const handleCopySecondaryAccount = () => {
+    if (secondaryAccountNumber) {
+      copyText(secondaryAccountNumber, 'bank-secondary');
+    }
+  };
+
+  const handleCopyAddress = () => {
+    const fullAddress = `${resepsiVenue}, ${city}`;
+    copyText(fullAddress, 'venue-address');
+  };
+
+  const handleCopySchedule = () => {
+    const scheduleSummary = `Undangan Pernikahan ${brideName} & ${groomName}\nTanggal: ${eventDateFormatted}\nAkad Nikah: ${akadTime} (${akadVenue})\nResepsi: ${resepsiTime} (${resepsiVenue}, ${city})`;
+    copyText(scheduleSummary, 'event-schedule');
+  };
+
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
@@ -473,15 +544,19 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
 
   return (
     <div className="relative min-h-screen bg-[#0B0D10] text-[#181512] font-['Manrope',sans-serif] selection:bg-[#C6A356]/30 selection:text-[#0B0D10]">
+      {/* Motion Styles Layer & Top Golden Scroll Progress */}
+      <MotionStyles />
+      {isOpened && <ScrollProgressBar progress={scrollProgress} />}
       
       {/* ============================================================
           TOP DEMO CONTROL BAR (Sticky Navigation for Sekarsiti)
           ============================================================ */}
       {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#12151A]/95 backdrop-blur-md border-b border-[#C6A356]/30 text-[#FBF3E4] px-4 sm:px-6 py-3 flex items-center justify-between text-xs">
+        <header className="fixed top-0 left-0 right-0 z-[70] bg-[#12151A]/95 backdrop-blur-md border-b border-[#C6A356]/30 text-[#FBF3E4] px-4 sm:px-6 py-3 flex items-center justify-between text-xs shadow-lg">
           <button
             onClick={onBackToLanding}
-            className="flex items-center gap-1.5 text-[#C6A356] hover:text-white transition-colors font-medium cursor-pointer"
+            className="flex items-center gap-1.5 text-[#C6A356] hover:text-white transition-colors font-medium cursor-pointer py-1 px-2 -ml-2 rounded-lg hover:bg-white/5 active:scale-95"
+            title="Kembali ke halaman utama"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Kembali ke Sekarsiti</span>
@@ -667,22 +742,52 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-[#0B0D10] via-[#0B0D10]/80 to-transparent pointer-events-none z-10" />
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/90 to-transparent pointer-events-none z-10" />
 
-        {/* Right Art Deco Top Header Badge */}
-        <div className="absolute top-14 right-6 z-20 pointer-events-none p-3 rounded-xl bg-[#12151A]/90 backdrop-blur-md border border-[#C6A356]/35 shadow-xl text-right">
-          <p className="text-[8px] tracking-[0.35em] uppercase text-[#C6A356] font-semibold">
-            ATMOSFER &amp; DETAIL
-          </p>
-          <p className="font-['Marcellus',serif] text-xs text-[#FBF3E4]">
-            Kemilau Gatsby · Ballroom
-          </p>
+        {/* Live Countdown Clock Widget on Right Panel */}
+        <div className="absolute top-14 left-6 right-6 z-20 p-3.5 rounded-xl bg-[#12151A]/95 backdrop-blur-md border border-[#C6A356]/40 shadow-2xl">
+          <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-[#C6A356]/20">
+            <span className="text-[8px] tracking-[0.25em] uppercase text-[#C6A356] font-semibold flex items-center gap-1.5">
+              <Clock className="w-3 h-3 text-[#C6A356]" />
+              <span>Hitung Mundur</span>
+            </span>
+            <span className="text-[9px] text-[#EDE3C8]/70 font-mono">
+              {timeLeft.isExpired ? 'Hari Bahagia' : 'Menuju Hari H'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-4 gap-1.5 text-center">
+            <div className="p-1.5 bg-[#0B0D10]/80 border border-[#C6A356]/30 rounded">
+              <span className="block font-['Marcellus',serif] text-base text-[#C6A356] font-bold tabular-nums">
+                <TickDigit value={timeLeft.days} />
+              </span>
+              <span className="text-[8px] uppercase tracking-wider text-[#EDE3C8]/60">Hari</span>
+            </div>
+            <div className="p-1.5 bg-[#0B0D10]/80 border border-[#C6A356]/30 rounded">
+              <span className="block font-['Marcellus',serif] text-base text-[#C6A356] font-bold tabular-nums">
+                <TickDigit value={timeLeft.hours} />
+              </span>
+              <span className="text-[8px] uppercase tracking-wider text-[#EDE3C8]/60">Jam</span>
+            </div>
+            <div className="p-1.5 bg-[#0B0D10]/80 border border-[#C6A356]/30 rounded">
+              <span className="block font-['Marcellus',serif] text-base text-[#C6A356] font-bold tabular-nums">
+                <TickDigit value={timeLeft.mins} />
+              </span>
+              <span className="text-[8px] uppercase tracking-wider text-[#EDE3C8]/60">Menit</span>
+            </div>
+            <div className="p-1.5 bg-[#0B0D10]/80 border border-[#C6A356]/30 rounded">
+              <span className="block font-['Marcellus',serif] text-base text-[#C6A356] font-bold tabular-nums">
+                <TickDigit value={timeLeft.secs} />
+              </span>
+              <span className="text-[8px] uppercase tracking-wider text-[#EDE3C8]/60">Detik</span>
+            </div>
+          </div>
         </div>
 
         {/* Floating Quick Section Navigator on Right Panel */}
-        <div className="absolute top-28 right-4 z-20 flex flex-col items-end gap-1 p-2.5 rounded-xl bg-[#12151A]/90 backdrop-blur-md border border-[#C6A356]/35 shadow-2xl">
+        <div className="absolute top-44 right-4 z-20 flex flex-col items-end gap-1 p-2.5 rounded-xl bg-[#12151A]/95 backdrop-blur-md border border-[#C6A356]/35 shadow-2xl">
           <span className="text-[8px] tracking-[0.25em] uppercase text-[#C6A356] font-semibold mb-1 px-1">
             Navigasi
           </span>
-          <div className="flex flex-col gap-0.5 max-h-[50vh] overflow-y-auto pr-0.5">
+          <div className="flex flex-col gap-0.5 max-h-[46vh] overflow-y-auto pr-0.5 scrollbar-thin">
             {SECTIONS.map((sec, idx) => {
               const isActive = activeSectionId === sec.id;
               const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV'][idx] || sec.number;
@@ -729,6 +834,9 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           }`}
           style={{ perspective: '1200px' }}
         >
+          {/* Ambient Drifting Gold Dust (Pure Deterministic CSS) */}
+          <GoldDust count={16} />
+
           {/* Cover background with luxury vignette */}
           {isCoverVideo ? (
             <video
@@ -743,7 +851,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             />
           ) : (
             <div 
-              className="absolute inset-0 bg-cover bg-center filter brightness-[0.40] scale-105"
+              className="absolute inset-0 bg-cover bg-center filter brightness-[0.40] scale-105 zz-kenburns"
               style={{ backgroundImage: `url(${heroImage})` }}
             />
           )}
@@ -764,20 +872,32 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
               style={{ transformStyle: 'preserve-3d' }}
             >
               {/* Flap Outer Graphic */}
-              <div className="relative bg-gradient-to-b from-[#1C222B] to-[#12151A] pt-6 pb-8 px-6 border-b border-[#C6A356]/40 shadow-md text-center">
+              <div className="relative bg-gradient-to-b from-[#1C222B] to-[#12151A] pt-6 pb-9 px-6 border-b border-[#C6A356]/40 shadow-md text-center">
                 <p className="uppercase tracking-[0.35em] text-[9px] font-semibold text-[#C6A356]">
                   UNDANGAN PERNIKAHAN RESMI
                 </p>
                 
                 {/* Flap downward pointer peak */}
                 <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-[#12151A] border-r border-b border-[#C6A356]/40 rotate-45" />
+
+                {/* Golden Wax Seal Medallion with pulsing glow */}
+                <button
+                  type="button"
+                  onClick={handleOpenInvitation}
+                  disabled={isOpeningFlap}
+                  className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full border-2 border-[#C6A356] bg-gradient-to-br from-[#E2C785] via-[#C6A356] to-[#8F702F] text-[#0B0D10] font-['Marcellus',serif] font-bold text-sm flex items-center justify-center cursor-pointer shadow-xl zz-seal active:scale-95 transition-transform z-30"
+                  title="Sentuh segel untuk membuka undangan"
+                  aria-label="Buka undangan pernikahan"
+                >
+                  <span className="tracking-tighter">{brideName[0]}&amp;{groomName[0]}</span>
+                </button>
               </div>
             </div>
 
             {/* Inner Envelope Content / Card Pocket Area */}
-            <div className="relative p-6 sm:p-8 text-center text-[#FBF3E4] space-y-6">
+            <div className="relative p-6 sm:p-8 pt-8 text-center text-[#FBF3E4] space-y-6">
               
-              <div className="flex justify-center">
+              <div className="flex justify-center pt-2">
                 <ArtDecoSunburst className="w-16 h-8 text-[#C6A356]" />
               </div>
 
@@ -807,7 +927,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
                 <button
                   onClick={handleOpenInvitation}
                   disabled={isOpeningFlap}
-                  className="group relative inline-flex items-center justify-center px-9 py-3.5 rounded-full bg-[#C6A356] hover:bg-[#d6b467] text-[#0B0D10] shadow-[0_10px_35px_rgba(198,163,86,0.35)] transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer font-semibold text-xs tracking-wider uppercase"
+                  className="group relative inline-flex items-center justify-center px-9 py-3.5 rounded-full bg-[#C6A356] hover:bg-[#d6b467] text-[#0B0D10] shadow-[0_10px_35px_rgba(198,163,86,0.35)] transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer font-semibold text-xs tracking-wider uppercase zz-shimmer"
                 >
                   <span>Buka Undangan</span>
                 </button>
@@ -857,7 +977,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
               <img
                 src={heroImage}
                 alt={`${brideName} & ${groomName}`}
-                className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.10]"
+                className="w-full h-full object-cover filter brightness-[0.55] contrast-[1.10] zz-kenburns"
               />
             ) : null}
           </div>
@@ -868,27 +988,38 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
 
           {/* Center Floating Text (Only Names & Pure Minimalist Elegance with subtle Parallax) */}
           <div 
-            className="relative z-10 w-full max-w-sm mx-auto p-6 text-center text-[#FBF3E4] space-y-4 will-change-transform"
+            className="relative z-10 w-full max-w-sm mx-auto p-6 sm:p-8 text-center text-[#FBF3E4] space-y-4 will-change-transform border border-[#C6A356]/30 bg-[#0B0D10]/55 backdrop-blur-[2px] shadow-[0_0_50px_rgba(0,0,0,0.8)]"
             style={{
               transform: `translate3d(0, ${scrollY * 0.12}px, 0)`,
             }}
           >
-            {/* Art Deco Sunburst Header */}
-            <div className="flex justify-center mb-2">
-              <ArtDecoSunburst className="w-24 h-12 text-[#C6A356]" />
-            </div>
+            {/* Subtle Art Deco Frame Accent */}
+            <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#C6A356]/70 pointer-events-none" />
+            <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#C6A356]/70 pointer-events-none" />
+            <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#C6A356]/70 pointer-events-none" />
+            <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#C6A356]/70 pointer-events-none" />
+
+            {/* Art Deco Monogram Crest Medallion & Radiating Sunburst */}
+            <Reveal variant="rays" as="div" className="flex flex-col items-center justify-center gap-2 mb-1">
+              <div className="w-12 h-12 rounded-full border border-[#C6A356]/80 flex items-center justify-center bg-[#0B0D10]/80 shadow-[0_0_25px_rgba(198,163,86,0.25)] text-[#C6A356] font-['Marcellus',serif] text-sm tracking-widest">
+                {brideName[0]}&amp;{groomName[0]}
+              </div>
+              <ArtDecoSunburst className="zz-sunburst w-24 h-12 text-[#C6A356]" />
+            </Reveal>
 
             <p className="text-[10px] sm:text-xs tracking-[0.42em] uppercase text-[#C6A356] font-semibold">
               THE WEDDING OF
             </p>
 
-            <h1 className="font-['Marcellus',serif] text-4xl sm:text-5xl text-[#FBF3E4] font-normal tracking-tight drop-shadow-xl leading-tight">
-              {brideName} &amp; {groomName}
-            </h1>
+            <Reveal variant="blur" delay={450}>
+              <h1 className="font-['Marcellus',serif] text-4xl sm:text-5xl text-[#FBF3E4] font-normal tracking-tight drop-shadow-xl leading-tight">
+                {brideName} &amp; {groomName}
+              </h1>
+            </Reveal>
 
             <div className="flex items-center justify-center gap-3 py-1">
               <span className="w-8 h-[1px] bg-gradient-to-r from-transparent to-[#C6A356]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-[#C6A356]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#C6A356] shadow-[0_0_8px_#C6A356]" />
               <span className="w-8 h-[1px] bg-gradient-to-l from-transparent to-[#C6A356]" />
             </div>
 
@@ -897,10 +1028,14 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             </p>
 
             {/* Scroll Indicator */}
-            <div className="pt-10 flex flex-col items-center gap-1.5 text-[#C6A356] text-[10px] tracking-widest uppercase animate-pulse">
-              <span>Gulir ke Bawah</span>
-              <span className="text-sm animate-bounce">↓</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => scrollToSection('couple')}
+              className="pt-6 flex flex-col items-center gap-1.5 text-[#C6A356] text-[10px] tracking-widest uppercase hover:text-white transition-colors cursor-pointer group mx-auto"
+            >
+              <span className="group-hover:tracking-[0.2em] transition-all">Gulir ke Bawah</span>
+              <ChevronDown className="w-4 h-4 animate-bounce text-[#C6A356]" />
+            </button>
           </div>
         </section>
 
@@ -937,22 +1072,30 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
               </p>
             </div>
 
-            {/* Direct Couple & Parents Presentation (Tanpa pengulangan nama sebelumnya) */}
+            {/* Direct Couple & Parents Presentation */}
             <div className="space-y-6 pt-2">
               
               {/* 1. MEMPELAI WANITA */}
-              <div className="space-y-3.5 bg-[#EDE3C8]/50 p-5 rounded-2xl border border-[#C6A356]/40 shadow-xs text-center">
-                {/* Bridal Portrait in Oval Brass Frame */}
-                <div 
-                  onClick={() => setSelectedPhoto(bridePortrait)}
-                  className="w-32 h-40 mx-auto rounded-full overflow-hidden border-2 border-[#C6A356] shadow-lg p-1 bg-white cursor-pointer group"
-                >
-                  <img 
-                    src={bridePortrait} 
-                    alt={brideFullName} 
-                    className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
+              <div className="space-y-3.5 bg-[#EDE3C8]/50 p-5 rounded-2xl border border-[#C6A356]/40 shadow-xs text-center transition-all hover:border-[#C6A356] group/card">
+                {/* Bridal Portrait in Oval Brass Frame with Iris Reveal and Lightbox Hint */}
+                <Reveal variant="iris" as="div" className="w-32 h-40 mx-auto">
+                  <div 
+                    onClick={() => setSelectedPhoto(bridePortrait)}
+                    className="relative w-32 h-40 mx-auto rounded-full overflow-hidden border-2 border-[#C6A356] shadow-lg p-1 bg-white cursor-pointer group"
+                    title="Sentuh untuk memperbesar foto"
+                  >
+                    <img 
+                      src={bridePortrait} 
+                      alt={brideFullName} 
+                      className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-[#0B0D10]/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-full flex items-center justify-center">
+                      <span className="p-2 rounded-full bg-[#12151A]/80 border border-[#C6A356]/60 text-[#C6A356] shadow-md">
+                        <ZoomIn className="w-4 h-4" />
+                      </span>
+                    </div>
+                  </div>
+                </Reveal>
 
                 <div>
                   <span className="text-[9px] tracking-[0.25em] uppercase text-[#1E4438] font-bold block mb-0.5">
@@ -982,27 +1125,37 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
                 )}
               </div>
 
-              {/* ART DECO AMPERSAND & DIAMOND DIVIDER */}
-              <div className="py-0.5">
+              {/* ART DECO AMPERSAND MEDALLION */}
+              <div className="py-0.5 relative">
                 <ArtDecoDivider className="my-2 text-[#C6A356]" />
-                <div className="flex items-center justify-center gap-4">
-                  <span className="font-['Marcellus',serif] italic text-2xl text-[#C6A356] font-normal">&amp;</span>
+                <div className="flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-full border border-[#C6A356] bg-[#FBF3E4] shadow-md flex items-center justify-center text-[#C6A356] font-['Marcellus',serif] italic text-xl -mt-5 z-10">
+                    &amp;
+                  </div>
                 </div>
               </div>
 
               {/* 2. MEMPELAI PRIA */}
-              <div className="space-y-3.5 bg-[#EDE3C8]/50 p-5 rounded-2xl border border-[#C6A356]/40 shadow-xs text-center">
-                {/* Groom Portrait in Oval Brass Frame */}
-                <div 
-                  onClick={() => setSelectedPhoto(groomPortrait)}
-                  className="w-32 h-40 mx-auto rounded-full overflow-hidden border-2 border-[#C6A356] shadow-lg p-1 bg-white cursor-pointer group"
-                >
-                  <img 
-                    src={groomPortrait} 
-                    alt={groomFullName} 
-                    className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
+              <div className="space-y-3.5 bg-[#EDE3C8]/50 p-5 rounded-2xl border border-[#C6A356]/40 shadow-xs text-center transition-all hover:border-[#C6A356] group/card">
+                {/* Groom Portrait in Oval Brass Frame with Iris Reveal and Lightbox Hint */}
+                <Reveal variant="iris" as="div" className="w-32 h-40 mx-auto">
+                  <div 
+                    onClick={() => setSelectedPhoto(groomPortrait)}
+                    className="relative w-32 h-40 mx-auto rounded-full overflow-hidden border-2 border-[#C6A356] shadow-lg p-1 bg-white cursor-pointer group"
+                    title="Sentuh untuk memperbesar foto"
+                  >
+                    <img 
+                      src={groomPortrait} 
+                      alt={groomFullName} 
+                      className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-[#0B0D10]/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-full flex items-center justify-center">
+                      <span className="p-2 rounded-full bg-[#12151A]/80 border border-[#C6A356]/60 text-[#C6A356] shadow-md">
+                        <ZoomIn className="w-4 h-4" />
+                      </span>
+                    </div>
+                  </div>
+                </Reveal>
 
                 <div>
                   <span className="text-[9px] tracking-[0.25em] uppercase text-[#1E4438] font-bold block mb-0.5">
@@ -1043,7 +1196,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             {/* Scroll Indicator */}
             <div className="flex flex-col items-center gap-1 text-[#8C4A36] text-[10px] uppercase tracking-widest pt-1">
               <span>Lanjut ke Rangkaian Acara</span>
-              <span className="text-sm animate-bounce">↓</span>
+              <ChevronDown className="w-3.5 h-3.5 animate-bounce text-[#8C4A36]" />
             </div>
 
           </div>
@@ -1054,9 +1207,9 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           <div className="flex justify-center mb-6">
             <ArtDecoSunburst className="w-24 h-12 text-[#C6A356]" />
           </div>
-          <p className="font-['Marcellus',serif] italic text-base sm:text-lg leading-relaxed text-[#181512] max-w-sm mx-auto">
+          <Reveal variant="blur" as="p" className="font-['Marcellus',serif] italic text-base sm:text-lg leading-relaxed text-[#181512] max-w-sm mx-auto">
             &ldquo;{quoteText}&rdquo;
-          </p>
+          </Reveal>
           {quoteSource && (
             <p className="text-[10px] tracking-widest uppercase text-[#8C4A36] font-semibold mt-3">
               — {quoteSource}
@@ -1076,52 +1229,92 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             Malam resepsi bernuansa elegan di bawah kilau lampu temaram
           </p>
 
-          {/* Countdown Boxes */}
-          <div className="flex justify-center gap-2.5 sm:gap-3 mb-10">
-            <div className="min-w-[62px] py-3 px-2 border border-[#C6A356]/40 bg-[#0B0D10]/80">
-              <span className="block font-['Marcellus',serif] text-2xl text-[#C6A356] tabular-nums">{timeLeft.days}</span>
-              <small className="text-[9px] tracking-widest uppercase text-[#FBF3E4]/60">Hari</small>
+          {/* Stepped Art Deco Countdown Boxes with Chronometer Hairlines */}
+          <div className="flex justify-center gap-2 sm:gap-3 mb-10">
+            <div className="relative group min-w-[66px] sm:min-w-[72px] py-3.5 px-2 border border-[#C6A356]/60 bg-gradient-to-b from-[#181C22] to-[#0B0D10] shadow-[0_4px_20px_rgba(0,0,0,0.5)] rounded-xs">
+              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#C6A356]" />
+              <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#C6A356]" />
+              <span className="block font-['Marcellus',serif] text-2xl sm:text-3xl text-[#C6A356] font-bold tabular-nums">
+                <TickDigit value={timeLeft.days} />
+              </span>
+              <small className="text-[9px] tracking-widest uppercase text-[#FBF3E4]/60 font-medium">Hari</small>
             </div>
-            <div className="min-w-[62px] py-3 px-2 border border-[#C6A356]/40 bg-[#0B0D10]/80">
-              <span className="block font-['Marcellus',serif] text-2xl text-[#C6A356] tabular-nums">{timeLeft.hours}</span>
-              <small className="text-[9px] tracking-widest uppercase text-[#FBF3E4]/60">Jam</small>
+            <div className="relative group min-w-[66px] sm:min-w-[72px] py-3.5 px-2 border border-[#C6A356]/60 bg-gradient-to-b from-[#181C22] to-[#0B0D10] shadow-[0_4px_20px_rgba(0,0,0,0.5)] rounded-xs">
+              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#C6A356]" />
+              <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#C6A356]" />
+              <span className="block font-['Marcellus',serif] text-2xl sm:text-3xl text-[#C6A356] font-bold tabular-nums">
+                <TickDigit value={timeLeft.hours} />
+              </span>
+              <small className="text-[9px] tracking-widest uppercase text-[#FBF3E4]/60 font-medium">Jam</small>
             </div>
-            <div className="min-w-[62px] py-3 px-2 border border-[#C6A356]/40 bg-[#0B0D10]/80">
-              <span className="block font-['Marcellus',serif] text-2xl text-[#C6A356] tabular-nums">{timeLeft.mins}</span>
-              <small className="text-[9px] tracking-widest uppercase text-[#FBF3E4]/60">Menit</small>
+            <div className="relative group min-w-[66px] sm:min-w-[72px] py-3.5 px-2 border border-[#C6A356]/60 bg-gradient-to-b from-[#181C22] to-[#0B0D10] shadow-[0_4px_20px_rgba(0,0,0,0.5)] rounded-xs">
+              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#C6A356]" />
+              <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#C6A356]" />
+              <span className="block font-['Marcellus',serif] text-2xl sm:text-3xl text-[#C6A356] font-bold tabular-nums">
+                <TickDigit value={timeLeft.mins} />
+              </span>
+              <small className="text-[9px] tracking-widest uppercase text-[#FBF3E4]/60 font-medium">Menit</small>
             </div>
-            <div className="min-w-[62px] py-3 px-2 border border-[#C6A356]/40 bg-[#0B0D10]/80">
-              <span className="block font-['Marcellus',serif] text-2xl text-[#C6A356] tabular-nums">{timeLeft.secs}</span>
-              <small className="text-[9px] tracking-widest uppercase text-[#FBF3E4]/60">Detik</small>
+            <div className="relative group min-w-[66px] sm:min-w-[72px] py-3.5 px-2 border border-[#C6A356]/60 bg-gradient-to-b from-[#181C22] to-[#0B0D10] shadow-[0_4px_20px_rgba(0,0,0,0.5)] rounded-xs">
+              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#C6A356]" />
+              <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#C6A356]" />
+              <span className="block font-['Marcellus',serif] text-2xl sm:text-3xl text-[#C6A356] font-bold tabular-nums">
+                <TickDigit value={timeLeft.secs} />
+              </span>
+              <small className="text-[9px] tracking-widest uppercase text-[#FBF3E4]/60 font-medium">Detik</small>
             </div>
           </div>
 
           {/* Schedule Cards */}
           <div className="grid gap-4 max-w-xs mx-auto text-left mb-8">
-            <div className="border border-[#C6A356]/35 p-5 bg-[#0B0D10]/50">
+            <div className="border border-[#C6A356]/40 p-5 bg-[#0B0D10]/70 relative group hover:border-[#C6A356] transition-colors">
+              <div className="absolute top-0 right-0 px-2 py-0.5 bg-[#C6A356]/20 text-[#C6A356] text-[9px] uppercase tracking-wider font-semibold border-b border-l border-[#C6A356]/30">
+                Khidmat
+              </div>
               <p className="text-[10px] tracking-widest uppercase text-[#C6A356] font-semibold mb-1">Akad Nikah</p>
               <p className="font-['Marcellus',serif] text-xl text-[#FBF3E4]">{akadTime}</p>
-              <p className="text-xs text-[#EDE3C8]/60 mt-1">{akadVenue}</p>
+              <p className="text-xs text-[#EDE3C8]/70 mt-1">{akadVenue}</p>
             </div>
 
-            <div className="border border-[#C6A356]/35 p-5 bg-[#0B0D10]/50">
+            <div className="border border-[#C6A356]/40 p-5 bg-[#0B0D10]/70 relative group hover:border-[#C6A356] transition-colors">
+              <div className="absolute top-0 right-0 px-2 py-0.5 bg-[#C6A356]/20 text-[#C6A356] text-[9px] uppercase tracking-wider font-semibold border-b border-l border-[#C6A356]/30">
+                Perayaan
+              </div>
               <p className="text-[10px] tracking-widest uppercase text-[#C6A356] font-semibold mb-1">Resepsi</p>
               <p className="font-['Marcellus',serif] text-xl text-[#FBF3E4]">{resepsiTime}</p>
-              <p className="text-xs text-[#EDE3C8]/60 mt-1">{resepsiVenue}</p>
+              <p className="text-xs text-[#EDE3C8]/70 mt-1">{resepsiVenue}</p>
             </div>
           </div>
 
-          {/* Calendar Button */}
-          <div className="pt-2">
+          {/* Calendar & Copy Schedule Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 max-w-xs mx-auto">
             <a
               href={googleCalendarUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#C6A356] hover:bg-[#b59247] text-[#0B0D10] text-xs font-semibold rounded-full shadow-md transition-all active:scale-95"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#C6A356] hover:bg-[#b59247] text-[#0B0D10] text-xs font-semibold rounded-full shadow-md transition-all active:scale-95 zz-shimmer"
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Simpan ke Google Calendar</span>
+              <span>Simpan ke Kalender</span>
             </a>
+
+            <button
+              type="button"
+              onClick={handleCopySchedule}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 border border-[#C6A356]/60 hover:bg-[#C6A356]/20 text-[#FBF3E4] text-xs font-medium rounded-full transition-all active:scale-95 cursor-pointer"
+            >
+              {isCopied('event-schedule') ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-[#C6A356]" />
+                  <span className="text-[#C6A356] zz-pop">Rincian Tersalin</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 text-[#C6A356]" />
+                  <span>Salin Jadwal</span>
+                </>
+              )}
+            </button>
           </div>
         </section>
 
@@ -1131,32 +1324,53 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             <img 
               src={spotlightImage || galleryImages[1] || galleryImages[0] || heroImage} 
               alt={resepsiVenue} 
-              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.75]"
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.70]"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/50 to-transparent" />
           
-          <div className="relative z-10 w-full p-8 text-center text-[#FBF3E4] space-y-3">
-            <p className="uppercase tracking-[0.3em] text-[10px] font-semibold text-[#C6A356]">
-              LOKASI ACARA
-            </p>
-            <h4 className="font-['Marcellus',serif] text-2xl text-[#FBF3E4]">
+          <div className="relative z-10 w-full p-6 sm:p-8 text-center text-[#FBF3E4] space-y-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0B0D10]/80 border border-[#C6A356]/40 text-[#C6A356] text-[10px] uppercase tracking-widest font-semibold mb-1">
+              <MapPin className="w-3 h-3" />
+              <span>Lokasi Acara</span>
+            </div>
+
+            <h4 className="font-['Marcellus',serif] text-2xl sm:text-3xl text-[#FBF3E4]">
               {resepsiVenue}
             </h4>
             <p className="text-xs text-[#EDE3C8]/85 max-w-xs mx-auto leading-relaxed">
               {city}
             </p>
-            <div className="pt-3">
+
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2 max-w-xs mx-auto">
               <a 
                 href={mapsUrl} 
                 target="_blank" 
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 border border-[#C6A356] hover:bg-[#C6A356]/20 text-[#FBF3E4] px-6 py-2.5 text-xs tracking-widest uppercase rounded-full transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#C6A356] hover:bg-[#b59247] text-[#0B0D10] px-5 py-2.5 text-xs font-semibold rounded-full shadow-md transition-all active:scale-95"
               >
-                <MapPin className="w-3.5 h-3.5 text-[#C6A356]" />
-                <span>Buka di Google Maps</span>
-                <ExternalLink className="w-3 h-3 text-[#EDE3C8]/60" />
+                <Compass className="w-3.5 h-3.5" />
+                <span>Google Maps</span>
+                <ExternalLink className="w-3 h-3 text-[#0B0D10]/70" />
               </a>
+
+              <button
+                type="button"
+                onClick={handleCopyAddress}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 border border-[#C6A356] hover:bg-[#C6A356]/20 text-[#FBF3E4] px-4 py-2.5 text-xs rounded-full transition-all active:scale-95 cursor-pointer"
+              >
+                {isCopied('venue-address') ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-[#C6A356]" />
+                    <span className="text-[#C6A356] zz-pop">Alamat Tersalin</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-[#C6A356]" />
+                    <span>Salin Alamat</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </section>
@@ -1172,9 +1386,9 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/35 to-transparent" />
           <div className="relative z-10 w-full p-8 text-center text-[#FBF3E4]">
-            <p className="font-['Marcellus',serif] italic text-lg sm:text-xl leading-relaxed max-w-xs mx-auto">
+            <Reveal variant="blur" as="p" className="font-['Marcellus',serif] italic text-lg sm:text-xl leading-relaxed max-w-xs mx-auto">
               &ldquo;Di bawah lampu temaram, dua bayangan menjadi satu.&rdquo;
-            </p>
+            </Reveal>
           </div>
         </section>
 
@@ -1195,10 +1409,13 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
               Kisah Cinta Kami
             </h3>
 
-            <div className="relative max-w-xs mx-auto pl-6 border-l border-[#8C4A36]/40 space-y-10 text-left">
+            <Reveal variant="none" as="div" className="relative max-w-xs mx-auto pl-6 space-y-10 text-left">
+              {/* Dynamic Animated Line */}
+              <span className="zz-line" />
+
               {storyMilestones.map((item, idx) => (
                 <div key={idx} className="relative">
-                  <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#8C4A36]" />
+                  <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#8C4A36] zz-dot" />
                   <span className="text-[10px] tracking-widest uppercase text-[#1E4438] block mb-1 font-semibold">
                     {item.date || item.chapter}
                   </span>
@@ -1225,11 +1442,11 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
                   </p>
                 </div>
               ))}
-            </div>
+            </Reveal>
           </section>
         )}
 
-        {/* SECTION 9: DRESS CODE (Ketentuan Busana & Swatches) */}
+        {/* SECTION 9: DRESS CODE (Ketentuan Busana & Interactive Swatches) */}
         <section id="dresscode" className="py-20 px-6 sm:px-8 bg-[#12151A] text-[#FBF3E4] text-center">
           <p className="uppercase tracking-[0.3em] text-[10px] font-semibold text-[#C6A356] mb-2">
             KETENTUAN BUSANA
@@ -1237,26 +1454,78 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           <h3 className="font-['Marcellus',serif] text-3xl text-[#FBF3E4] mb-3">
             Art Deco Evening Attire
           </h3>
-          <p className="text-xs text-[#EDE3C8]/85 leading-relaxed max-w-xs mx-auto mb-8 font-light">
-            Kami mengundang Anda mengenakan busana bernuansa zamrud, kuningan, atau bata tua — agar keakraban malam itu semakin hangat dalam bingkai warna yang senada.
+          <p className="text-xs text-[#EDE3C8]/85 leading-relaxed max-w-xs mx-auto mb-7 font-light">
+            Kami mengundang Anda mengenakan busana bernuansa hangat Art Deco. Sentuh palet warna di bawah untuk panduan inspirasi gaya busana.
           </p>
 
-          <div className="flex justify-center gap-5 sm:gap-6 flex-wrap">
-            <div className="flex flex-col items-center gap-2">
-              <i className="w-10 h-10 rounded-full border border-[#FBF3E4]/30 block shadow-md" style={{ background: '#1E4438' }} />
-              <span className="text-[10px] tracking-wider uppercase text-[#C6A356]">Zamrud</span>
+          {/* Interactive Color Swatches */}
+          <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mb-6">
+            {(Object.keys(SWATCH_DETAILS) as Array<keyof typeof SWATCH_DETAILS>).map((key, idx) => {
+              const swatch = SWATCH_DETAILS[key];
+              const isActive = activeSwatch === key;
+              return (
+                <Reveal key={key} variant="zoom" delay={idx * 90} as="div">
+                  <button
+                    type="button"
+                    onClick={() => setActiveSwatch(key)}
+                    className="flex flex-col items-center gap-2 group cursor-pointer transition-all active:scale-95"
+                  >
+                    <div 
+                      className={`relative w-11 h-11 rounded-full border transition-all duration-300 shadow-md flex items-center justify-center ${
+                        isActive 
+                          ? 'ring-2 ring-[#C6A356] ring-offset-2 ring-offset-[#12151A] scale-110 shadow-[0_0_15px_rgba(198,163,86,0.5)] border-white' 
+                          : 'border-[#FBF3E4]/30 opacity-70 group-hover:opacity-100 group-hover:scale-105'
+                      }`}
+                      style={{ background: swatch.color }}
+                    >
+                      {isActive && (
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: swatch.textColor }} />
+                      )}
+                    </div>
+                    <span className={`text-[10px] tracking-wider uppercase transition-colors ${isActive ? 'text-[#C6A356] font-bold' : 'text-[#EDE3C8]/70'}`}>
+                      {swatch.name.split(' ')[0]}
+                    </span>
+                  </button>
+                </Reveal>
+              );
+            })}
+          </div>
+
+          {/* Dynamic Style Recommendation Card */}
+          <div className="relative max-w-xs mx-auto p-5 border border-[#C6A356]/40 bg-[#0B0D10]/85 text-left shadow-xl transition-all duration-300">
+            <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: SWATCH_DETAILS[activeSwatch].color }} />
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#C6A356]/20">
+              <div>
+                <span className="font-['Marcellus',serif] text-base text-[#FBF3E4] block">
+                  {SWATCH_DETAILS[activeSwatch].name}
+                </span>
+                <span className="text-[10px] text-[#EDE3C8]/60 font-mono">
+                  {SWATCH_DETAILS[activeSwatch].subtitle}
+                </span>
+              </div>
+              <span className="text-[9px] px-2.5 py-0.5 rounded-full border border-[#C6A356]/40 text-[#C6A356] bg-[#C6A356]/10 uppercase tracking-widest font-semibold">
+                {SWATCH_DETAILS[activeSwatch].badge}
+              </span>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <i className="w-10 h-10 rounded-full border border-[#FBF3E4]/30 block shadow-md" style={{ background: '#C6A356' }} />
-              <span className="text-[10px] tracking-wider uppercase text-[#C6A356]">Kuningan</span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <i className="w-10 h-10 rounded-full border border-[#FBF3E4]/30 block shadow-md" style={{ background: '#8C4A36' }} />
-              <span className="text-[10px] tracking-wider uppercase text-[#C6A356]">Bata Tua</span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <i className="w-10 h-10 rounded-full border border-[#FBF3E4]/30 block shadow-md" style={{ background: '#EDE3C8' }} />
-              <span className="text-[10px] tracking-wider uppercase text-[#C6A356]">Gading</span>
+
+            <div className="space-y-2.5 text-xs">
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-[#C6A356] font-semibold block mb-0.5">
+                  Wanita (Ladies):
+                </span>
+                <p className="text-[#EDE3C8]/85 leading-relaxed font-light">
+                  {SWATCH_DETAILS[activeSwatch].forLadies}
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-[#C6A356]/15">
+                <span className="text-[10px] uppercase tracking-wider text-[#C6A356] font-semibold block mb-0.5">
+                  Pria (Gentlemen):
+                </span>
+                <p className="text-[#EDE3C8]/85 leading-relaxed font-light">
+                  {SWATCH_DETAILS[activeSwatch].forGentlemen}
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -1272,9 +1541,9 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/35 to-transparent" />
           <div className="relative z-10 w-full p-8 text-center text-[#FBF3E4]">
-            <p className="font-['Marcellus',serif] italic text-lg sm:text-xl leading-relaxed max-w-xs mx-auto">
+            <Reveal variant="blur" as="p" className="font-['Marcellus',serif] italic text-lg sm:text-xl leading-relaxed max-w-xs mx-auto">
               &ldquo;Dua hati yang memilih untuk terus melangkah bersama.&rdquo;
-            </p>
+            </Reveal>
           </div>
         </section>
 
@@ -1291,9 +1560,10 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
                 className="relative aspect-3/4 max-w-[320px] mx-auto overflow-hidden border border-[#8C4A36]/40 shadow-2xl cursor-pointer group bg-[#12151A]"
               >
                 <img 
+                  key={carouselIndex}
                   src={galleryImages[carouselIndex] || galleryImages[0]} 
                   alt={`Galeri foto ${carouselIndex + 1}`} 
-                  className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 zz-fade"
                 />
                 <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="text-xs text-[#FBF3E4] bg-[#0B0D10]/80 px-4 py-1.5 rounded-full border border-[#C6A356]/40">
@@ -1361,7 +1631,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             Amplop Digital
           </h3>
 
-          <div className="relative max-w-sm mx-auto border-2 border-[#C6A356]/70 p-7 bg-[#FBF3E4] space-y-6 shadow-xl">
+          <div className="relative max-w-sm mx-auto border-2 border-[#C6A356]/70 p-6 sm:p-7 bg-[#FBF3E4] space-y-5 shadow-xl">
             <div className="absolute top-2 left-2 pointer-events-none"><ArtDecoCorner position="tl" /></div>
             <div className="absolute top-2 right-2 pointer-events-none"><ArtDecoCorner position="tr" /></div>
             <div className="absolute bottom-2 left-2 pointer-events-none"><ArtDecoCorner position="bl" /></div>
@@ -1372,69 +1642,110 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
               Doa restu Anda adalah karunia yang paling berarti bagi kami. Namun jika ingin memberi tanda kasih, kami dengan hormat menerima melalui:
             </p>
 
-            <div className="p-4 bg-[#EDE3C8]/70 border border-[#C6A356]/40 rounded text-left space-y-1.5">
-              <span className="text-[10px] text-[#1E4438] font-bold block uppercase tracking-wider">{bankName}</span>
-              <p className="text-base font-mono font-bold text-[#181512]">{accountNumber}</p>
-              <p className="text-xs text-[#181512]">a.n. {accountHolder}</p>
-            </div>
-
-            {secondaryAccountNumber && (
-              <div className="p-4 bg-[#EDE3C8]/70 border border-[#C6A356]/40 rounded text-left space-y-1.5">
-                <span className="text-[10px] text-[#1E4438] font-bold block uppercase tracking-wider">{secondaryBankName || 'Bank Cadangan'}</span>
-                <p className="text-base font-mono font-bold text-[#181512]">{secondaryAccountNumber}</p>
-                <p className="text-xs text-[#181512]">a.n. {secondaryAccountHolder || accountHolder}</p>
+            {/* Primary Bank Card */}
+            <div className="p-4 bg-[#EDE3C8]/70 border border-[#C6A356]/40 rounded-lg text-left space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-[#1E4438] font-bold block uppercase tracking-wider">{bankName}</span>
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#1E4438]/10 text-[#1E4438] font-semibold">Rekening Utama</span>
               </div>
-            )}
+              <p className="text-lg font-mono font-bold text-[#181512] tracking-wider">{accountNumber}</p>
+              <p className="text-xs text-[#181512]">a.n. {accountHolder}</p>
 
-            <div className="flex gap-2">
               <button
+                type="button"
                 onClick={handleCopyAccount}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 bg-[#C6A356] hover:bg-[#b59247] text-[#0B0D10] text-xs font-semibold rounded uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-xs"
+                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-[#C6A356] hover:bg-[#b59247] text-[#0B0D10] text-xs font-semibold rounded uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-xs mt-1 zz-shimmer"
               >
                 {isCopied('bank') ? (
                   <>
                     <Check className="w-3.5 h-3.5" />
-                    <span>Rekening Tersalin</span>
+                    <span className="zz-pop">Rekening Tersalin</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-3.5 h-3.5" />
-                    <span>Salin Nomor Rekening</span>
+                    <span>Salin Rekening {bankName}</span>
                   </>
                 )}
               </button>
-
-              <button
-                onClick={() => setShowQrisModal(true)}
-                className="flex items-center justify-center gap-1.5 py-2.5 px-3.5 bg-[#EDE3C8] hover:bg-[#ded1b3] border border-[#C6A356] text-[#181512] text-xs font-semibold rounded transition-colors cursor-pointer"
-                title="Tampilkan QRIS"
-              >
-                <QrCode className="w-4 h-4 text-[#C6A356]" />
-                <span className="hidden sm:inline">QRIS</span>
-              </button>
             </div>
+
+            {/* Secondary Bank Card (if provided) */}
+            {secondaryAccountNumber && (
+              <div className="p-4 bg-[#EDE3C8]/70 border border-[#C6A356]/40 rounded-lg text-left space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-[#8C4A36] font-bold block uppercase tracking-wider">{secondaryBankName || 'Bank Cadangan'}</span>
+                  <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#8C4A36]/10 text-[#8C4A36] font-semibold">Pilihan Lain</span>
+                </div>
+                <p className="text-lg font-mono font-bold text-[#181512] tracking-wider">{secondaryAccountNumber}</p>
+                <p className="text-xs text-[#181512]">a.n. {secondaryAccountHolder || accountHolder}</p>
+
+                <button
+                  type="button"
+                  onClick={handleCopySecondaryAccount}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-[#8C4A36] hover:bg-[#783e2d] text-[#FBF3E4] text-xs font-semibold rounded uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-xs mt-1 zz-shimmer"
+                >
+                  {isCopied('bank-secondary') ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span className="zz-pop">Rekening Tersalin</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Salin Rekening {secondaryBankName || 'Kedua'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* QRIS Button */}
+            {qrisImageUrl && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowQrisModal(true)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#EDE3C8] hover:bg-[#ded1b3] border border-[#C6A356] text-[#181512] text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                >
+                  <QrCode className="w-4 h-4 text-[#C6A356]" />
+                  <span>Buka Pembayaran QRIS</span>
+                </button>
+              </div>
+            )}
           </div>
         </section>
 
         {/* SECTION 13: GUESTBOOK (Ucapan & Doa) */}
         <section id="guestbook" className="py-20 px-6 sm:px-8 bg-[#12151A] text-[#FBF3E4]">
-          <h3 className="font-['Marcellus',serif] text-3xl text-center text-[#FBF3E4] mb-8">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Sparkles className="w-4 h-4 text-[#C6A356]" />
+            <p className="uppercase tracking-[0.3em] text-[10px] font-semibold text-[#C6A356]">
+              BUKU TAMU DIGITAL
+            </p>
+          </div>
+          <h3 className="font-['Marcellus',serif] text-3xl text-center text-[#FBF3E4] mb-3">
             Ucapan &amp; Doa
           </h3>
+          <p className="text-xs text-[#EDE3C8]/75 max-w-xs mx-auto text-center mb-8 font-light">
+            Torehkan doa restu serta harapan hangat Anda bagi perjalanan kedua mempelai.
+          </p>
 
           {/* Wishes List */}
-          <div className="max-w-sm mx-auto mb-8 max-h-64 overflow-y-auto space-y-3 pr-1">
+          <div className="max-w-sm mx-auto mb-6 max-h-64 overflow-y-auto space-y-3 pr-1 scrollbar-thin">
             {wishes.map((w, idx) => (
-              <div key={idx} className="border border-[#C6A356]/30 p-4 bg-[#0B0D10]/60 text-left">
-                <span className="font-['Marcellus',serif] text-sm text-[#C6A356] block mb-1">
-                  {w.name}
-                </span>
-                <p className="text-xs text-[#FBF3E4]/90 leading-relaxed font-light mb-1">
+              <div key={idx} className="border border-[#C6A356]/30 p-4 bg-[#0B0D10]/70 text-left rounded-xs">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-['Marcellus',serif] text-sm text-[#C6A356]">
+                    {w.name}
+                  </span>
+                  <span className="text-[9px] text-[#EDE3C8]/50">
+                    {w.time}
+                  </span>
+                </div>
+                <p className="text-xs text-[#FBF3E4]/90 leading-relaxed font-light">
                   {w.message}
                 </p>
-                <span className="text-[9px] text-[#EDE3C8]/40 block text-right">
-                  {w.time}
-                </span>
               </div>
             ))}
           </div>
@@ -1446,20 +1757,21 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
               placeholder="Nama Anda"
               value={guestNameInput}
               onChange={(e) => setGuestNameInput(e.target.value)}
-              className="w-full bg-transparent border border-[#FBF3E4]/40 text-[#FBF3E4] p-3 text-xs rounded focus:outline-none focus:border-[#C6A356]"
+              className="w-full bg-[#0B0D10]/60 border border-[#C6A356]/40 text-[#FBF3E4] p-3 text-xs rounded-sm focus:outline-none focus:border-[#C6A356]"
               required
             />
+
             <textarea
               placeholder="Tulis ucapan & doa untuk kedua mempelai"
               value={guestMsgInput}
               onChange={(e) => setGuestMsgInput(e.target.value)}
               rows={3}
-              className="w-full bg-transparent border border-[#FBF3E4]/40 text-[#FBF3E4] p-3 text-xs rounded focus:outline-none focus:border-[#C6A356] resize-none"
+              className="w-full bg-[#0B0D10]/60 border border-[#C6A356]/40 text-[#FBF3E4] p-3 text-xs rounded-sm focus:outline-none focus:border-[#C6A356] resize-none"
               required
             />
             <button
               type="submit"
-              className="w-full py-3 bg-[#C6A356] hover:bg-[#b59247] text-[#0B0D10] text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-md"
+              className="w-full py-3 bg-[#C6A356] hover:bg-[#b59247] text-[#0B0D10] text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-md rounded-sm zz-shimmer"
             >
               Kirim Ucapan
             </button>
@@ -1468,59 +1780,118 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
 
         {/* SECTION 14: RSVP */}
         <section id="rsvp" className="py-20 px-6 sm:px-8 bg-[#EDE3C8] text-center">
+          <p className="uppercase tracking-[0.3em] text-[10px] font-semibold text-[#8C4A36] mb-2">
+            RESERVASI
+          </p>
           <h3 className="font-['Marcellus',serif] text-3xl text-[#181512] mb-6">
             Konfirmasi Kehadiran
           </h3>
 
           {rsvpSuccess && (
-            <div className="max-w-sm mx-auto mb-4 p-3 bg-emerald-50 border border-emerald-400 text-emerald-800 text-xs">
-              ✓ Terima kasih! Konfirmasi kehadiran Anda telah tersimpan.
+            <div className="max-w-sm mx-auto mb-4 p-3 bg-[#1E4438]/15 border border-[#1E4438]/40 text-[#181512] text-xs rounded flex items-center justify-center gap-2">
+              <Check className="w-4 h-4 text-[#1E4438] flex-shrink-0" />
+              <span>Konfirmasi kehadiran Anda telah berhasil tersimpan.</span>
             </div>
           )}
 
-          <form onSubmit={handleRsvpSubmit} className="max-w-sm mx-auto space-y-3.5 text-left bg-[#FBF3E4] p-6 border border-[#C6A356]/40 shadow-xs">
+          <form onSubmit={handleRsvpSubmit} className="max-w-sm mx-auto space-y-4 text-left bg-[#FBF3E4] p-6 border-2 border-[#C6A356]/50 shadow-lg relative">
+            <div className="absolute top-1.5 left-1.5 pointer-events-none"><ArtDecoCorner position="tl" /></div>
+            <div className="absolute top-1.5 right-1.5 pointer-events-none"><ArtDecoCorner position="tr" /></div>
+            
             <div>
-              <label className="block text-xs font-medium text-[#181512] mb-1">Nama Lengkap</label>
+              <label className="block text-xs font-semibold text-[#181512] mb-1">Nama Lengkap</label>
               <input
                 type="text"
                 placeholder="Nama Anda"
                 value={rsvpName}
                 onChange={(e) => setRsvpName(e.target.value)}
-                className="w-full bg-transparent border border-[#1E4438]/40 text-[#181512] p-2.5 text-xs rounded focus:outline-none focus:border-[#1E4438]"
+                className="w-full bg-[#EDE3C8]/40 border border-[#1E4438]/40 text-[#181512] p-2.5 text-xs rounded focus:outline-none focus:border-[#1E4438]"
                 required
               />
             </div>
 
+            {/* Tactile Art Deco Attendance Toggle Buttons */}
             <div>
-              <label className="block text-xs font-medium text-[#181512] mb-1">Kehadiran</label>
-              <select
-                value={rsvpAttendance}
-                onChange={(e) => setRsvpAttendance(e.target.value as 'hadir' | 'tidak_hadir' | 'ragu')}
-                className="w-full bg-transparent border border-[#1E4438]/40 text-[#181512] p-2.5 text-xs rounded focus:outline-none focus:border-[#1E4438]"
-                required
-              >
-                <option value="hadir">Hadir</option>
-                <option value="tidak_hadir">Tidak Hadir</option>
-                <option value="ragu">Masih Ragu</option>
-              </select>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#181512] mb-1.5">Konfirmasi Kehadiran</label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRsvpAttendance('hadir')}
+                  className={`p-3 rounded border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                    rsvpAttendance === 'hadir'
+                      ? 'bg-[#1E4438] text-[#FBF3E4] border-[#1E4438] shadow-md ring-2 ring-[#C6A356]/60'
+                      : 'bg-[#EDE3C8]/60 text-[#181512] border-[#C6A356]/30 hover:border-[#1E4438]/50'
+                  }`}
+                >
+                  <span className="font-['Marcellus',serif] text-xs font-semibold tracking-wider uppercase">Hadir</span>
+                  <span className={`text-[9px] mt-0.5 tracking-tight ${rsvpAttendance === 'hadir' ? 'text-[#EDE3C8]/80' : 'text-[#181512]/60'}`}>Pasti Hadir</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRsvpAttendance('ragu')}
+                  className={`p-3 rounded border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                    rsvpAttendance === 'ragu'
+                      ? 'bg-[#C6A356] text-[#0B0D10] border-[#C6A356] shadow-md ring-2 ring-[#0B0D10]/30'
+                      : 'bg-[#EDE3C8]/60 text-[#181512] border-[#C6A356]/30 hover:border-[#C6A356]'
+                  }`}
+                >
+                  <span className="font-['Marcellus',serif] text-xs font-semibold tracking-wider uppercase">Ragu</span>
+                  <span className={`text-[9px] mt-0.5 tracking-tight ${rsvpAttendance === 'ragu' ? 'text-[#0B0D10]/80' : 'text-[#181512]/60'}`}>Belum Pasti</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRsvpAttendance('tidak_hadir')}
+                  className={`p-3 rounded border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                    rsvpAttendance === 'tidak_hadir'
+                      ? 'bg-[#8C4A36] text-[#FBF3E4] border-[#8C4A36] shadow-md ring-2 ring-[#C6A356]/60'
+                      : 'bg-[#EDE3C8]/60 text-[#181512] border-[#C6A356]/30 hover:border-[#8C4A36]/50'
+                  }`}
+                >
+                  <span className="font-['Marcellus',serif] text-xs font-semibold tracking-wider uppercase">Absen</span>
+                  <span className={`text-[9px] mt-0.5 tracking-tight ${rsvpAttendance === 'tidak_hadir' ? 'text-[#EDE3C8]/80' : 'text-[#181512]/60'}`}>Berhalangan</span>
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-[#181512] mb-1">Jumlah Tamu</label>
-              <input
-                type="number"
-                min="1"
-                max="5"
-                placeholder="Jumlah tamu"
-                value={rsvpCount}
-                onChange={(e) => setRsvpCount(e.target.value)}
-                className="w-full bg-transparent border border-[#1E4438]/40 text-[#181512] p-2.5 text-xs rounded focus:outline-none focus:border-[#1E4438]"
-              />
-            </div>
+            {/* Tactile Guest Count Stepper */}
+            {rsvpAttendance !== 'tidak_hadir' && (
+              <div>
+                <label className="block text-xs font-semibold text-[#181512] mb-1.5">Jumlah Tamu</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = parseInt(rsvpCount || '1', 10);
+                      if (current > 1) setRsvpCount(String(current - 1));
+                    }}
+                    className="w-10 h-10 rounded border border-[#C6A356]/50 bg-[#EDE3C8]/80 hover:bg-[#EDE3C8] text-[#181512] font-bold text-lg flex items-center justify-center cursor-pointer transition-colors active:scale-95"
+                    aria-label="Kurangi tamu"
+                  >
+                    -
+                  </button>
+                  <div className="flex-1 text-center py-2 border border-[#1E4438]/40 rounded bg-white font-mono text-sm font-semibold text-[#181512]">
+                    {rsvpCount || '1'} Orang
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = parseInt(rsvpCount || '1', 10);
+                      if (current < 10) setRsvpCount(String(current + 1));
+                    }}
+                    className="w-10 h-10 rounded border border-[#C6A356]/50 bg-[#EDE3C8]/80 hover:bg-[#EDE3C8] text-[#181512] font-bold text-lg flex items-center justify-center cursor-pointer transition-colors active:scale-95"
+                    aria-label="Tambah tamu"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
 
             <button
               type="submit"
-              className="w-full py-3 bg-[#1E4438] hover:bg-[#15332a] text-[#FBF3E4] text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 cursor-pointer mt-2"
+              className="w-full py-3 bg-[#1E4438] hover:bg-[#15332a] text-[#FBF3E4] text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 cursor-pointer mt-2 rounded shadow-md"
             >
               Kirim Konfirmasi
             </button>
@@ -1539,23 +1910,42 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           <div className="absolute inset-0 bg-[#0B0D10]/80" />
 
           <div className="relative z-10 text-[#FBF3E4] space-y-4 max-w-xs">
-            <div className="flex justify-center mb-4">
+            {/* Monogram Crest */}
+            <div className="w-12 h-12 rounded-full border border-[#C6A356]/80 flex items-center justify-center bg-[#0B0D10]/80 shadow-[0_0_20px_rgba(198,163,86,0.3)] mx-auto font-['Marcellus',serif] text-sm text-[#C6A356] tracking-widest mb-2">
+              {brideName[0]}&amp;{groomName[0]}
+            </div>
+
+            <div className="flex justify-center mb-3">
               <ArtDecoSunburst className="w-24 h-12 text-[#C6A356]" inverted={true} />
             </div>
             
             <p className="text-xs sm:text-sm leading-relaxed text-[#EDE3C8]/90 font-light">
-              Terima kasih telah menjadi bagian dari kisah kami. Kehadiran dan doa Anda adalah hadiah yang paling kami hargai.
+              Terima kasih telah menjadi bagian dari kisah kami. Kehadiran dan doa restu Anda adalah kehormatan serta kebahagiaan terbesar bagi kami.
             </p>
-            <p className="text-[10px] tracking-[0.25em] uppercase text-[#FBF3E4]/40 pt-4">
-              DIBUAT DENGAN CINTA — 2027
-            </p>
+            <div className="pt-2">
+              <p className="font-['Marcellus',serif] text-xl text-[#FBF3E4] font-normal tracking-wide">
+                {brideName} &amp; {groomName}
+              </p>
+              <p className="text-[10px] tracking-[0.25em] uppercase text-[#C6A356]/80 font-medium pt-1">
+                {resepsiVenue} · {city}
+              </p>
+            </div>
 
-            <div className="pt-6">
+            <div className="pt-4 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => scrollToSection('hero-video')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 border border-[#C6A356]/40 text-[#C6A356] hover:bg-[#C6A356]/15 rounded-full text-xs transition-colors cursor-pointer"
+              >
+                <ArrowUp className="w-3.5 h-3.5" />
+                <span>Kembali ke Atas</span>
+              </button>
+
               <button
                 onClick={onBackToLanding}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 border border-[#C6A356]/60 text-[#C6A356] hover:bg-[#C6A356]/20 rounded-full text-xs font-medium transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#C6A356]/15 hover:bg-[#C6A356]/25 border border-[#C6A356]/60 text-[#FBF3E4] rounded-full text-xs font-medium transition-colors cursor-pointer"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
+                <ArrowLeft className="w-3.5 h-3.5 text-[#C6A356]" />
                 <span>Kembali ke Katalog Sekarsiti</span>
               </button>
             </div>
@@ -1568,7 +1958,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
       {selectedPhoto && (
         <div 
           onClick={() => setSelectedPhoto(null)}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+          className="fixed inset-0 z-[80] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer animate-fade-in"
         >
           <button
             onClick={() => setSelectedPhoto(null)}
@@ -1588,7 +1978,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
       {showQrisModal && (
         <div 
           onClick={() => setShowQrisModal(false)}
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
+          className="fixed inset-0 z-[80] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer animate-fade-in"
         >
           <div 
             onClick={(e) => e.stopPropagation()}
