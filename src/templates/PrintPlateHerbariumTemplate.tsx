@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowLeft, 
-  MessageCircle, 
   Copy, 
   Check, 
   MapPin, 
@@ -126,8 +124,8 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       ? customData.mediaSlots.galleryImages.filter((u) => Boolean(u && !isVideoUrl(u)))
       : allAdminUploadedImages
     : [
-        '/images/editorial_couple_portrait_1790838636662.jpg',
-        '/images/wedding_bride_veil_1790901501919.jpg',
+        '/images/wedding_couple_portrait_1790833906470.jpg',
+        '/images/film_vintage_couple_1791034007642.jpg',
         '/images/wedding_vows_bouquet_1790901516667.jpg',
         '/images/wedding_dance_lights_1790901533590.jpg',
         '/images/wedding_shoes_jewelry_1790901548736.jpg',
@@ -147,17 +145,17 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   const isCoverVideo =
     isVideoUrl(rawHeroMedia) || Boolean(customData?.mediaSlots?.heroVideo && !rawHeroMedia);
   const bridePortrait = customData
-    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    ? customData.mediaSlots?.bridePortrait || (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : allAdminUploadedImages[0]) || ''
     : '/images/wedding_bride_veil_1790901501919.jpg';
   const groomPortrait = customData
-    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    ? customData.mediaSlots?.groomPortrait || (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : allAdminUploadedImages[0]) || ''
     : '/images/editorial_groom_portrait_1790915490996.jpg';
   const spotlightImage = customData
-    ? customData.mediaSlots?.spotlightImage || galleryImages[1] || galleryImages[0] || heroImage || ''
-    : galleryImages[1] || heroImage;
+    ? customData.mediaSlots?.spotlightImage || (allAdminUploadedImages.length > 3 ? allAdminUploadedImages[3] : '') || galleryImages[1] || galleryImages[0] || heroImage || ''
+    : '/images/art_deco_emerald_couple_1790840336340.jpg';
   const closingImage = customData
-    ? customData.mediaSlots?.closingImage || galleryImages[galleryImages.length - 1] || galleryImages[0] || heroImage || ''
-    : galleryImages[0] || heroImage;
+    ? customData.mediaSlots?.closingImage || (allAdminUploadedImages.length > 4 ? allAdminUploadedImages[allAdminUploadedImages.length - 1] : '') || galleryImages[galleryImages.length - 1] || galleryImages[0] || heroImage || ''
+    : '/images/wedding_dance_lights_1790901533590.jpg';
   const waxSealImage =
     customData?.mediaSlots?.waxSealEmblem ||
     (!customData ? '/images/wax_seal_gold_monogram_1790915522548.jpg' : heroImage || '/images/wax_seal_gold_monogram_1790915522548.jpg');
@@ -568,7 +566,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 01',
       title: 'Titik Temu di Kota Kembang',
       location: 'Bandung · Sudut Baca Kampus',
-      image: customData ? (allAdminUploadedImages[0] || '') : '/images/film_vintage_couple_1791034007642.jpg',
+      image: customData ? (allAdminUploadedImages.length > 0 ? allAdminUploadedImages[0] : '') : '/images/film_vintage_couple_1791034007642.jpg',
       quote: '“Pertemuan pertama yang tak disengaja di ruang baca kampus...”',
       story: 'Dipertemukan dalam lingkaran perkuliahan di Bandung. Dari obrolan hangat tentang arsitektur, karya desain, dan secangkir kopi di sudut kota, kisah kami perlahan menemukan jalannya. Tak ada yang tergesa, semua mengalir bersahaja dan apa adanya.'
     },
@@ -578,7 +576,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 02',
       title: 'Saling Menguatkan Cita',
       location: 'Jakarta & Denpasar · Meniti Karir',
-      image: customData ? (allAdminUploadedImages[1] || allAdminUploadedImages[0] || '') : '/images/wedding_vows_bouquet_1790901516667.jpg',
+      image: customData ? (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : allAdminUploadedImages[0] || '') : '/images/wedding_vows_bouquet_1790901516667.jpg',
       quote: '“Menemukan ketenangan di tengah riuhnya langkah awal...”',
       story: 'Menghadapi fase awal dunia kerja dan kesibukan yang sesekali memisahkan jarak, kami belajar arti saling percaya dan mendengarkan. Setiap perbincangan malam menjadi tempat pulang ternyaman di tengah riuhnya dunia luar.'
     },
@@ -588,7 +586,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 03',
       title: 'Satu Niat di Hadapan Keluarga',
       location: 'Jakarta Selatan · Ikrar Pertunangan',
-      image: customData ? (allAdminUploadedImages[2] || allAdminUploadedImages[0] || '') : '/images/editorial_venue_rings_1790838653826.jpg',
+      image: customData ? (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : allAdminUploadedImages[0] || '') : '/images/editorial_venue_rings_1790838653826.jpg',
       quote: '“Di hadapan kedua keluarga besar, doa-doa mulai berpadu...”',
       story: 'Di hadapan kedua orang tua dan keluarga besar yang kami muliakan, sebuah cincin melingkar sebagai tanda kesungguhan hati. Sebuah komitmen tulus untuk melangkah ke jenjang yang lebih tinggi dan saling menyempurnakan seumur hidup.'
     },
@@ -598,7 +596,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
       chapter: 'BABAK 04',
       title: 'Menyatukan Dua Jiwa',
       location: 'Grand Ballroom Aryaduta · Janji Suci',
-      image: customData ? (allAdminUploadedImages[3] || allAdminUploadedImages[0] || '') : '/images/editorial_couple_portrait_1790838636662.jpg',
+      image: customData ? (allAdminUploadedImages.length > 3 ? allAdminUploadedImages[3] : allAdminUploadedImages[0] || '') : '/images/wedding_couple_portrait_1790833906470.jpg',
       quote: '“Awal dari pelayaran panjang yang dibangun di atas cinta dan iman.”',
       story: 'Kini, dengan penuh rasa syukur dan memohon ridho Allah SWT, kami melangkah menuju gerbang pernikahan suci. Menyatukan dua keluarga, melayari samudra kehidupan bersama dalam sakinah, mawaddah, dan rahmah.'
     }
@@ -614,7 +612,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
         location: ch.location || '',
         image:
           ch.image ||
-          allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] ||
+          (allAdminUploadedImages.length > idx ? allAdminUploadedImages[idx] : '') ||
           '',
         quote: ch.quote || '',
         story: ch.story || '',
@@ -626,36 +624,6 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
   return (
     <div className="relative min-h-screen bg-[#111110] text-[#242321] font-['Plus_Jakarta_Sans',sans-serif] selection:bg-[#C5A880]/30 selection:text-[#111110]">
       
-      {/* ============================================================
-          TOP DEMO CONTROL BAR (Sticky Navigation for Sekarsiti)
-          ============================================================ */}
-      {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-[70] bg-[#161514]/95 backdrop-blur-md border-b border-[#2A2926] text-[#FAF7F2] px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs">
-          <button
-            onClick={onBackToLanding}
-            className="flex items-center gap-1.5 text-[#C5A880] hover:text-white transition-colors font-medium cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Sekarsiti</span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-2 text-[#EFE9DF]/80">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880]" />
-            <span className="font-['Fraunces',serif] text-sm text-[#FAF7F2] tracking-wide">
-              Seri Editorial Modern · {brideName} &amp; {groomName}
-            </span>
-          </div>
-
-          <button
-            onClick={onOrderViaWhatsApp}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-[#C5A880] hover:bg-[#b8986c] text-[#111110] font-semibold rounded-full shadow-xs transition-all active:scale-95 cursor-pointer"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>Pesan Desain Ini</span>
-          </button>
-        </header>
-      )}
-
       {/* Floating Audio Disk Player (Mobile) */}
       {isOpened && (
         <div className="fixed bottom-6 right-6 z-[60] lg:hidden flex items-center gap-3 pointer-events-auto">
@@ -743,7 +711,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
 
       {/* 1. LEFT PANEL: Luxurious Curatorial Monograph & Film Archive */}
       <aside 
-        className="hidden lg:flex flex-col fixed top-0 bottom-0 left-0 w-[clamp(280px,28vw,410px)] bg-[#121110] border-r border-[#262420] z-10 pt-16 px-6 sm:px-7 pb-6 overflow-hidden"
+        className="hidden lg:flex flex-col fixed top-0 bottom-0 left-0 w-[clamp(280px,28vw,410px)] bg-[#121110] border-r border-[#262420] z-10 pt-6 px-6 sm:px-7 pb-6 overflow-hidden"
       >
         {/* Curatorial Masthead - Refined Editorial Typography without SVG Clutter */}
         <div className="pb-3 border-b border-[#262420] mb-3.5 shrink-0 space-y-1.5 text-left">
@@ -1060,7 +1028,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
 
       {/* 2. RIGHT PANEL: Curatorial Reading Index & Audio (Zero Box Frames) */}
       <aside 
-        className="hidden lg:flex flex-col fixed top-0 bottom-0 right-0 w-[clamp(260px,26vw,380px)] bg-[#141413] border-l border-[#22211F] z-10 pt-16 px-8 pb-8 overflow-hidden"
+        className="hidden lg:flex flex-col fixed top-0 bottom-0 right-0 w-[clamp(260px,26vw,380px)] bg-[#141413] border-l border-[#22211F] z-10 pt-6 px-8 pb-8 overflow-hidden"
       >
         {/* Curatorial Navigation Header */}
         <div className="pb-4 border-b border-[#22211F] mb-6 shrink-0 flex items-center justify-between">
@@ -1265,7 +1233,7 @@ export const PrintPlateHerbariumTemplate: React.FC<PrintPlateHerbariumTemplatePr
           CENTRAL STAGE (Mobile & Reading Column: Warm Architectural Paper)
           Open whitespace, NO rounded border box frames ("frame kotak")!
           ============================================================ */}
-      <div className={`relative z-20 max-w-[520px] mx-auto bg-[#FAF7F2] shadow-[0_0_100px_rgba(0,0,0,0.8)] min-h-screen ${customData ? 'pt-0' : 'pt-12'}`}>
+      <div className="relative z-20 max-w-[520px] mx-auto bg-[#FAF7F2] shadow-[0_0_100px_rgba(0,0,0,0.8)] min-h-screen pt-0">
         
         {/* ============================================================
             SECTION 1: VIDEO HERO

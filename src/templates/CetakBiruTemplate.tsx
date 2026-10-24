@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, MessageCircle, Disc3, Disc } from 'lucide-react';
+import { Disc3, Disc } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
 import {
   useCountdown,
@@ -22,14 +22,14 @@ interface CetakBiruTemplateProps {
 const DEFAULT_GALLERY_PHOTOS = [
   '/images/blueprint_couple_hero_1791171076790.jpg',
   '/images/blueprint_couple_candid_1791171089791.jpg',
-  '/images/blueprint_venue_detail_1791171101186.jpg',
-  '/images/blueprint_groom_portrait_1791171047935.jpg',
-  '/images/blueprint_bride_portrait_1791171064118.jpg',
+  '/images/wedding_bride_veil_1790901501919.jpg',
+  '/images/wedding_ring_exchange_1790833922500.jpg',
   '/images/editorial_couple_portrait_1790838636662.jpg',
   '/images/wedding_vows_bouquet_1790901516667.jpg',
-  '/images/editorial_venue_rings_1790838653826.jpg',
-  '/images/botanical_estate_venue_1790919022237.jpg',
-  '/images/wedding_dance_lights_1790901533590.jpg'
+  '/images/blueprint_venue_detail_1791171101186.jpg',
+  '/images/wedding_shoes_jewelry_1790901548736.jpg',
+  '/images/wedding_dance_lights_1790901533590.jpg',
+  '/images/wedding_table_botanical_1790833955186.jpg'
 ];
 
 const REGISTRATION_MARKS = [
@@ -127,7 +127,9 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
   const galleryPhotos = customData
     ? customData.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
       ? customData.mediaSlots.galleryImages.filter((u) => Boolean(u && !isVideoUrl(u)))
-      : allAdminUploadedImages
+      : allAdminUploadedImages.length > 1
+        ? allAdminUploadedImages
+        : DEFAULT_GALLERY_PHOTOS
     : DEFAULT_GALLERY_PHOTOS;
 
   const panelSourcePhotos = React.useMemo(() => {
@@ -135,7 +137,9 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
     const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
       (u) => Boolean(u && !isVideoUrl(u))
     );
-    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
+    if (customPanel.length > 0) return customPanel;
+    if (allAdminUploadedImages.length > 1) return allAdminUploadedImages;
+    return galleryPhotos;
   }, [customData, allAdminUploadedImages, galleryPhotos]);
 
   const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
@@ -144,31 +148,42 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
   const heroCoverPhoto =
     !isVideoUrl(rawHeroMedia) && rawHeroMedia
       ? rawHeroMedia
-      : galleryPhotos[0] || allAdminUploadedImages[0] || (!customData ? '/images/blueprint_couple_hero_1791171076790.jpg' : '');
-  const groomPortraitPhoto = customData
-    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
-    : '/images/blueprint_groom_portrait_1791171047935.jpg';
-  const bridePortraitPhoto = customData
-    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
-    : '/images/blueprint_bride_portrait_1791171064118.jpg';
+      : galleryPhotos[0] || allAdminUploadedImages[0] || '/images/blueprint_couple_hero_1791171076790.jpg';
+
+  const groomPortraitPhoto =
+    customData?.mediaSlots?.groomPortrait ||
+    (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : '') ||
+    '/images/blueprint_groom_portrait_1791171047935.jpg';
+
+  const bridePortraitPhoto =
+    customData?.mediaSlots?.bridePortrait ||
+    (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : '') ||
+    '/images/blueprint_bride_portrait_1791171064118.jpg';
+
   const gateBgPhoto =
     !isVideoUrl(rawHeroMedia) && rawHeroMedia
       ? rawHeroMedia
-      : customData
-        ? heroCoverPhoto || allAdminUploadedImages[0] || ''
-        : '/images/blueprint_couple_candid_1791171089791.jpg';
-  const fullbleed1Photo = customData
-    ? customData.mediaSlots?.spotlightImage || panelSourcePhotos[0] || heroCoverPhoto || ''
-    : '/images/blueprint_couple_candid_1791171089791.jpg';
-  const elevation1Photo = customData
-    ? panelSourcePhotos[1] || customData.mediaSlots?.spotlightImage || panelSourcePhotos[0] || heroCoverPhoto || ''
-    : '/images/blueprint_venue_detail_1791171101186.jpg';
-  const elevation2Photo = customData
-    ? panelSourcePhotos[2] || panelSourcePhotos[0] || heroCoverPhoto || ''
-    : '/images/botanical_estate_venue_1790919022237.jpg';
-  const closingBgPhoto = customData
-    ? customData.mediaSlots?.closingImage || panelSourcePhotos[panelSourcePhotos.length - 1] || heroCoverPhoto || ''
-    : '/images/blueprint_couple_hero_1791171076790.jpg';
+      : (allAdminUploadedImages.length > 3 ? allAdminUploadedImages[3] : '') ||
+        '/images/blueprint_couple_candid_1791171089791.jpg';
+
+  const fullbleed1Photo =
+    customData?.mediaSlots?.spotlightImage ||
+    (panelSourcePhotos.length > 4 ? panelSourcePhotos[4] : '') ||
+    '/images/editorial_couple_portrait_1790838636662.jpg';
+
+  const elevation1Photo =
+    (panelSourcePhotos.length > 5 ? panelSourcePhotos[5] : '') ||
+    customData?.mediaSlots?.spotlightImage ||
+    '/images/blueprint_venue_detail_1791171101186.jpg';
+
+  const elevation2Photo =
+    (panelSourcePhotos.length > 6 ? panelSourcePhotos[6] : '') ||
+    '/images/editorial_venue_rings_1790838653826.jpg';
+
+  const closingBgPhoto =
+    customData?.mediaSlots?.closingImage ||
+    (panelSourcePhotos.length > 7 ? panelSourcePhotos[panelSourcePhotos.length - 1] : '') ||
+    '/images/wedding_dance_lights_1790901533590.jpg';
   const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
 
   const photoSlotMap: Record<string, string> = {
@@ -180,6 +195,7 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
     'elevation-1': elevation1Photo,
     'elevation-2': elevation2Photo,
     'gallery-1': galleryPhotos[0] || heroCoverPhoto,
+    'gallery-2': galleryPhotos[1] || galleryPhotos[0] || heroCoverPhoto,
     'closing-bp': closingBgPhoto
   };
 
@@ -205,24 +221,33 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
         date: 'Maret 2021',
         title: 'Pertama Bertemu',
         story: 'Bertemu di sebuah proyek kolaborasi kampus, saling mengoreksi sketsa satu sama lain.',
-        image: customData ? allAdminUploadedImages[0] || '' : galleryPhotos[0]
+        image:
+          customData && allAdminUploadedImages.length > 0
+            ? allAdminUploadedImages[0]
+            : '/images/blueprint_couple_candid_1791171089791.jpg'
       },
       {
         rev: 'B',
         date: 'Juli 2023',
         title: 'Lamaran',
         story: 'Revisi besar: dari dua rencana terpisah menjadi satu cetak biru bersama.',
-        image: customData ? allAdminUploadedImages[1] || allAdminUploadedImages[0] || '' : galleryPhotos[1]
+        image:
+          customData && allAdminUploadedImages.length > 1
+            ? allAdminUploadedImages[1]
+            : '/images/wedding_ring_exchange_1790833922500.jpg'
       },
       {
         rev: 'C',
         date: 'November 2026',
         title: 'Hari Peresmian',
         story: 'Dan kini, kami mengundang Anda untuk menyaksikan peresmiannya.',
-        image: customData ? allAdminUploadedImages[2] || '' : ''
+        image:
+          customData && allAdminUploadedImages.length > 2
+            ? allAdminUploadedImages[2]
+            : '/images/wedding_vows_bouquet_1790901516667.jpg'
       }
     ];
-  }, [customData, allAdminUploadedImages, galleryPhotos]);
+  }, [customData, allAdminUploadedImages]);
 
   // Hooks
   const { guestName: guestRecipient, hideGuestName } = useGuestRecipient(
@@ -239,9 +264,12 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
   const [calSaved, setCalSaved] = useState(false);
 
   // Dual dynamic desktop panels crossfade state
+  const initialRightLayer = customData
+    ? panelSourcePhotos[1] || customData.mediaSlots?.bridePortrait || heroCoverPhoto
+    : '/images/blueprint_venue_detail_1791171101186.jpg';
   const [leftLayers, setLeftLayers] = useState<[string, string]>([heroCoverPhoto, heroCoverPhoto]);
   const [activeLeftIdx, setActiveLeftIdx] = useState<0 | 1>(0);
-  const [rightLayers, setRightLayers] = useState<[string, string]>([heroCoverPhoto, heroCoverPhoto]);
+  const [rightLayers, setRightLayers] = useState<[string, string]>([initialRightLayer, initialRightLayer]);
   const [activeRightIdx, setActiveRightIdx] = useState<0 | 1>(0);
 
   // Dimension line scroll progress state
@@ -558,7 +586,7 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
           width: 100%;
           height: 100vh;
           height: 100dvh;
-          padding-top: 44px;
+          padding-top: 0;
           background: var(--blue-deep);
         }
 
@@ -674,8 +702,8 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
           }
           .cetak-biru-root .panel-invitation {
             width: 100%;
-            height: calc(100vh - 44px);
-            height: calc(100dvh - 44px);
+            height: 100vh;
+            height: 100dvh;
             box-shadow: none;
           }
         }
@@ -687,10 +715,10 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
           left: auto;
           margin-left: 6px;
           width: 30px;
-          height: calc(100vh - 44px);
-          height: calc(100dvh - 44px);
-          margin-bottom: calc(-100vh + 44px);
-          margin-bottom: calc(-100dvh + 44px);
+          height: 100vh;
+          height: 100dvh;
+          margin-bottom: -100vh;
+          margin-bottom: -100dvh;
           pointer-events: none;
           z-index: 3;
         }
@@ -935,7 +963,7 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
 
         /* ===================== HERO ===================== */
         .cetak-biru-root .hero {
-          min-height: calc(100vh - 44px);
+          min-height: 100vh;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
@@ -1892,36 +1920,6 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
         }
       `}</style>
 
-      {/* ============================================================
-          TOP DEMO CONTROL BAR (Sticky Navigation for Sekarsiti)
-          ============================================================ */}
-      {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-70 bg-[#082438]/95 backdrop-blur-md border-b border-[#9fd3ec]/25 text-[#f1ecdd] px-4 sm:px-6 h-[44px] flex items-center justify-between text-xs">
-          <button
-            onClick={onBackToLanding}
-            className="flex items-center gap-1.5 text-[#e0b876] hover:text-white transition-colors font-medium cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Sekarsiti</span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-2 text-[#cbe8f7]/85">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#c9903f] animate-pulse" />
-            <span className="font-['Space_Grotesk',sans-serif] text-xs tracking-wider uppercase text-[#f1ecdd]">
-              Cetak Biru Kami · {groomName} &amp; {brideName}
-            </span>
-          </div>
-
-          <button
-            onClick={onOrderViaWhatsApp}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-[#c9903f] hover:bg-[#b57f32] text-[#12233a] font-semibold rounded-sm shadow-sm transition-all active:scale-95 cursor-pointer font-['Space_Grotesk',sans-serif]"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>Pesan Desain Ini</span>
-          </button>
-        </header>
-      )}
-
       {/* Floating Audio Controller */}
       {isGateClosed && (
         <div className="fixed bottom-8 right-8 z-[75] flex items-center gap-3 pointer-events-auto">
@@ -2143,6 +2141,7 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
             id="section-quote"
             data-section-type="static"
             data-panel-source="gate-bp"
+            data-panel-source-right="elevation-1"
           >
             <div className="quote__badge reveal">
               <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.4">
@@ -2440,6 +2439,7 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
             data-section-type="dynamic"
             data-invitation-type="pernikahan"
             data-panel-source="gate-bp"
+            data-panel-source-right="elevation-2"
           >
             <div className="section-tag reveal">Rangkaian Acara</div>
             <h2 className="rundown__title reveal reveal-delay-1">Jadwal Pelaksanaan</h2>
@@ -2576,6 +2576,7 @@ export const CetakBiruTemplate: React.FC<CetakBiruTemplateProps> = ({
             data-section-type="dynamic"
             data-invitation-type="pernikahan"
             data-panel-source="gallery-1"
+            data-panel-source-right="gallery-2"
           >
             <div className="section-tag reveal">Galeri</div>
             <h2 className="gallery__title reveal reveal-delay-1">Lembar Dokumentasi</h2>

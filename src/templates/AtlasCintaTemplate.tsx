@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, MessageCircle, Disc3, Disc, Copy, Check } from 'lucide-react';
+import { Disc3, Disc, Copy, Check } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
 import {
   useCountdown,
@@ -22,8 +22,8 @@ interface AtlasCintaTemplateProps {
 const DEFAULT_ATLAS_GALLERY = [
   '/images/atlas_cinta_hero_cover_1791177934302.jpg',
   '/images/atlas_cinta_interlude_landscape_1791177985962.jpg',
-  '/images/atlas_cinta_bride_portrait_1791177955237.jpg',
-  '/images/atlas_cinta_groom_portrait_1791177974718.jpg',
+  '/images/wedding_bride_veil_1790901501919.jpg',
+  '/images/wedding_ring_exchange_1790833922500.jpg',
   '/images/sage_outdoor_couple_portrait_1790919006777.jpg',
   '/images/botanical_estate_venue_1790919022237.jpg',
   '/images/film_vintage_couple_1791034007642.jpg',
@@ -140,7 +140,9 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
   const rawGallery = customData
     ? customData.mediaSlots?.galleryImages && customData.mediaSlots.galleryImages.length > 0
       ? customData.mediaSlots.galleryImages.filter((u) => Boolean(u && !isVideoUrl(u)))
-      : allAdminUploadedImages
+      : allAdminUploadedImages.length > 1
+        ? allAdminUploadedImages
+        : DEFAULT_ATLAS_GALLERY
     : DEFAULT_ATLAS_GALLERY;
 
   const panelSourcePhotos = React.useMemo(() => {
@@ -148,7 +150,9 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
     const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
       (u) => Boolean(u && !isVideoUrl(u))
     );
-    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
+    if (customPanel.length > 0) return customPanel;
+    if (allAdminUploadedImages.length > 1) return allAdminUploadedImages;
+    return rawGallery;
   }, [customData, allAdminUploadedImages, rawGallery]);
 
   const pickPanelPhoto = (idx: number, fallback = '') => {
@@ -169,31 +173,40 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
   const heroCoverBg =
     !isVideoUrl(rawHeroMedia) && rawHeroMedia
       ? rawHeroMedia
-      : rawGallery[0] || allAdminUploadedImages[0] || (!customData ? '/images/atlas_cinta_hero_cover_1791177934302.jpg' : '');
-  const bridePortraitPhoto = customData
-    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
-    : '/images/atlas_cinta_bride_portrait_1791177955237.jpg';
-  const groomPortraitPhoto = customData
-    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
-    : '/images/atlas_cinta_groom_portrait_1791177974718.jpg';
-  const interludeBg = customData
-    ? customData.mediaSlots?.spotlightImage || pickPanelPhoto(0, heroCoverBg)
-    : '/images/atlas_cinta_interlude_landscape_1791177985962.jpg';
-  const parallaxBg = customData
-    ? pickPanelPhoto(1, customData.mediaSlots?.spotlightImage || heroCoverBg)
-    : '/images/sage_outdoor_couple_portrait_1790919006777.jpg';
-  const fullPlatePhoto = customData
-    ? pickPanelPhoto(2, bridePortraitPhoto || heroCoverBg)
-    : '/images/atlas_cinta_bride_portrait_1791177955237.jpg';
-  const footerClosingBg = customData
-    ? customData.mediaSlots?.closingImage || pickPanelPhoto(panelSourcePhotos.length - 1, heroCoverBg)
-    : '/images/atlas_cinta_hero_cover_1791177934302.jpg';
+      : rawGallery[0] || allAdminUploadedImages[0] || '/images/atlas_cinta_hero_cover_1791177934302.jpg';
+
+  const bridePortraitPhoto =
+    customData?.mediaSlots?.bridePortrait ||
+    (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : '') ||
+    '/images/atlas_cinta_bride_portrait_1791177955237.jpg';
+
+  const groomPortraitPhoto =
+    customData?.mediaSlots?.groomPortrait ||
+    (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : '') ||
+    '/images/atlas_cinta_groom_portrait_1791177974718.jpg';
+
+  const interludeBg =
+    customData?.mediaSlots?.spotlightImage ||
+    (panelSourcePhotos.length > 3 ? panelSourcePhotos[3] : '') ||
+    '/images/atlas_cinta_interlude_landscape_1791177985962.jpg';
+
+  const parallaxBg =
+    (panelSourcePhotos.length > 4 ? panelSourcePhotos[4] : '') ||
+    '/images/sage_outdoor_couple_portrait_1790919006777.jpg';
+
+  const fullPlatePhoto =
+    (panelSourcePhotos.length > 5 ? panelSourcePhotos[5] : '') ||
+    '/images/film_vintage_couple_1791034007642.jpg';
+
+  const footerClosingBg =
+    customData?.mediaSlots?.closingImage ||
+    (panelSourcePhotos.length > 6 ? panelSourcePhotos[panelSourcePhotos.length - 1] : '') ||
+    '/images/wedding_dance_lights_1790901533590.jpg';
   const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
 
   const storyTrails = React.useMemo(() => {
     const rawChapters = customData?.mediaSlots?.storyChapters;
-    if (Array.isArray(rawChapters)) {
-      if (rawChapters.length === 0) return [];
+    if (Array.isArray(rawChapters) && rawChapters.length > 0) {
       return rawChapters.map((ch, idx) => ({
         date: ch.date || ch.chapter || `TITIK ${String(idx + 1).padStart(2, '0')}`,
         title: ch.title || `Babak ${idx + 1}`,
@@ -201,12 +214,20 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
         image:
           ch.image && !isVideoUrl(ch.image)
             ? ch.image
-            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+            : (allAdminUploadedImages.length > idx ? allAdminUploadedImages[idx] : '')
       }));
     }
+    const demoStoryPhotos = [
+      '/images/film_vintage_couple_1791034007642.jpg',
+      '/images/sage_outdoor_couple_portrait_1790919006777.jpg',
+      '/images/wedding_ring_exchange_1790833922500.jpg'
+    ];
     return DEFAULT_STORY_TRAILS.map((st, idx) => ({
       ...st,
-      image: customData ? allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || '' : ''
+      image:
+        customData && allAdminUploadedImages.length > idx
+          ? allAdminUploadedImages[idx]
+          : demoStoryPhotos[idx % demoStoryPhotos.length]
     }));
   }, [customData, allAdminUploadedImages]);
 
@@ -237,9 +258,12 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
   const [activeCarouselDot, setActiveCarouselDot] = useState(0);
 
   // Desktop right floating pane state
+  const initialRightPane = customData
+    ? (panelSourcePhotos[1] || customData.mediaSlots?.bridePortrait || heroCoverBg)
+    : '/images/atlas_cinta_interlude_landscape_1791177985962.jpg';
   const [paneLayers, setPaneLayers] = useState<[string, string]>([
-    heroCoverBg,
-    heroCoverBg
+    initialRightPane,
+    initialRightPane
   ]);
   const [activePaneIdx, setActivePaneIdx] = useState<0 | 1>(0);
   const [postcardInfo, setPostcardInfo] = useState({
@@ -627,7 +651,7 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
   return (
     <div
       ref={rootRef}
-      className={`atlas-cinta-root min-h-screen ${customData ? 'pt-0' : 'pt-[44px]'} ${
+      className={`atlas-cinta-root min-h-screen pt-0 ${
         isGateOpened ? 'is-open' : 'max-h-screen overflow-hidden'
       }`}
     >
@@ -714,7 +738,7 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
         ================================================================= */
         .atlas-cinta-root #gate {
           position: fixed;
-          inset: 44px 0 0 0;
+          inset: 0;
           z-index: 60;
           background: var(--navy);
           display: flex;
@@ -853,8 +877,8 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
           .atlas-cinta-root #deskPane {
             display: block;
             position: sticky;
-            top: calc(44px + var(--gap));
-            height: calc(100vh - 44px - (var(--gap) * 2));
+            top: var(--gap);
+            height: calc(100vh - (var(--gap) * 2));
             flex: 1 1 640px;
             min-width: 320px;
             max-width: 820px;
@@ -936,7 +960,7 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
            HERO / SAMPUL — TITIK AWAL
         ================================================================= */
         .atlas-cinta-root #hero {
-          min-height: calc(100svh - 44px);
+          min-height: 100svh;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
@@ -1878,36 +1902,6 @@ export const AtlasCintaTemplate: React.FC<AtlasCintaTemplateProps> = ({
           to { transform: scale(1.07); }
         }
       `}</style>
-
-      {/* ============================================================
-          TOP DEMO BAR (Sekarsiti Navigation)
-          ============================================================ */}
-      {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-70 bg-[#1F2A3C]/95 backdrop-blur-md border-b border-[#F2E9D8]/15 text-[#F2E9D8] px-4 sm:px-6 h-[44px] flex items-center justify-between text-xs">
-          <button
-            onClick={onBackToLanding}
-            className="flex items-center gap-1.5 text-[#F2E9D8]/90 hover:text-white transition-colors font-medium cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4 text-[#B4432F]" />
-            <span>Kembali ke Sekarsiti</span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-2 text-[#F2E9D8]/80">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#B4432F] animate-pulse" />
-            <span className="font-['Courier_Prime',monospace] text-xs tracking-wider uppercase">
-              Atlas Cinta · {brideName} &amp; {groomName}
-            </span>
-          </div>
-
-          <button
-            onClick={onOrderViaWhatsApp}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-[#B4432F] hover:bg-[#9c3725] text-[#F2E9D8] font-semibold rounded-sm shadow-sm transition-all active:scale-95 cursor-pointer font-['Courier_Prime',monospace] uppercase tracking-wider text-[11px]"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>Pesan Desain Ini</span>
-          </button>
-        </header>
-      )}
 
       {/* Floating Audio Controller */}
       {isGateOpened && (

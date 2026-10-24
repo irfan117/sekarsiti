@@ -127,7 +127,7 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
           {displayedTemplates.map((template, idx) => {
             const matching = portfolioByTemplateId.get(template.id);
-            const isReal = Boolean(matching);
+            const isReal = Boolean(matching && !matching.id.startsWith('PF-DEFAULT-'));
             const cardImage = isReal && (matching!.coverImage || matching!.heroImage)
               ? (matching!.coverImage || matching!.heroImage)
               : template.image;

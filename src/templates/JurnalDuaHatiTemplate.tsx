@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  ArrowLeft, 
-  MessageCircle, 
   Disc3,
   Disc, 
   Copy, 
@@ -59,8 +57,8 @@ const SECTION_PHOTOS: Record<string, string> = {
 };
 
 const GALLERY_PHOTOS = [
-  { src: '/images/wedding_bride_veil_1790901501919.jpg', alt: 'Veil & Senyuman Lembut' },
-  { src: '/images/editorial_groom_portrait_1790915490996.jpg', alt: 'Potret Mempelai Pria' },
+  { src: '/images/wedding_couple_portrait_1790833906470.jpg', alt: 'Tatapan Hangat Berdua' },
+  { src: '/images/film_vintage_couple_1791034007642.jpg', alt: 'Romansa Klasik Dua Insan' },
   { src: '/images/wedding_vows_bouquet_1790901516667.jpg', alt: 'Janji Suci & Buket Bunga' },
   { src: '/images/wedding_shoes_jewelry_1790901548736.jpg', alt: 'Perhiasan & Detail Busana' },
   { src: '/images/editorial_venue_rings_1790838653826.jpg', alt: 'Sepasang Cincin Pernikahan' },
@@ -112,6 +110,14 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
       ).map((src, i) => ({ src, alt: `Lembar Polaroid #${i + 1}` }))
     : GALLERY_PHOTOS;
 
+  const panelSourcePhotos = React.useMemo(() => {
+    if (!customData) return [];
+    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
+  }, [customData, allAdminUploadedImages]);
+
   const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
   const heroVideoUrl =
     customData?.mediaSlots?.heroVideo || (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '');
@@ -120,26 +126,18 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
       ? rawHeroMedia
       : galleryPhotos[0]?.src || allAdminUploadedImages[0] || (!customData ? '/images/editorial_couple_portrait_1790838636662.jpg' : '');
   const bridePortrait = customData
-    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    ? customData.mediaSlots?.bridePortrait || (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : allAdminUploadedImages[0]) || ''
     : '/images/wedding_bride_veil_1790901501919.jpg';
   const groomPortrait = customData
-    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    ? customData.mediaSlots?.groomPortrait || (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : allAdminUploadedImages[0]) || ''
     : '/images/editorial_groom_portrait_1790915490996.jpg';
   const spotlightImage = customData
-    ? customData.mediaSlots?.spotlightImage || galleryPhotos[0]?.src || heroImage || ''
-    : '';
+    ? customData.mediaSlots?.spotlightImage || (panelSourcePhotos.length > 3 ? panelSourcePhotos[3] : '') || galleryPhotos[0]?.src || heroImage || ''
+    : '/images/art_deco_emerald_couple_1790840336340.jpg';
   const closingImage = customData
-    ? customData.mediaSlots?.closingImage || galleryPhotos[galleryPhotos.length - 1]?.src || heroImage || ''
-    : heroImage;
+    ? customData.mediaSlots?.closingImage || (panelSourcePhotos.length > 4 ? panelSourcePhotos[panelSourcePhotos.length - 1] : '') || galleryPhotos[galleryPhotos.length - 1]?.src || heroImage || ''
+    : '/images/wedding_dance_lights_1790901533590.jpg';
   const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
-
-  const panelSourcePhotos = React.useMemo(() => {
-    if (!customData) return [];
-    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
-      (u) => Boolean(u && !isVideoUrl(u))
-    );
-    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
-  }, [customData, allAdminUploadedImages]);
 
   const sectionPhotos: Record<string, string> = React.useMemo(() => {
     if (customData) {
@@ -160,17 +158,17 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
     return {
       ...SECTION_PHOTOS,
       cover: heroImage,
-      couple: heroImage,
+      couple: '/images/art_deco_emerald_couple_1790840336340.jpg',
       'moment-1': galleryPhotos[0]?.src || SECTION_PHOTOS['moment-1'],
       datetime: bridePortrait,
       lokasi: galleryPhotos[1]?.src || SECTION_PHOTOS.lokasi,
       turut: groomPortrait,
       'our-story': galleryPhotos[2]?.src || SECTION_PHOTOS['our-story'],
       'moment-2': galleryPhotos[3]?.src || galleryPhotos[0]?.src || SECTION_PHOTOS['moment-2'],
-      dresscode: bridePortrait,
+      dresscode: SECTION_PHOTOS.dresscode,
       'moment-3': galleryPhotos[4]?.src || galleryPhotos[1]?.src || SECTION_PHOTOS['moment-3'],
       gallery: galleryPhotos[0]?.src || SECTION_PHOTOS.gallery,
-      closing: heroImage
+      closing: closingImage
     };
   }, [customData, panelSourcePhotos, heroImage, bridePortrait, groomPortrait, spotlightImage, closingImage, galleryPhotos]);
 
@@ -186,7 +184,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
         image:
           ch.image && !isVideoUrl(ch.image)
             ? ch.image
-            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+            : (allAdminUploadedImages.length > idx ? allAdminUploadedImages[idx] : '')
       }));
     }
     return [
@@ -195,21 +193,27 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
         title: 'Pertemuan Pertama',
         quote: '',
         story: 'Bertemu tanpa sengaja di sebuah acara kampus, dan sejak itu percakapan tak pernah berhenti mengalir hangat.',
-        image: customData ? allAdminUploadedImages[0] || '' : ''
+        image: customData
+          ? (allAdminUploadedImages.length > 0 ? allAdminUploadedImages[0] : '')
+          : '/images/film_vintage_couple_1791034007642.jpg'
       },
       {
         date: 'Desember 2022',
         title: 'Lamaran',
         quote: '',
         story: 'Di depan keluarga besar, sebuah janji sederhana disampaikan dan diterima dengan haru bahagia.',
-        image: customData ? allAdminUploadedImages[1] || allAdminUploadedImages[0] || '' : ''
+        image: customData
+          ? (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : allAdminUploadedImages[0] || '')
+          : '/images/wedding_ring_exchange_1790833922500.jpg'
       },
       {
         date: 'Februari 2027',
         title: 'Hari Bahagia',
         quote: '',
         story: 'Babak baru dimulai — dua keluarga menjadi satu, disaksikan oleh seluruh orang-orang tercinta.',
-        image: customData ? allAdminUploadedImages[2] || allAdminUploadedImages[0] || '' : ''
+        image: customData
+          ? (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : allAdminUploadedImages[0] || '')
+          : '/images/wedding_vows_bouquet_1790901516667.jpg'
       }
     ];
   }, [customData, allAdminUploadedImages]);
@@ -1097,36 +1101,6 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
         }
       `}</style>
 
-      {/* ============================================================
-          TOP DEMO CONTROL BAR (Sticky Navigation for Sekarsiti)
-          ============================================================ */}
-      {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-[70] bg-[#1F1D19]/90 backdrop-blur-md border-b border-[#D8C9A3]/25 text-[#F8F5EC] px-4 sm:px-6 py-3 flex items-center justify-between text-xs">
-          <button
-            onClick={onBackToLanding}
-            className="flex items-center gap-1.5 text-[#D8C9A3] hover:text-white transition-colors font-medium cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Sekarsiti</span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-2 text-[#F8F5EC]/85">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#55653F] animate-pulse" />
-            <span className="font-['Bricolage_Grotesque',sans-serif] text-sm text-[#F8F5EC] tracking-wide">
-              Seri Jurnal Dua Hati · {brideName} &amp; {groomName}
-            </span>
-          </div>
-
-          <button
-            onClick={onOrderViaWhatsApp}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-[#55653F] hover:bg-[#435132] text-white font-semibold rounded-full shadow-md transition-all active:scale-95 cursor-pointer font-['Bricolage_Grotesque',sans-serif]"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>Pesan Desain Ini</span>
-          </button>
-        </header>
-      )}
-
       {/* Floating Audio Vinyl Player with Rotation Animation */}
       <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 pointer-events-auto">
         {showAudioToast && (
@@ -1183,7 +1157,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
       {/* ============================================================
           MAIN CENTRAL STAGE (480px Notebook Width)
           ============================================================ */}
-      <div className={`stage ${customData ? 'pt-0' : 'pt-12'}`} id="stage">
+      <div className="stage pt-0" id="stage">
         <main>
 
           {/* ============ 1. SAMPUL JURNAL (3D BOOK SWING OPEN) ============ */}

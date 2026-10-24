@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, 
   ArrowUp,
-  MessageCircle, 
   Copy, 
   Check, 
   MapPin, 
@@ -288,14 +287,22 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
       : allAdminUploadedImages
     : [
         '/images/editorial_couple_portrait_1790838636662.jpg',
-        '/images/wedding_bride_veil_1790901501919.jpg',
         '/images/wedding_vows_bouquet_1790901516667.jpg',
         '/images/wedding_dance_lights_1790901533590.jpg',
-        '/images/art_deco_emerald_couple_1790840336340.jpg',
-        '/images/editorial_venue_rings_1790838653826.jpg',
         '/images/art_deco_venue_details_1790840351864.jpg',
-        '/images/wedding_shoes_jewelry_1790901548736.jpg'
+        '/images/editorial_venue_rings_1790838653826.jpg',
+        '/images/wedding_table_botanical_1790833955186.jpg',
+        '/images/wedding_shoes_jewelry_1790901548736.jpg',
+        '/images/sage_outdoor_couple_portrait_1790919006777.jpg'
       ];
+
+  const panelSourcePhotos = React.useMemo(() => {
+    if (!customData) return [];
+    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
+  }, [customData, allAdminUploadedImages]);
 
   const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
   const heroVideoUrl = customData
@@ -308,31 +315,23 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
   const isCoverVideo =
     isVideoUrl(rawHeroMedia) || Boolean(customData?.mediaSlots?.heroVideo && !rawHeroMedia);
   const bridePortrait = customData
-    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    ? customData.mediaSlots?.bridePortrait || (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : allAdminUploadedImages[0]) || ''
     : '/images/wedding_bride_veil_1790901501919.jpg';
   const groomPortrait = customData
-    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
-    : '/images/editorial_couple_portrait_1790838636662.jpg';
+    ? customData.mediaSlots?.groomPortrait || (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : allAdminUploadedImages[0]) || ''
+    : '/images/editorial_groom_portrait_1790915490996.jpg';
   const spotlightImage = customData
-    ? customData.mediaSlots?.spotlightImage || galleryImages[1] || galleryImages[0] || heroImage || ''
-    : galleryImages[0];
+    ? customData.mediaSlots?.spotlightImage || (panelSourcePhotos.length > 3 ? panelSourcePhotos[3] : '') || galleryImages[1] || galleryImages[0] || heroImage || ''
+    : '/images/art_deco_venue_details_1790840351864.jpg';
   const closingImage = customData
-    ? customData.mediaSlots?.closingImage || galleryImages[galleryImages.length - 1] || galleryImages[0] || heroImage || ''
-    : galleryImages[0];
+    ? customData.mediaSlots?.closingImage || (panelSourcePhotos.length > 4 ? panelSourcePhotos[panelSourcePhotos.length - 1] : '') || galleryImages[galleryImages.length - 1] || galleryImages[0] || heroImage || ''
+    : '/images/wedding_dance_lights_1790901533590.jpg';
   const quoteText = customData?.quoteText || 'Bunga melati tumbuh berseri, mekar indah di taman hati. Dua insan berjanji sehidup semati, menyatu dalam ikatan suci.';
   const quoteSource = customData?.quoteSource || 'Syair Kasih Klasik';
   const secondaryBankName = customData?.secondaryBankName;
   const secondaryAccountNumber = customData?.secondaryAccountNumber;
   const secondaryAccountHolder = customData?.secondaryAccountHolder;
   const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
-
-  const panelSourcePhotos = React.useMemo(() => {
-    if (!customData) return [];
-    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
-      (u) => Boolean(u && !isVideoUrl(u))
-    );
-    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
-  }, [customData, allAdminUploadedImages]);
 
   // Continuous Filmstrip Photos for Left (Portraits & Moments) and Right (Details & Atmosphere)
   const leftFilmstripPhotos = customData
@@ -345,9 +344,9 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         { src: heroImage, tag: `${brideName.toUpperCase()} & ${groomName.toUpperCase()} · 01`, caption: 'Mempelai Berbahagia' },
         { src: bridePortrait, tag: 'THE BRIDE · 02', caption: 'Anggun Dalam Balutan Gaun' },
         { src: groomPortrait, tag: 'THE GROOM · 03', caption: 'Keteguhan Janji Suci' },
-        { src: galleryImages[0] || '/images/wedding_dance_lights_1790901533590.jpg', tag: 'FIRST DANCE · 04', caption: 'Tarian Pertama di Bawah Cahaya' },
-        { src: galleryImages[1] || '/images/sage_outdoor_couple_portrait_1790919006777.jpg', tag: 'ROMANTIC MOMENT · 05', caption: 'Langkah Awal Bersama' },
-        { src: galleryImages[2] || '/images/art_deco_emerald_couple_1790840336340.jpg', tag: 'FOREVER AFTER · 06', caption: 'Cinta Seumur Hidup' },
+        { src: '/images/wedding_dance_lights_1790901533590.jpg', tag: 'FIRST DANCE · 04', caption: 'Tarian Pertama di Bawah Cahaya' },
+        { src: '/images/sage_outdoor_couple_portrait_1790919006777.jpg', tag: 'ROMANTIC MOMENT · 05', caption: 'Langkah Awal Bersama' },
+        { src: '/images/wedding_couple_portrait_1790833906470.jpg', tag: 'FOREVER AFTER · 06', caption: 'Cinta Seumur Hidup' },
       ];
 
   const rightFilmstripPhotos = customData
@@ -380,7 +379,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         image:
           ch.image && !isVideoUrl(ch.image)
             ? ch.image
-            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+            : (allAdminUploadedImages.length > idx ? allAdminUploadedImages[idx] : '')
       }));
     }
     return [
@@ -391,7 +390,9 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         title: 'Pertemuan Pertama',
         quote: '',
         story: 'Bertemu tanpa sengaja di sebuah acara kampus, dan sejak itu percakapan tak pernah berhenti.',
-        image: customData ? allAdminUploadedImages[0] || '' : ''
+        image: customData
+          ? (allAdminUploadedImages.length > 0 ? allAdminUploadedImages[0] : '')
+          : '/images/film_vintage_couple_1791034007642.jpg'
       },
       {
         chapter: 'BABAK 02',
@@ -400,7 +401,9 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         title: 'Lamaran',
         quote: '',
         story: 'Di depan keluarga besar, sebuah janji sederhana disampaikan dan diterima dengan haru.',
-        image: customData ? allAdminUploadedImages[1] || allAdminUploadedImages[0] || '' : ''
+        image: customData
+          ? (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : allAdminUploadedImages[0] || '')
+          : '/images/wedding_ring_exchange_1790833922500.jpg'
       },
       {
         chapter: 'BABAK 03',
@@ -409,7 +412,9 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         title: 'Hari Bahagia',
         quote: '',
         story: 'Babak baru dimulai — dua keluarga menjadi satu, disaksikan orang-orang tercinta.',
-        image: customData ? allAdminUploadedImages[2] || allAdminUploadedImages[0] || '' : ''
+        image: customData
+          ? (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : allAdminUploadedImages[0] || '')
+          : '/images/wedding_couple_portrait_1790833906470.jpg'
       }
     ];
   }, [customData, allAdminUploadedImages]);
@@ -547,37 +552,6 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
       {/* Motion Styles Layer & Top Golden Scroll Progress */}
       <MotionStyles />
       {isOpened && <ScrollProgressBar progress={scrollProgress} />}
-      
-      {/* ============================================================
-          TOP DEMO CONTROL BAR (Sticky Navigation for Sekarsiti)
-          ============================================================ */}
-      {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-[70] bg-[#12151A]/95 backdrop-blur-md border-b border-[#C6A356]/30 text-[#FBF3E4] px-4 sm:px-6 py-3 flex items-center justify-between text-xs shadow-lg">
-          <button
-            onClick={onBackToLanding}
-            className="flex items-center gap-1.5 text-[#C6A356] hover:text-white transition-colors font-medium cursor-pointer py-1 px-2 -ml-2 rounded-lg hover:bg-white/5 active:scale-95"
-            title="Kembali ke halaman utama"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Sekarsiti</span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-2.5 text-[#EDE3C8]/85">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#1E4438] ring-2 ring-[#C6A356] animate-pulse" />
-            <span className="font-['Marcellus',serif] text-sm text-[#FBF3E4] tracking-wide">
-              Template: Malam Zamrud (Art Deco Evening)
-            </span>
-          </div>
-
-          <button
-            onClick={onOrderViaWhatsApp}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-[#C6A356] hover:bg-[#b59247] text-[#0B0D10] font-semibold rounded-full shadow-md transition-all active:scale-95 cursor-pointer"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>Pesan Desain Ini</span>
-          </button>
-        </header>
-      )}
 
       {/* Floating Audio Disk Player (Only visible after opening) */}
       {isOpened && (
@@ -652,7 +626,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/90 to-transparent pointer-events-none z-10" />
 
         {/* Left Art Deco Top Header Badge */}
-        <div className="absolute top-14 left-6 z-20 pointer-events-none p-3 rounded-xl bg-[#12151A]/90 backdrop-blur-md border border-[#C6A356]/35 shadow-xl">
+        <div className="absolute top-6 left-6 z-20 pointer-events-none p-3 rounded-xl bg-[#12151A]/90 backdrop-blur-md border border-[#C6A356]/35 shadow-xl">
           <p className="text-[8px] tracking-[0.35em] uppercase text-[#C6A356] font-semibold">
             {brideName.toUpperCase()} &amp; {groomName.toUpperCase()}
           </p>
@@ -743,7 +717,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0B0D10] via-[#0B0D10]/90 to-transparent pointer-events-none z-10" />
 
         {/* Live Countdown Clock Widget on Right Panel */}
-        <div className="absolute top-14 left-6 right-6 z-20 p-3.5 rounded-xl bg-[#12151A]/95 backdrop-blur-md border border-[#C6A356]/40 shadow-2xl">
+        <div className="absolute top-6 left-6 right-6 z-20 p-3.5 rounded-xl bg-[#12151A]/95 backdrop-blur-md border border-[#C6A356]/40 shadow-2xl">
           <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-[#C6A356]/20">
             <span className="text-[8px] tracking-[0.25em] uppercase text-[#C6A356] font-semibold flex items-center gap-1.5">
               <Clock className="w-3 h-3 text-[#C6A356]" />
@@ -783,11 +757,11 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
         </div>
 
         {/* Floating Quick Section Navigator on Right Panel */}
-        <div className="absolute top-44 right-4 z-20 flex flex-col items-end gap-1 p-2.5 rounded-xl bg-[#12151A]/95 backdrop-blur-md border border-[#C6A356]/35 shadow-2xl">
+        <div className="absolute top-36 right-4 z-20 flex flex-col items-end gap-1 p-2.5 rounded-xl bg-[#12151A]/95 backdrop-blur-md border border-[#C6A356]/35 shadow-2xl">
           <span className="text-[8px] tracking-[0.25em] uppercase text-[#C6A356] font-semibold mb-1 px-1">
             Navigasi
           </span>
-          <div className="flex flex-col gap-0.5 max-h-[46vh] overflow-y-auto pr-0.5 scrollbar-thin">
+          <div className="flex flex-col gap-0.5 max-h-[52vh] overflow-y-auto pr-0.5 scrollbar-thin">
             {SECTIONS.map((sec, idx) => {
               const isActive = activeSectionId === sec.id;
               const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV'][idx] || sec.number;
@@ -942,7 +916,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           CENTRAL STAGE (Mobile-simulated 480px Column)
           Art Deco Evening Warm Ivory (#EDE3C8)
           ============================================================ */}
-      <div className={`relative z-20 max-w-[480px] w-full mx-auto bg-[#EDE3C8] shadow-[0_0_80px_rgba(0,0,0,0.7)] overflow-hidden min-h-screen ${customData ? 'pt-0' : 'pt-12'}`}>
+      <div className="relative z-20 max-w-[480px] w-full mx-auto bg-[#EDE3C8] shadow-[0_0_80px_rgba(0,0,0,0.7)] overflow-hidden min-h-screen pt-0">
         
         {/* ============================================================
             SECTION 1: VIDEO HERO & NAMA MEMPELAI (DENGAN EFEK PARALAKS)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { ArrowLeft, MessageCircle, Disc3, Disc, Calendar, Sparkles, Gift } from 'lucide-react';
+import { Disc3, Disc, Calendar, Sparkles, Gift } from 'lucide-react';
 import { ClientInvitationData } from '../types/clientInvitation';
 import { isVideoUrl } from '../utils/cloudinaryUpload';
 import { collectAdminUploadedPhotos } from '../utils/templateMediaResolver';
@@ -88,6 +88,14 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
     ];
   }, [customData, allAdminUploadedImages]);
 
+  const stageSourcePhotos = useMemo(() => {
+    if (!customData) return galleryImages;
+    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
+      (u) => Boolean(u && !isVideoUrl(u))
+    );
+    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
+  }, [customData, allAdminUploadedImages, galleryImages]);
+
   const rawHeroMedia = customData?.mediaSlots?.heroImage || '';
   const heroVideoUrl =
     customData?.mediaSlots?.heroVideo || (isVideoUrl(rawHeroMedia) ? rawHeroMedia : '');
@@ -96,26 +104,18 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
       ? rawHeroMedia
       : galleryImages[0] || allAdminUploadedImages[0] || (!customData ? '/images/wedding_couple_portrait_1790833906470.jpg' : '');
   const bridePortrait = customData
-    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    ? customData.mediaSlots?.bridePortrait || (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : allAdminUploadedImages[0]) || ''
     : '/images/wedding_bride_portrait_1790833939171.jpg';
   const groomPortrait = customData
-    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    ? customData.mediaSlots?.groomPortrait || (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : allAdminUploadedImages[0]) || ''
     : '/images/editorial_groom_portrait_1790915490996.jpg';
   const spotlightImage = customData
-    ? customData.mediaSlots?.spotlightImage || galleryImages[0] || heroImage || ''
-    : galleryImages[0] || heroImage;
+    ? customData.mediaSlots?.spotlightImage || (stageSourcePhotos.length > 3 ? stageSourcePhotos[3] : '') || galleryImages[0] || heroImage || ''
+    : '/images/editorial_couple_portrait_1790838636662.jpg';
   const closingImage = customData
-    ? customData.mediaSlots?.closingImage || galleryImages[galleryImages.length - 1] || galleryImages[0] || heroImage || ''
-    : galleryImages[2] || heroImage;
+    ? customData.mediaSlots?.closingImage || (stageSourcePhotos.length > 4 ? stageSourcePhotos[stageSourcePhotos.length - 1] : '') || galleryImages[galleryImages.length - 1] || galleryImages[0] || heroImage || ''
+    : '/images/wedding_dance_lights_1790901533590.jpg';
   const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
-
-  const stageSourcePhotos = useMemo(() => {
-    if (!customData) return galleryImages;
-    const customPanel = (customData.mediaSlots?.leftPanelImages || []).filter(
-      (u) => Boolean(u && !isVideoUrl(u))
-    );
-    return customPanel.length > 0 ? customPanel : allAdminUploadedImages;
-  }, [customData, allAdminUploadedImages, galleryImages]);
 
   const pickStagePhoto = (idx: number, fallback: string) => {
     if (stageSourcePhotos.length > 0) {
@@ -154,7 +154,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
         image:
           ch.image && !isVideoUrl(ch.image)
             ? ch.image
-            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+            : (allAdminUploadedImages.length > idx ? allAdminUploadedImages[idx] : '')
       }));
     }
     return [
@@ -771,36 +771,6 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
         }
       `}</style>
 
-      {/* ============================================================
-          TOP DEMO CONTROL BAR (Sticky Navigation for Sekarsiti)
-          ============================================================ */}
-      {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-[70] bg-[#1b1e17]/90 backdrop-blur-md border-b border-[#b4c1a4]/25 text-[#faf7f1] px-4 sm:px-6 py-3 flex items-center justify-between text-xs">
-          <button
-            onClick={onBackToLanding}
-            className="flex items-center gap-1.5 text-[#b4c1a4] hover:text-white transition-colors font-medium cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Sekarsiti</span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-2 text-[#faf7f1]/80">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#556743] animate-pulse" />
-            <span className="font-['Bodoni_Moda',serif] text-sm text-[#faf7f1] tracking-wide">
-              Kertas Sage · {groomName} &amp; {brideName}
-            </span>
-          </div>
-
-          <button
-            onClick={onOrderViaWhatsApp}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-[#556743] hover:bg-[#475737] text-white font-semibold rounded-full shadow-md transition-all active:scale-95 cursor-pointer"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>Pesan Desain Ini</span>
-          </button>
-        </header>
-      )}
-
       {/* Floating Audio Disk Player (Only visible after opening) */}
       {isCoverOpened && (
         <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 pointer-events-auto">
@@ -912,7 +882,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
       {/* ============================================================
           EXACT APP-SHELL: STAGE (LEFT) & DEVICE FRAME (RIGHT)
           ============================================================ */}
-      <div className={`app-shell ${customData ? 'pt-0' : 'pt-12'}`}>
+      <div className="app-shell pt-0">
 
         {/* STAGE: panel kiri khusus desktop — foto berganti (crossfade) mengikuti section aktif */}
         <aside className="stage" aria-hidden="true">

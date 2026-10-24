@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  ArrowLeft, 
-  MessageCircle, 
   Disc3,
   Disc, 
   Copy, 
@@ -56,14 +54,14 @@ const CHAPTERS = [
 
 // 8 scattered polaroids for gallery
 const GALLERY_POLAROIDS = [
-  { src: '/images/wedding_bride_veil_1790901501919.jpg', cap: '01 · Senyuman Pertama', alt: 'Veil mempelai wanita' },
-  { src: '/images/editorial_groom_portrait_1790915490996.jpg', cap: '02 · Tatapan Hangat', alt: 'Potret mempelai pria' },
+  { src: '/images/wedding_couple_portrait_1790833906470.jpg', cap: '01 · Tatapan Hangat', alt: 'Tatapan mempelai berdua' },
+  { src: '/images/film_vintage_couple_1791034007642.jpg', cap: '02 · Romansa Klasik', alt: 'Potret vintage berdua' },
   { src: '/images/wedding_vows_bouquet_1790901516667.jpg', cap: '03 · Janji Suci & Buket', alt: 'Buket bunga vintage' },
   { src: '/images/wedding_shoes_jewelry_1790901548736.jpg', cap: '04 · Detail Wardrobe', alt: 'Sepatu dan perhiasan' },
   { src: '/images/editorial_venue_rings_1790838653826.jpg', cap: '05 · Sepasang Cincin', alt: 'Cincin kawin di atas batu' },
   { src: '/images/wedding_table_botanical_1790833955186.jpg', cap: '06 · Jamuan Meja', alt: 'Dekorasi meja jamuan' },
   { src: '/images/wedding_dance_lights_1790901533590.jpg', cap: '07 · Dansa Malam', alt: 'Tarian di bawah lampu gantung' },
-  { src: '/images/editorial_couple_portrait_1790838636662.jpg', cap: '08 · Pelukan Bahagia', alt: 'Momen berpelukan' }
+  { src: '/images/art_deco_emerald_couple_1790840336340.jpg', cap: '08 · Pelukan Bahagia', alt: 'Momen berpelukan' }
 ];
 
 // 16 tiles for hero analog mosaic
@@ -160,13 +158,13 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
       ? rawHeroMedia
       : galleryPolaroids[0]?.src || allAdminUploadedImages[0] || (!customData ? '/images/editorial_couple_portrait_1790838636662.jpg' : '');
   const bridePortrait = customData
-    ? customData.mediaSlots?.bridePortrait || allAdminUploadedImages[0] || ''
+    ? customData.mediaSlots?.bridePortrait || (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : allAdminUploadedImages[0]) || ''
     : '/images/wedding_bride_veil_1790901501919.jpg';
   const groomPortrait = customData
-    ? customData.mediaSlots?.groomPortrait || allAdminUploadedImages[1] || allAdminUploadedImages[0] || ''
+    ? customData.mediaSlots?.groomPortrait || (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : allAdminUploadedImages[0]) || ''
     : '/images/editorial_groom_portrait_1790915490996.jpg';
   const closingImage = customData
-    ? customData.mediaSlots?.closingImage || allAdminUploadedImages[allAdminUploadedImages.length - 1] || heroImage || ''
+    ? customData.mediaSlots?.closingImage || (allAdminUploadedImages.length > 3 ? allAdminUploadedImages[allAdminUploadedImages.length - 1] : '') || heroImage || ''
     : '/images/wedding_dance_lights_1790901533590.jpg';
   const qrisImageUrl = customData?.qrisImageUrl || customData?.mediaSlots?.qrisImageUrl;
 
@@ -199,7 +197,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
         image:
           ch.image && !isVideoUrl(ch.image)
             ? ch.image
-            : allAdminUploadedImages[idx % Math.max(1, allAdminUploadedImages.length)] || ''
+            : (allAdminUploadedImages.length > idx ? allAdminUploadedImages[idx] : '')
       }));
     }
     return [
@@ -210,7 +208,9 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
         title: 'Pertemuan yang Tak Terencana',
         quote: 'Toko Buku Tua',
         story: 'Dua orang asing berebut naskah sastra klasik yang sama di rak pojok. Sebuah tawa canggung menjadi obrolan hangat berjam-jam di kedai kopi seberang jalan.',
-        image: customData ? allAdminUploadedImages[0] || '' : ''
+        image: customData
+          ? (allAdminUploadedImages.length > 0 ? allAdminUploadedImages[0] : '')
+          : '/images/film_vintage_couple_1791034007642.jpg'
       },
       {
         chapter: 'SCENE 02',
@@ -219,7 +219,9 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
         title: 'Menyimpan Momen dalam Film',
         quote: 'Kamera Analog',
         story: 'Kami mulai mengoleksi gulungan film 35mm. Dari senja di bukit hingga langkah kaki di Braga, setiap detik terasa terlalu berharga untuk dilewatkan tanpa terekam.',
-        image: customData ? allAdminUploadedImages[1] || allAdminUploadedImages[0] || '' : ''
+        image: customData
+          ? (allAdminUploadedImages.length > 1 ? allAdminUploadedImages[1] : allAdminUploadedImages[0] || '')
+          : '/images/wedding_ring_exchange_1790833922500.jpg'
       },
       {
         chapter: 'SCENE 03',
@@ -228,7 +230,9 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
         title: 'Lamaran & Menuju Hari Bahagia',
         quote: 'Janji Suci',
         story: 'Di hadapan orang tua dan keluarga terdekat, sebuah cincin disematkan. Babak baru resmi dimulai untuk kita nikmati bersama sampai rambut memutih.',
-        image: customData ? allAdminUploadedImages[2] || allAdminUploadedImages[0] || '' : ''
+        image: customData
+          ? (allAdminUploadedImages.length > 2 ? allAdminUploadedImages[2] : allAdminUploadedImages[0] || '')
+          : '/images/wedding_vows_bouquet_1790901516667.jpg'
       }
     ];
   }, [customData, allAdminUploadedImages]);
@@ -777,37 +781,6 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
       `}</style>
 
       {/* ============================================================
-          TOP DEMO CONTROL BAR (Sticky Navigation for Sekarsiti Catalog Demo Only)
-          Disembunyikan jika dalam mode Undangan Klien Nyata / Preview Admin
-          ============================================================ */}
-      {!customData && (
-        <header className="fixed top-0 left-0 right-0 z-[70] bg-[#171310]/90 backdrop-blur-md border-b border-[#D4AF6A]/25 text-[#F3EAD9] px-4 sm:px-6 py-3 flex items-center justify-between text-xs">
-          <button
-            onClick={onBackToLanding}
-            className="flex items-center gap-1.5 text-[#D4AF6A] hover:text-white transition-colors font-medium cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Sekarsiti</span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-2 text-[#F3EAD9]/85">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C99A4B] animate-pulse" />
-            <span className="font-['DM_Serif_Display',serif] text-sm text-[#F3EAD9] tracking-wide">
-              Seri Reel Sinematik · {brideName} &amp; {groomName}
-            </span>
-          </div>
-
-          <button
-            onClick={onOrderViaWhatsApp}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-[#7B3B34] hover:bg-[#5C2B25] text-white font-semibold rounded-full shadow-md transition-all active:scale-95 cursor-pointer font-['Karla',sans-serif]"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>Pesan Desain Ini</span>
-          </button>
-        </header>
-      )}
-
-      {/* ============================================================
           FLOATING AUDIO PLAYER (VINYL FILM REEL BADGE)
           ============================================================ */}
       <div className="fixed bottom-[128px] right-4 lg:right-[196px] z-[80] flex items-center gap-3 pointer-events-auto">
@@ -889,7 +862,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           DESKTOP SIDEBAR LEFT — Film Perforations + Section Navigator
           Full-height agar tidak ada gap kosong di sudut (header/filmstrip overlap via z-index)
           ============================================================ */}
-      <aside className={`hidden lg:flex fixed inset-y-0 left-0 w-[188px] z-30 flex-col bg-[#171310] border-r border-[#D4AF6A]/20 overflow-hidden pb-[88px] ${customData ? 'pt-0' : 'pt-12'}`}>
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-[188px] z-30 flex-col bg-[#171310] border-r border-[#D4AF6A]/20 overflow-hidden pb-[88px] pt-0">
         {/* Film perforation strip top */}
         <div className="flex-none h-6 bg-[#0D0A08] flex items-center justify-around px-2 border-b border-[#D4AF6A]/10">
           {[...Array(6)].map((_, i) => (
@@ -945,7 +918,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
           DESKTOP SIDEBAR RIGHT — Foto pasangan + Countdown
           Full-height agar sudut viewport tidak menyisakan gap kertas cream
           ============================================================ */}
-      <aside className={`hidden lg:flex fixed inset-y-0 right-0 w-[188px] z-30 flex-col bg-[#0D0A08] border-l border-[#D4AF6A]/20 overflow-hidden pb-[88px] ${customData ? 'pt-0' : 'pt-12'}`}>
+      <aside className="hidden lg:flex fixed inset-y-0 right-0 w-[188px] z-30 flex-col bg-[#0D0A08] border-l border-[#D4AF6A]/20 overflow-hidden pb-[88px] pt-0">
         {/* Film perforation strip top */}
         <div className="flex-none h-6 bg-[#171310] flex items-center justify-around px-2 border-b border-[#D4AF6A]/10">
           {[...Array(6)].map((_, i) => (
@@ -1033,7 +1006,7 @@ export const ReelSinematikTemplate: React.FC<ReelSinematikTemplateProps> = ({
       {/* ============================================================
           MAIN BODY SECTIONS — center column (padded by sidebars on desktop)
           ============================================================ */}
-      <main className={`${customData ? 'pt-0' : 'pt-12'} lg:ml-[188px] lg:mr-[188px] bg-[#F3EAD9] min-h-screen`}>
+      <main className="pt-0 lg:ml-[188px] lg:mr-[188px] bg-[#F3EAD9] min-h-screen">
 
         {/* ============ SECTION 1 (STATIS): HERO KOLASE 16 TILES ============ */}
         <section 
