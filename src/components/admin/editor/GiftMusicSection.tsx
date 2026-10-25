@@ -133,6 +133,7 @@ export const GiftMusicSection: React.FC<GiftMusicSectionProps> = ({
 
       {/* Musik Latar Library & Upload */}
       <MusicSelector
+        mode="admin"
         currentSongTitle={formData.songTitle}
         currentAudioUrl={formData.audioUrl}
         onSelect={(songTitle, audioUrl) => {

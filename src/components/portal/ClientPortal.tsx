@@ -17,7 +17,14 @@ import { PortalRsvpTab } from './PortalRsvpTab';
 import { PortalWishesTab } from './PortalWishesTab';
 import { PortalInfoTab } from './PortalInfoTab';
 import { PortalDataFormTab } from './PortalDataFormTab';
-import { savePortalSession, getPortalSession, clearPortalSession } from '../../utils/portalAuth';
+import {
+  savePortalSession,
+  getPortalSession,
+  clearPortalSession,
+  checkPortalLockout,
+  recordPortalFailedAttempt,
+  resetPortalFailedAttempts,
+} from '../../utils/portalAuth';
 
 interface ClientPortalProps {
   initialCode?: string;
@@ -91,13 +98,24 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
     let isMounted = true;
 
     const restoreSession = async () => {
-      // 1. Prioritas utama: Parameter URL langsung (misal link khusus dari WhatsApp/Admin)
+      // 1. Prioritas utama: Parameter URL langsung dengan PIN (misal link resmi dari Admin WhatsApp)
       if (initialCode && initialPin) {
+        const lockout = checkPortalLockout(initialCode);
+        if (lockout.isLocked) {
+          if (!isMounted) return;
+          setIsLoadingSession(false);
+          setLoginError(
+            `Akses portal untuk akun ini sedang dikunci sementara karena beberapa kali salah PIN. Silakan coba lagi dalam ${Math.ceil(lockout.remainingSeconds / 60)} menit.`
+          );
+          return;
+        }
+
         try {
           const found = await AdminStore.getByAccessAsync(initialCode, initialPin);
           if (!isMounted) return;
           setIsLoadingSession(false);
           if (found) {
+            resetPortalFailedAttempts(initialCode);
             setCurrentClient(found);
             savePortalSession(initialCode, initialPin, found.id);
             // Bersihkan parameter PIN sensitif dari URL address bar
@@ -105,7 +123,12 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
               window.history.replaceState({}, '', window.location.pathname + '?view=portal');
             }
           } else {
-            setLoginError('Kode akses atau PIN sandi tidak sesuai.');
+            const attempt = recordPortalFailedAttempt(initialCode);
+            if (attempt.isLocked) {
+              setLoginError('Akses portal dikunci selama 15 menit karena 5x percobaan PIN salah.');
+            } else {
+              setLoginError(`Kode akses atau PIN sandi tidak sesuai. Sisa kesempatan: ${attempt.remainingAttempts}x.`);
+            }
           }
         } catch (err) {
           if (!isMounted) return;
@@ -115,7 +138,44 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
         return;
       }
 
-      // 2. Prioritas kedua: Pulihkan sesi yang tersimpan di localStorage (saat di-refresh)
+      // 2. IDOR Protection: Jika URL menyertakan initialCode TANPA PIN (misal seseorang mengganti URL ?portal=target-slug)
+      if (initialCode && !initialPin) {
+        const savedSession = getPortalSession();
+        if (savedSession) {
+          // Periksa apakah sesi browser COCOK dengan target yang diminta di URL
+          const isSameTarget =
+            savedSession.code.toLowerCase() === initialCode.toLowerCase() ||
+            savedSession.clientId.toLowerCase() === initialCode.toLowerCase();
+
+          if (isSameTarget) {
+            try {
+              const found = await AdminStore.getByAccessAsync(savedSession.code, savedSession.pin);
+              if (!isMounted) return;
+              setIsLoadingSession(false);
+              if (found) {
+                setCurrentClient(found);
+                if (typeof window !== 'undefined' && window.history?.replaceState) {
+                  window.history.replaceState({}, '', window.location.pathname + '?view=portal');
+                }
+                return;
+              }
+            } catch {}
+          } else {
+            // MISMATCH: Sesi di browser milik klien lain!
+            // Jangan pernah biarkan sesi Klien A membuka atau tertukar dengan Klien B.
+            clearPortalSession();
+          }
+        }
+
+        // Tampilkan formulir login dengan kode akses terisi, namun WAJIB memasukkan PIN target
+        if (!isMounted) return;
+        setAccessCodeInput(initialCode);
+        setPinCodeInput('');
+        setIsLoadingSession(false);
+        return;
+      }
+
+      // 3. Prioritas ketiga: Pulihkan sesi yang tersimpan di localStorage saat browser di-refresh tanpa parameter URL
       const savedSession = getPortalSession();
       if (savedSession) {
         setAccessCodeInput(savedSession.code);
@@ -174,8 +234,21 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
       return;
     }
 
+    // IDOR & Brute-Force Check: Periksa apakah kode akses sedang dalam masa lockout
+    const lockout = checkPortalLockout(code);
+    if (lockout.isLocked) {
+      setLoginError(
+        `Akses untuk akun ini sementara dikunci karena beberapa kali salah memasukkan PIN. Silakan tunggu ${Math.ceil(lockout.remainingSeconds / 60)} menit lagi.`
+      );
+      return;
+    }
+
+    // Jeda keamanan 350ms untuk meredam automated dictionary scanning
+    await new Promise((resolve) => setTimeout(resolve, 350));
+
     const found = await AdminStore.getByAccessAsync(code, pin);
     if (found) {
+      resetPortalFailedAttempts(code);
       setCurrentClient(found);
       setLoginError('');
       savePortalSession(code, pin, found.id);
@@ -184,7 +257,12 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
         window.history.replaceState({}, '', window.location.pathname + '?view=portal');
       }
     } else {
-      setLoginError('Kombinasi Kode Akses atau PIN sandi salah. Silakan periksa kembali pesan dari Admin Sekarsiti.');
+      const attempt = recordPortalFailedAttempt(code);
+      if (attempt.isLocked) {
+        setLoginError('Terlalu banyak percobaan PIN salah. Akses akun ini dikunci selama 15 menit untuk melindungi data.');
+      } else {
+        setLoginError(`Kombinasi Kode Akses atau PIN sandi salah. Sisa kesempatan: ${attempt.remainingAttempts} kali.`);
+      }
     }
   };
 

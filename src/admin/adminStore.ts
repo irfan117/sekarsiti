@@ -10,6 +10,7 @@ import {
 import { buildInvitationUrl } from '../utils/subdomainUtils';
 import { sanitizeAudioUrl } from '../utils/audioUrl';
 import { readPersistedJson, writePersistedJson } from '../utils/persistedStore';
+import { getPortalSession, isAuthorizedPortalSession } from '../utils/portalAuth';
 
 const ADMIN_ORDERS_STORAGE_KEY = 'sekarsiti_admin_orders_v1';
 
@@ -51,6 +52,29 @@ export class AdminStore {
     });
   }
 
+  /**
+   * Cek status otentikasi admin secara sinkron untuk memvalidasi aksi mutasi & proteksi kredensial
+   */
+  static isAdminAuthenticatedSync(): boolean {
+    if (typeof window === 'undefined') return false;
+    const isMock =
+      import.meta.env.DEV &&
+      import.meta.env.VITE_ENABLE_MOCK_ADMIN === 'true' &&
+      localStorage.getItem('sekarsiti_mock_admin_session') === 'true';
+    if (isMock) return true;
+
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          const raw = localStorage.getItem(key);
+          if (raw && raw.includes('access_token')) return true;
+        }
+      }
+    } catch {}
+    return false;
+  }
+
   // Load awal dari Supabase
   static async initFromSupabase(force = false): Promise<ClientInvitationData[]> {
     if (isLoadedFromSupabase && !force) {
@@ -65,52 +89,67 @@ export class AdminStore {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
+          const isAdmin = this.isAdminAuthenticatedSync();
+          const portalSession = getPortalSession();
+
           if (data.length > 0) {
-            const mapped = data.map((item: any) => ({
-              id: item.id,
-              clientName: item.client_name,
-              clientPhone: item.client_phone || '',
-              clientEmail: item.client_email || '',
-              templateId: item.template_id || 'ruang-rasa',
-              status: item.status || 'pending',
-              createdAt: item.created_at,
-              updatedAt: item.updated_at,
-              slug: item.slug,
-              brideName: item.bride_name || '',
-              brideFullName: item.bride_full_name || '',
-              brideParents: item.bride_parents || '',
-              brideInstagram: item.bride_instagram || '',
-              groomName: item.groom_name || '',
-              groomFullName: item.groom_full_name || '',
-              groomParents: item.groom_parents || '',
-              groomInstagram: item.groom_instagram || '',
-              eventDateFormatted: item.event_date_formatted || '',
-              countdownIsoDate: item.countdown_iso_date || '',
-              akadTime: item.akad_time || '',
-              akadVenue: item.akad_venue || '',
-              resepsiTime: item.resepsi_time || '',
-              resepsiVenue: item.resepsi_venue || '',
-              city: item.city || '',
-              mapsUrl: item.maps_url || '',
-              quoteText: item.quote_text || '',
-              quoteSource: item.quote_source || '',
-              bankName: item.bank_name || '',
-              accountNumber: item.account_number || '',
-              accountHolder: item.account_holder || '',
-              secondaryBankName: item.secondary_bank_name || '',
-              secondaryAccountNumber: item.secondary_account_number || '',
-              secondaryAccountHolder: item.secondary_account_holder || '',
-              songTitle: item.song_title || '',
-              audioUrl: sanitizeAudioUrl(item.audio_url),
-              mediaSlots: item.media_slots || {},
-              accessCode: item.access_code || item.slug || item.id,
-              pinCode: item.pin_code || '1234',
-              guestLinks: item.guest_links || [],
-              guestbookEntries: item.guestbook_entries || [],
-              rsvpList: item.rsvp_list || []
-            }));
+            const mapped = data.map((item: any) => {
+              const isOwner =
+                portalSession &&
+                (portalSession.clientId === item.id ||
+                  (item.slug && portalSession.code.toLowerCase() === item.slug.toLowerCase()) ||
+                  (item.access_code && portalSession.code.toLowerCase() === item.access_code.toLowerCase()));
+
+              return {
+                id: item.id,
+                clientName: item.client_name,
+                clientPhone: isAdmin || isOwner ? item.client_phone || '' : '',
+                clientEmail: isAdmin || isOwner ? item.client_email || '' : '',
+                templateId: item.template_id || 'ruang-rasa',
+                status: item.status || 'pending',
+                createdAt: item.created_at,
+                updatedAt: item.updated_at,
+                slug: item.slug,
+                brideName: item.bride_name || '',
+                brideFullName: item.bride_full_name || '',
+                brideParents: item.bride_parents || '',
+                brideInstagram: item.bride_instagram || '',
+                groomName: item.groom_name || '',
+                groomFullName: item.groom_full_name || '',
+                groomParents: item.groom_parents || '',
+                groomInstagram: item.groom_instagram || '',
+                eventDateFormatted: item.event_date_formatted || '',
+                countdownIsoDate: item.countdown_iso_date || '',
+                akadTime: item.akad_time || '',
+                akadVenue: item.akad_venue || '',
+                resepsiTime: item.resepsi_time || '',
+                resepsiVenue: item.resepsi_venue || '',
+                city: item.city || '',
+                mapsUrl: item.maps_url || '',
+                quoteText: item.quote_text || '',
+                quoteSource: item.quote_source || '',
+                bankName: item.bank_name || '',
+                accountNumber: item.account_number || '',
+                accountHolder: item.account_holder || '',
+                secondaryBankName: item.secondary_bank_name || '',
+                secondaryAccountNumber: item.secondary_account_number || '',
+                secondaryAccountHolder: item.secondary_account_holder || '',
+                songTitle: item.song_title || '',
+                audioUrl: sanitizeAudioUrl(item.audio_url),
+                mediaSlots: item.media_slots || {},
+                accessCode: item.access_code || item.slug || item.id,
+                // IDOR & Privacy: PIN hanya diisi jika pemanggil adalah admin atau pemilik sah portal
+                pinCode: isAdmin || isOwner ? item.pin_code || '' : '',
+                guestLinks: item.guest_links || [],
+                guestbookEntries: item.guestbook_entries || [],
+                rsvpList: item.rsvp_list || []
+              };
+            });
             memoryOrders = mapped;
-            writePersistedJson(ADMIN_ORDERS_STORAGE_KEY, mapped);
+            // Hanya simpan order master ke localStorage jika pengguna adalah admin
+            if (isAdmin) {
+              writePersistedJson(ADMIN_ORDERS_STORAGE_KEY, mapped);
+            }
             isLoadedFromSupabase = true;
             this.notify();
             return mapped;
@@ -224,12 +263,28 @@ export class AdminStore {
   static getById(id: string): ClientInvitationData | undefined {
     if (!id) return undefined;
     const clean = id.trim().toLowerCase();
-    return this.getStore().find(
+    const found = this.getStore().find(
       item =>
         item.id.toLowerCase() === clean ||
         item.slug?.toLowerCase() === clean ||
         item.accessCode?.toLowerCase() === clean
     );
+    if (!found) return undefined;
+
+    // IDOR Protection: Sembunyikan PIN dan kontak pribadi untuk pengunjung umum
+    const isAdmin = this.isAdminAuthenticatedSync();
+    const isOwner = isAuthorizedPortalSession(found.id, found.slug, found.accessCode);
+
+    if (!isAdmin && !isOwner) {
+      return {
+        ...found,
+        clientPhone: '',
+        clientEmail: '',
+        pinCode: '', // Kredensial rahasia dimasking untuk tamu umum
+      };
+    }
+
+    return found;
   }
 
   static getStats(): AdminStoreStats {
@@ -402,8 +457,9 @@ export class AdminStore {
         (item.slug && item.slug.toLowerCase() === cleanCode) ||
         (item.id && item.id.toLowerCase() === cleanCode);
 
-      const expectedPin = (item.pinCode || '1234').trim();
-      const matchPin = expectedPin === cleanPin;
+      const expectedPin = (item.pinCode || '').trim();
+      // IDOR protection: PIN harus eksplisit cocok dan tidak boleh string kosong atau bypass default
+      const matchPin = Boolean(expectedPin) && expectedPin === cleanPin;
       return matchCode && matchPin;
     }) || null;
   }
@@ -415,6 +471,15 @@ export class AdminStore {
     const orders = this.getStore();
     const index = orders.findIndex(o => o.id === invitationId || o.slug === invitationId);
     if (index === -1) return { success: false, link: null };
+
+    // IDOR Protection: Hanya admin atau pemilik portal yang sah
+    const target = orders[index];
+    const isAdmin = this.isAdminAuthenticatedSync();
+    const isOwner = isAuthorizedPortalSession(target.id, target.slug, target.accessCode);
+    if (!isAdmin && !isOwner) {
+      console.error(`[IDOR Blocked] Akses ditolak: Upaya menambah tamu pada "${invitationId}" tanpa izin.`);
+      return { success: false, link: null };
+    }
 
     const newLink = {
       id: `gl-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -444,6 +509,15 @@ export class AdminStore {
     const orders = this.getStore();
     const index = orders.findIndex(o => o.id === invitationId || o.slug === invitationId);
     if (index === -1 || !guests.length) return { success: false, addedCount: 0 };
+
+    // IDOR Protection: Hanya admin atau pemilik portal yang sah
+    const target = orders[index];
+    const isAdmin = this.isAdminAuthenticatedSync();
+    const isOwner = isAuthorizedPortalSession(target.id, target.slug, target.accessCode);
+    if (!isAdmin && !isOwner) {
+      console.error(`[IDOR Blocked] Akses ditolak: Upaya impor batch tamu pada "${invitationId}" tanpa izin.`);
+      return { success: false, addedCount: 0 };
+    }
 
     const now = new Date().toISOString();
     const newLinks = guests
@@ -476,6 +550,15 @@ export class AdminStore {
     const index = orders.findIndex(o => o.id === invitationId || o.slug === invitationId);
     if (index === -1) return;
 
+    // IDOR Protection
+    const target = orders[index];
+    const isAdmin = this.isAdminAuthenticatedSync();
+    const isOwner = isAuthorizedPortalSession(target.id, target.slug, target.accessCode);
+    if (!isAdmin && !isOwner) {
+      console.error(`[IDOR Blocked] Akses ditolak: Ubah status kirim tamu pada "${invitationId}"`);
+      return;
+    }
+
     const currentLinks = orders[index].guestLinks || [];
     orders[index] = {
       ...orders[index],
@@ -490,6 +573,15 @@ export class AdminStore {
     const orders = this.getStore();
     const index = orders.findIndex(o => o.id === invitationId || o.slug === invitationId);
     if (index === -1) return;
+
+    // IDOR Protection
+    const target = orders[index];
+    const isAdmin = this.isAdminAuthenticatedSync();
+    const isOwner = isAuthorizedPortalSession(target.id, target.slug, target.accessCode);
+    if (!isAdmin && !isOwner) {
+      console.error(`[IDOR Blocked] Akses ditolak: Hapus tamu pada "${invitationId}"`);
+      return;
+    }
 
     const currentLinks = orders[index].guestLinks || [];
     orders[index] = {
@@ -554,14 +646,31 @@ export class AdminStore {
 
   static update(id: string, updates: Partial<ClientInvitationData>): ClientInvitationData {
     const orders = this.getStore();
-    const index = orders.findIndex(item => item.id === id);
+    const index = orders.findIndex(item => item.id === id || item.slug === id);
     if (index === -1) {
       throw new Error(`Order with id ${id} not found`);
     }
 
+    // IDOR Protection: Cegah manipulasi data pesanan oleh pihak tak berwenang
+    const targetOrder = orders[index];
+    const isAdmin = this.isAdminAuthenticatedSync();
+    const isOwner = isAuthorizedPortalSession(targetOrder.id, targetOrder.slug, targetOrder.accessCode);
+
+    if (!isAdmin && !isOwner) {
+      console.error(`[IDOR Blocked] Akses ditolak: Upaya pengubahan order "${id}" oleh sesi tidak sah.`);
+      throw new Error('Akses Ditolak: Anda tidak memiliki wewenang untuk mengubah data undangan ini (Perlindungan IDOR).');
+    }
+
+    const safeUpdates: Partial<ClientInvitationData> = { ...updates };
+    // Non-admin tidak boleh memanipulasi id atau status pesanan
+    if (!isAdmin) {
+      delete safeUpdates.id;
+      delete safeUpdates.status;
+    }
+
     const updated: ClientInvitationData = {
-      ...orders[index],
-      ...updates,
+      ...targetOrder,
+      ...safeUpdates,
       updatedAt: new Date().toISOString()
     };
 
@@ -572,6 +681,12 @@ export class AdminStore {
   }
 
   static delete(id: string): void {
+    const isAdmin = this.isAdminAuthenticatedSync();
+    if (!isAdmin) {
+      console.error(`[IDOR Blocked] Akses ditolak: Upaya penghapusan order "${id}" oleh non-admin.`);
+      throw new Error('Akses Ditolak: Hanya Admin yang memiliki wewenang untuk menghapus pesanan.');
+    }
+
     const orders = this.getStore().filter(item => item.id !== id);
     this.saveStore(orders);
     if (isSupabaseConfigured) {

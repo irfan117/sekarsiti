@@ -164,6 +164,7 @@ export const PortfolioItemEditorModal: React.FC<PortfolioItemEditorModalProps> =
             
             <div className="space-y-3">
               <MusicSelector
+                mode="admin"
                 currentSongTitle={formData.songTitle}
                 currentAudioUrl={formData.audioUrl}
                 onSelect={handleAudioSelect}

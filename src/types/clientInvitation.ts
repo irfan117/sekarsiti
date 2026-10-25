@@ -18,6 +18,14 @@ export interface StoryChapterData {
   image: string;
 }
 
+export interface ClientCustomMusicTrack {
+  id?: string;
+  title: string;
+  artist: string;
+  audioUrl: string;
+  createdAt?: string;
+}
+
 export interface ClientInvitationData {
   id: string; // e.g. "INV-2027-001"
   clientName: string; // e.g. "Kirana & Adhitya"
@@ -85,7 +93,11 @@ export interface ClientInvitationData {
     dresscodeSwatches?: DresscodeSwatch[]; // Khusus Malam Zamrud & Jurnal
     waxSealEmblem?: string; // Khusus Jurnal Dua Hati & Editorial
     qrisImageUrl?: string; // Khusus Malam Zamrud & Editorial
+    customMusicTrack?: ClientCustomMusicTrack; // Lagu kustom privat mempelai (maksimal 1 lagu)
   };
+
+  // Lagu kustom privat mempelai (shortcut)
+  customMusicTrack?: ClientCustomMusicTrack;
 
   // Akses Portal Mempelai (Kode & Sandi)
   accessCode?: string; // e.g. "INV-2027-001" atau "kirana-adhitya"

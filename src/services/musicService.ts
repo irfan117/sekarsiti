@@ -27,14 +27,14 @@ export const DEFAULT_MUSIC_TRACKS: MusicTrack[] = [];
 
 function readLocalTracks(): MusicTrack[] {
   return readPersistedJson<MusicTrack[]>(MUSIC_STORAGE_KEY, []).filter(
-    (track) => track?.id && isPlayableAudioUrl(track.audio_url)
+    (track) => track?.id && isPlayableAudioUrl(track.audio_url) && track.source !== 'custom'
   );
 }
 
 function writeLocalTracks(tracks: MusicTrack[]): void {
   writePersistedJson(
     MUSIC_STORAGE_KEY,
-    tracks.filter((track) => track?.id && isPlayableAudioUrl(track.audio_url))
+    tracks.filter((track) => track?.id && isPlayableAudioUrl(track.audio_url) && track.source !== 'custom')
   );
 }
 
@@ -44,7 +44,7 @@ function mergeTracks(...lists: MusicTrack[][]): MusicTrack[] {
 
   for (const list of lists) {
     for (const track of list) {
-      if (!track?.id || !isPlayableAudioUrl(track.audio_url)) continue;
+      if (!track?.id || !isPlayableAudioUrl(track.audio_url) || track.source === 'custom') continue;
       byId.set(track.id, track);
       byUrl.set(track.audio_url, track);
     }
@@ -77,45 +77,28 @@ export async function fetchMusicTracks(): Promise<MusicTrack[]> {
   }
 
   try {
-    const [musicRes, invRes] = await Promise.all([
-      supabase
-        .from('music_tracks')
-        .select('*')
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('invitations')
-        .select('id, song_title, audio_url, template_id, created_at')
-        .not('audio_url', 'is', null)
-    ]);
+    // Hanya ambil daftar master resmi dari tabel music_tracks milik admin
+    // JANGAN PERNAH mengambil dari tabel invitations agar musik custom klien tidak bocor ke klien lain
+    const { data, error } = await supabase
+      .from('music_tracks')
+      .select('*')
+      .or('source.eq.admin,source.is.null')
+      .order('created_at', { ascending: false });
 
-    const remotePlayable: MusicTrack[] = (musicRes.data || [])
+    if (error) {
+      console.warn('Supabase fetch music_tracks error, use localTracks:', error.message);
+      return localTracks;
+    }
+
+    const remotePlayable: MusicTrack[] = (data || [])
       .map((track: MusicTrack) => ({
         ...track,
+        source: (track.source || 'admin') as 'admin',
         audio_url: sanitizeAudioUrl(track.audio_url)
       }))
-      .filter((track: MusicTrack) => isPlayableAudioUrl(track.audio_url));
+      .filter((track: MusicTrack) => isPlayableAudioUrl(track.audio_url) && track.source !== 'custom');
 
-    // Pulihkan juga lagu yang sudah tersimpan di tabel invitations agar katalog
-    // tetap utuh meskipun domain utama berubah, diakses dari subdomain, atau tabel music_tracks kosong
-    const harvestedFromInvitations: MusicTrack[] = (invRes.data || [])
-      .filter((row: any) => isPlayableAudioUrl(row?.audio_url))
-      .map((row: any) => {
-        const rawTitle = String(row.song_title || 'Musik Undangan').trim();
-        const parts = rawTitle.split(/\s+-\s+/);
-        const title = parts[0]?.trim() || rawTitle;
-        const artist = parts.slice(1).join(' - ').trim() || 'Koleksi Undangan';
-        return {
-          id: `inv-track-${row.id}`,
-          title,
-          artist,
-          audio_url: sanitizeAudioUrl(row.audio_url),
-          genre: row.template_id ? `Template: ${row.template_id}` : 'Wedding',
-          source: 'admin' as const,
-          created_at: row.created_at
-        };
-      });
-
-    const merged = mergeTracks(remotePlayable, harvestedFromInvitations, localTracks);
+    const merged = mergeTracks(remotePlayable, localTracks);
     writeLocalTracks(merged);
     return merged;
   } catch (err) {

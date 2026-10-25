@@ -131,9 +131,24 @@ export const PortalInfoTab: React.FC<PortalInfoTabProps> = ({ client, onClientUp
         </p>
 
         <MusicSelector
+          mode="client"
           currentSongTitle={musicTitle}
           currentAudioUrl={musicUrl}
-          addUploadsToCatalog={false}
+          clientCustomTrack={client.mediaSlots?.customMusicTrack || client.customMusicTrack || null}
+          onClientCustomTrackChange={(newTrack) => {
+            const nextMediaSlots = {
+              ...(client.mediaSlots || { galleryImages: [] }),
+              customMusicTrack: newTrack || undefined,
+            };
+            if (!newTrack) {
+              delete nextMediaSlots.customMusicTrack;
+            }
+            const updated = AdminStore.update(client.id, {
+              mediaSlots: nextMediaSlots,
+              customMusicTrack: newTrack || undefined,
+            });
+            onClientUpdated?.(updated);
+          }}
           onSelect={(songTitle, audioUrl) => persistMusic(songTitle, audioUrl)}
         />
 

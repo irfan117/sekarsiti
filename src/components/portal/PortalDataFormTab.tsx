@@ -500,15 +500,49 @@ export const PortalDataFormTab: React.FC<PortalDataFormTabProps> = ({
         </div>
 
         <MusicSelector
+          mode="client"
           currentSongTitle={formData.songTitle}
           currentAudioUrl={formData.audioUrl}
-          addUploadsToCatalog={false}
+          clientCustomTrack={formData.mediaSlots?.customMusicTrack || formData.customMusicTrack || null}
+          onClientCustomTrackChange={(newTrack) => {
+            setFormData((prev) => {
+              const nextMediaSlots = {
+                ...(prev.mediaSlots || { galleryImages: [] }),
+                customMusicTrack: newTrack || undefined,
+              };
+              if (!newTrack) {
+                delete nextMediaSlots.customMusicTrack;
+              }
+              const updated = {
+                ...prev,
+                mediaSlots: nextMediaSlots,
+                customMusicTrack: newTrack || undefined,
+              };
+              try {
+                AdminStore.update(client.id, updated);
+                onClientUpdated(updated);
+              } catch (e) {
+                console.warn('Auto-save custom track failed', e);
+              }
+              return updated;
+            });
+            setSaveSuccess(false);
+          }}
           onSelect={(songTitle, audioUrl) => {
-            setFormData((prev) => ({
-              ...prev,
-              songTitle,
-              audioUrl,
-            }));
+            setFormData((prev) => {
+              const updated = {
+                ...prev,
+                songTitle,
+                audioUrl,
+              };
+              try {
+                AdminStore.update(client.id, updated);
+                onClientUpdated(updated);
+              } catch (e) {
+                console.warn('Auto-save selected track failed', e);
+              }
+              return updated;
+            });
             setSaveSuccess(false);
           }}
         />
