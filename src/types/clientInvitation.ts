@@ -1,4 +1,16 @@
-export type TemplateId = 'ruang-rasa' | 'malam-zamrud' | 'setangkai' | 'suasana' | 'lembayung' | 'cetak-biru' | 'atlas-cinta';
+export type TemplateId =
+  | 'noir-editorial'
+  | 'ruang-rasa'
+  | 'malam-zamrud'
+  | 'setangkai'
+  | 'suasana'
+  | 'lembayung'
+  | 'cetak-biru'
+  | 'atlas-cinta'
+  | 'lantera'
+  | 'pasang'
+  | 'pop-kuning'
+  | 'porselen-biru';
 
 export type OrderStatus = 'pending' | 'in_progress' | 'review' | 'published';
 

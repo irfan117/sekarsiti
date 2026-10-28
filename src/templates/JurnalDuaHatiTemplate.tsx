@@ -83,6 +83,10 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
   const groomParents = customData?.groomParents || 'Putra kedua dari Bapak Suryanto Nugraha & Ibu Ratna Dewi';
   const groomInstagram = customData?.groomInstagram || '@adhityanugraha';
 
+  const brideInitial = (brideName.trim().charAt(0) || 'K').toUpperCase();
+  const groomInitial = (groomName.trim().charAt(0) || 'A').toUpperCase();
+  const monogram = `${brideInitial} & ${groomInitial}`;
+
   const eventDateFormatted = customData?.eventDateFormatted || 'Minggu, 14 Februari 2027';
   const countdownIsoDate = customData?.countdownIsoDate || '2027-02-14T08:00:00+07:00';
   const akadTime = customData?.akadTime || '08.00 – 09.30 WIB';
@@ -1320,7 +1324,7 @@ export const JurnalDuaHatiTemplate: React.FC<JurnalDuaHatiTemplateProps> = ({
                 <div className="flex items-center gap-3">
                   <div className="h-px w-12 bg-[#D8C9A3]" />
                   <div className="w-10 h-10 rounded-full border border-[#55653F] bg-[#EDE9DB] flex items-center justify-center font-['Newsreader',serif] italic font-semibold text-base text-[#55653F] shadow-xs">
-                    {brideName.charAt(0)} &amp; {groomName.charAt(0)}
+                    {monogram}
                   </div>
                   <div className="h-px w-12 bg-[#D8C9A3]" />
                 </div>

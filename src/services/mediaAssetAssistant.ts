@@ -220,6 +220,61 @@ export const TEMPLATE_FALLBACK_ASSETS: Record<TemplateId, {
       '/images/wedding_bride_veil_1790901501919.jpg',
       '/images/wedding_vows_bouquet_1790901516667.jpg'
     ]
+  },
+  'noir-editorial': {
+    heroImage: '/images/editorial_couple_portrait_1790838636662.jpg',
+    bridePortrait: '/images/wedding_bride_veil_1790901501919.jpg',
+    groomPortrait: '/images/editorial_groom_portrait_1790915490996.jpg',
+    galleryImages: [
+      '/images/editorial_couple_portrait_1790838636662.jpg',
+      '/images/editorial_venue_rings_1790838653826.jpg',
+      '/images/film_vintage_couple_1791034007642.jpg',
+      '/images/wedding_bride_veil_1790901501919.jpg'
+    ]
+  },
+  'lantera': {
+    heroImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75',
+    bridePortrait: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=75',
+    groomPortrait: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=600&q=75',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=700&q=70',
+      'https://images.unsplash.com/photo-1522413452208-996ff3f3e740?auto=format&fit=crop&w=500&q=70',
+      'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=500&q=70',
+      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=700&q=70'
+    ]
+  },
+  'pasang': {
+    heroImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75',
+    bridePortrait: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=75',
+    groomPortrait: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=600&q=75',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=700&q=70',
+      'https://images.unsplash.com/photo-1522413452208-996ff3f3e740?auto=format&fit=crop&w=500&q=70',
+      'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=500&q=70',
+      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=700&q=70'
+    ]
+  },
+  'pop-kuning': {
+    heroImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75',
+    bridePortrait: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=75',
+    groomPortrait: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=600&q=75',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=500&q=70',
+      'https://images.unsplash.com/photo-1522413452208-996ff3f3e740?auto=format&fit=crop&w=500&q=70',
+      'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=500&q=70',
+      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=500&q=70'
+    ]
+  },
+  'porselen-biru': {
+    heroImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75',
+    bridePortrait: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=75',
+    groomPortrait: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=600&q=75',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=700&q=70',
+      'https://images.unsplash.com/photo-1522413452208-996ff3f3e740?auto=format&fit=crop&w=500&q=70',
+      'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=500&q=70',
+      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=600&q=70'
+    ]
   }
 };
 

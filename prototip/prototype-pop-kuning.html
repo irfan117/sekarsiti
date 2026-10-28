@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undangan Pernikahan — Pop Kuning</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{sun:'#ffd23f',ink:'#15110c',paper:'#fffdf5',tomato:'#ef4a2d',blush:'#ffd6cc'},fontFamily:{disp:['Unbounded','system-ui','sans-serif'],body:['"Hanken Grotesk"','system-ui','sans-serif']}}}}
+</script>
+<style>
+html{scroll-behavior:smooth;scroll-padding-top:48px}
+body{font-family:'Hanken Grotesk',system-ui,sans-serif;background:#ffd23f;color:#15110c}
+.hard{border:2px solid #15110c;box-shadow:6px 6px 0 #15110c}
+.hard-sm{border:2px solid #15110c;box-shadow:3px 3px 0 #15110c}
+.photo{border:2px solid #15110c;box-shadow:6px 6px 0 #15110c;background:#fff;padding:8px 8px 28px}
+.photo img{display:block;width:100%;height:100%;object-fit:cover}
+.tape::before{content:"";position:absolute;top:-12px;left:50%;width:70px;height:22px;transform:translateX(-50%) rotate(-4deg);background:rgba(239,74,45,.75);border:1px solid rgba(21,17,12,.25)}
+#gate-cover{transition:transform .9s cubic-bezier(.8,0,.2,1)}
+#gate-cover.open{transform:translateX(-100%);pointer-events:none}
+.panel-img{opacity:0;transition:opacity .6s}.panel-img.on{opacity:1}
+.chap{position:absolute;inset:0;display:flex;align-items:center;opacity:0;transform:translateX(-24px);transition:all .5s}.chap.on{opacity:1;transform:none}
+.nav a{padding:12px 11px;white-space:nowrap;border-bottom:3px solid transparent;transition:all .25s}
+.nav a.active{border-color:#ffd23f;color:#ffd23f}
+@keyframes mq{to{transform:translateX(-50%)}}
+.mq{animation:mq 22s linear infinite;width:max-content}
+.reveal{opacity:0;transform:translateY(14px);transition:all .7s}.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}.reveal{opacity:1;transform:none}}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #ef4a2d;outline-offset:2px}
+</style>
+</head>
+<body class="antialiased">
+
+<!-- GATE -->
+<div id="gate-cover" class="fixed inset-0 z-[100] bg-sun flex flex-col justify-between p-6 overflow-hidden">
+  <p class="font-disp font-bold text-xs">Undangan Pernikahan</p>
+  <div class="relative">
+    <h1 class="font-disp font-black text-[22vw] sm:text-[8rem] leading-[0.85] uppercase break-words"><span data-bind="brideName">Nadia</span><br><span class="text-tomato">+</span> <span data-bind="groomName">Raka</span></h1>
+    <div class="hidden sm:block absolute right-0 -top-24 w-40 photo rotate-6 bg-paper"><div class="aspect-square"><img data-slot="ambientTexture" alt="" src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=400&q=70"></div></div>
+  </div>
+  <div>
+    <p class="text-sm">Kepada: <b id="guest-name" class="font-bold">Tamu Undangan</b></p>
+    <button id="btn-open-invitation" class="hard mt-4 bg-ink text-sun font-disp font-bold text-sm px-8 py-4 hover:bg-tomato hover:text-ink transition">Buka Undangan</button>
+  </div>
+</div>
+
+<div class="lg:flex">
+
+  <!-- LEFT REACTIVE PANEL -->
+  <aside class="hidden lg:block w-1/2 h-screen sticky top-0 bg-sun overflow-hidden border-r-2 border-ink" aria-hidden="true">
+    <p id="panel-count" class="absolute top-8 left-10 font-disp font-bold text-sm">01 / 06</p>
+    <p class="absolute top-8 right-10 font-disp font-bold text-sm"><span data-bind="brideName">Nadia</span> + <span data-bind="groomName">Raka</span></p>
+    <div class="absolute left-10 right-10 top-[16%] h-44">
+      <div class="chap on" data-chap="home"><span class="font-disp font-black text-[6.5rem] leading-none uppercase">Halo</span></div>
+      <div class="chap" data-chap="couple"><span class="font-disp font-black text-[6.5rem] leading-none uppercase">Kami</span></div>
+      <div class="chap" data-chap="event"><span class="font-disp font-black text-[6.5rem] leading-none uppercase">Acara</span></div>
+      <div class="chap" data-chap="gift"><span class="font-disp font-black text-[6.5rem] leading-none uppercase">Kado</span></div>
+      <div class="chap" data-chap="rsvp"><span class="font-disp font-black text-[6.5rem] leading-none uppercase">Hadir</span></div>
+      <div class="chap" data-chap="wishes"><span class="font-disp font-black text-[6.5rem] leading-none uppercase">Doa</span></div>
+    </div>
+    <div class="absolute right-14 bottom-14 w-[52%] photo rotate-[-4deg] bg-paper relative tape">
+      <div class="relative aspect-[4/5]">
+        <img class="panel-img on absolute inset-0" data-slot="backgroundHero" data-panel="home" alt="" src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75">
+        <img class="panel-img absolute inset-0" data-slot="ambientTexture" data-panel="couple" alt="" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=75">
+        <img class="panel-img absolute inset-0" data-slot="ambientTexture" data-panel="event" alt="" src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=800&q=75">
+        <img class="panel-img absolute inset-0" data-slot="ambientTexture" data-panel="gift" alt="" src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&q=75">
+        <img class="panel-img absolute inset-0" data-slot="ambientTexture" data-panel="rsvp" alt="" src="https://images.unsplash.com/photo-1522413452208-996ff3f3e740?auto=format&fit=crop&w=800&q=75">
+        <img class="panel-img absolute inset-0" data-slot="ambientTexture" data-panel="wishes" alt="" src="https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=800&q=75">
+      </div>
+    </div>
+    <p class="absolute left-10 bottom-14 w-60 text-sm leading-relaxed">14 November 2026. Datang, makan enak, dan rayakan bersama kami.</p>
+  </aside>
+
+  <!-- RIGHT -->
+  <main class="w-full lg:w-1/2 bg-paper">
+    <!-- NAV ATAS -->
+    <nav class="nav sticky top-0 z-40 bg-ink text-paper text-[11px] font-bold flex justify-center overflow-x-auto" aria-label="Navigasi">
+      <a href="#home">Beranda</a><a href="#couple">Mempelai</a><a href="#event">Acara</a><a href="#gift">Kado</a><a href="#rsvp">RSVP</a><a href="#wishes">Ucapan</a>
+    </nav>
+
+    <div class="max-w-[480px] mx-auto">
+
+      <!-- HERO -->
+      <section id="home" data-panel-section="home" class="px-6 pt-14 pb-20">
+        <p class="font-disp font-bold text-xs">Kami akan menikah</p>
+        <h2 class="font-disp font-black uppercase text-[4.2rem] leading-[0.88] mt-5"><span data-bind="brideName">Nadia</span><br><span class="text-tomato">+</span> <span data-bind="groomName">Raka</span></h2>
+        <div class="photo relative tape rotate-2 mt-12 bg-white">
+          <div class="aspect-[4/5]"><img data-slot="heroImage" alt="Foto mempelai" src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75"></div>
+        </div>
+        <div class="hard bg-sun mt-12 p-5 flex items-end justify-between">
+          <p class="font-disp font-black text-6xl leading-none">14</p>
+          <p class="text-right font-bold leading-snug" data-bind="eventDateFormatted">Sabtu, 14 November 2026</p>
+        </div>
+        <p id="guest-badge" class="mt-4 text-sm">Untuk: <b data-bind="guestLabel">Tamu Undangan</b></p>
+      </section>
+
+      <!-- MARQUEE -->
+      <div class="bg-ink text-sun py-3 overflow-hidden border-y-2 border-ink" aria-hidden="true">
+        <div class="mq flex font-disp font-bold text-sm whitespace-nowrap">
+          <span class="pr-8">Simpan tanggalnya ✦ 14.11.2026 ✦ Simpan tanggalnya ✦ 14.11.2026 ✦ Simpan tanggalnya ✦ 14.11.2026 ✦ </span>
+          <span class="pr-8">Simpan tanggalnya ✦ 14.11.2026 ✦ Simpan tanggalnya ✦ 14.11.2026 ✦ Simpan tanggalnya ✦ 14.11.2026 ✦ </span>
+        </div>
+      </div>
+
+      <!-- QUOTE -->
+      <section class="px-7 py-16 bg-blush border-b-2 border-ink">
+        <p class="font-disp font-bold text-2xl leading-snug" data-bind="quoteText">Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan pasangan untukmu agar kamu merasa tenteram kepadanya.</p>
+        <p class="text-sm font-bold mt-5" data-bind="quoteSource">QS. Ar-Rum: 21</p>
+      </section>
+
+      <!-- COUPLE -->
+      <section id="couple" data-panel-section="couple" class="px-6 py-20 space-y-16">
+        <div class="reveal">
+          <div class="photo relative tape -rotate-3 w-[68%]"><div class="aspect-[3/4]"><img data-slot="bridePortrait" alt="Mempelai wanita" src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=75"></div></div>
+          <div class="hard bg-sun p-5 -mt-10 ml-[28%] relative">
+            <p class="text-xs font-bold">Mempelai wanita</p>
+            <h3 class="font-disp font-black text-2xl uppercase leading-tight mt-1" data-bind="brideFullName">Nadia Safitri Putri</h3>
+            <p class="text-sm mt-2">Putri dari <span data-bind="brideParents">Bapak Hendra &amp; Ibu Sari</span></p>
+          </div>
+        </div>
+        <div class="reveal">
+          <div class="photo relative tape rotate-3 w-[68%] ml-auto"><div class="aspect-[3/4]"><img data-slot="groomPortrait" alt="Mempelai pria" src="https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=600&q=75"></div></div>
+          <div class="hard bg-blush p-5 -mt-10 mr-[28%] relative">
+            <p class="text-xs font-bold">Mempelai pria</p>
+            <h3 class="font-disp font-black text-2xl uppercase leading-tight mt-1" data-bind="groomFullName">Raka Mahendra</h3>
+            <p class="text-sm mt-2">Putra dari <span data-bind="groomParents">Bapak Dimas &amp; Ibu Wulan</span></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- EVENT -->
+      <section id="event" data-panel-section="event" class="px-6 py-20 bg-sun border-y-2 border-ink">
+        <h2 class="font-disp font-black uppercase text-4xl leading-none">Hari<br>Bahagia</h2>
+        <div class="grid grid-cols-4 gap-2 mt-8 text-center">
+          <div class="hard-sm bg-paper py-3"><p id="cd-days" class="font-disp font-black text-2xl">00</p><p class="text-[10px] font-bold">HARI</p></div>
+          <div class="hard-sm bg-paper py-3"><p id="cd-hours" class="font-disp font-black text-2xl">00</p><p class="text-[10px] font-bold">JAM</p></div>
+          <div class="hard-sm bg-paper py-3"><p id="cd-mins" class="font-disp font-black text-2xl">00</p><p class="text-[10px] font-bold">MENIT</p></div>
+          <div class="hard-sm bg-paper py-3"><p id="cd-secs" class="font-disp font-black text-2xl">00</p><p class="text-[10px] font-bold">DETIK</p></div>
+        </div>
+        <div class="mt-10 space-y-5">
+          <article class="hard bg-paper p-6">
+            <p class="inline-block bg-ink text-sun text-xs font-bold px-2 py-1">AKAD NIKAH</p>
+            <p class="font-disp font-black text-4xl mt-3" data-bind="akadTime">08.00 WIB</p>
+            <p class="text-sm mt-2 leading-relaxed" data-bind="akadVenue">Masjid Agung Bandung, Jl. Dalem Kaum No. 14</p>
+          </article>
+          <article class="hard bg-paper p-6">
+            <p class="inline-block bg-tomato text-ink text-xs font-bold px-2 py-1">RESEPSI</p>
+            <p class="font-disp font-black text-4xl mt-3" data-bind="resepsiTime">11.00 – 14.00 WIB</p>
+            <p class="text-sm mt-2 leading-relaxed" data-bind="resepsiVenue">Gedung Sasana Budaya, Jl. Naripan No. 9</p>
+          </article>
+          <a href="https://maps.google.com" target="_blank" rel="noopener" data-bind="mapsUrl" class="hard block text-center bg-ink text-sun font-disp font-bold text-sm py-4 hover:bg-tomato hover:text-ink transition">Buka Google Maps</a>
+        </div>
+      </section>
+
+      <!-- GALLERY -->
+      <section class="px-5 py-20 overflow-hidden">
+        <h2 class="font-disp font-black uppercase text-4xl leading-none mb-10">Album<br>Kami</h2>
+        <div class="grid grid-cols-2 gap-x-5 gap-y-8">
+          <div class="photo -rotate-2"><div class="aspect-square"><img data-slot="galleryImages" alt="Galeri 1" src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=500&q=70"></div></div>
+          <div class="photo rotate-3 mt-8"><div class="aspect-[3/4]"><img data-slot="galleryImages" alt="Galeri 2" src="https://images.unsplash.com/photo-1522413452208-996ff3f3e740?auto=format&fit=crop&w=500&q=70"></div></div>
+          <div class="photo rotate-2"><div class="aspect-[3/4]"><img data-slot="galleryImages" alt="Galeri 3" src="https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=500&q=70"></div></div>
+          <div class="photo -rotate-3 mt-8"><div class="aspect-square"><img data-slot="galleryImages" alt="Galeri 4" src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=500&q=70"></div></div>
+        </div>
+      </section>
+
+      <!-- GIFT -->
+      <section id="gift" data-panel-section="gift" class="px-6 pb-20">
+        <h2 class="font-disp font-black uppercase text-4xl leading-none">Kado<br>Digital</h2>
+        <p class="text-sm mt-4 leading-relaxed">Doa Anda sudah jadi hadiah terbaik. Kalau ingin berbagi lebih, kami terima dengan senang hati.</p>
+        <div class="hard bg-ink text-paper p-6 mt-8">
+          <p class="text-sun font-bold" data-bind="bankName">Bank BCA</p>
+          <p id="acc-num" class="font-disp font-bold text-3xl mt-5 tracking-wide" data-bind="accountNumber">1234 5678 90</p>
+          <p class="text-sm mt-2 text-paper/70">a.n. <span data-bind="accountHolder">Nadia Safitri Putri</span></p>
+          <button id="btn-copy-acc" class="mt-6 bg-sun text-ink font-disp font-bold text-xs px-5 py-3 border-2 border-sun hover:bg-tomato hover:border-tomato transition">Salin nomor</button>
+        </div>
+      </section>
+
+      <!-- RSVP -->
+      <section id="rsvp" data-panel-section="rsvp" class="px-6 py-20 bg-blush border-y-2 border-ink">
+        <h2 class="font-disp font-black uppercase text-4xl leading-none">Bisa<br>Hadir?</h2>
+        <form id="rsvp-form" class="mt-8 space-y-3">
+          <input required name="nama" placeholder="Nama lengkap" class="hard-sm w-full bg-paper px-4 py-3">
+          <select name="status" class="hard-sm w-full bg-paper px-4 py-3"><option>Hadir</option><option>Tidak bisa hadir</option><option>Masih ragu</option></select>
+          <select name="jumlah" class="hard-sm w-full bg-paper px-4 py-3"><option>1 orang</option><option>2 orang</option><option>3 orang</option><option>4 orang</option></select>
+          <button class="hard w-full bg-ink text-sun font-disp font-bold text-sm py-4 hover:bg-tomato hover:text-ink transition">Kirim konfirmasi</button>
+        </form>
+      </section>
+
+      <!-- UCAPAN / KOMENTAR -->
+      <section id="wishes" data-panel-section="wishes" class="px-6 py-20">
+        <h2 class="font-disp font-black uppercase text-4xl leading-none">Ucapan<br>&amp; Doa</h2>
+        <p class="text-sm mt-3"><b id="wish-count">0</b> ucapan sudah masuk</p>
+        <form id="wish-form" data-guestbook-form class="hard bg-sun p-5 mt-6 space-y-3">
+          <input required id="wish-name" maxlength="40" placeholder="Nama Anda" class="hard-sm w-full bg-paper px-3 py-2.5">
+          <textarea required id="wish-text" maxlength="300" rows="3" placeholder="Tulis ucapan untuk mempelai" class="hard-sm w-full bg-paper px-3 py-2.5 resize-none"></textarea>
+          <button class="w-full bg-ink text-sun font-disp font-bold text-xs py-3 hover:bg-tomato hover:text-ink transition">Kirim ucapan</button>
+        </form>
+        <ul id="wish-list" data-dynamic-list="guest_wishes" data-list-source="guest" class="mt-8 space-y-5 max-h-[460px] overflow-y-auto pr-2 pb-2"></ul>
+      </section>
+
+      <!-- CLOSING -->
+      <section class="bg-ink text-paper px-6 py-20">
+        <div class="photo relative tape rotate-2 w-[75%] mx-auto"><div class="aspect-[4/5]"><img data-slot="closingImage" alt="Penutup" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=75"></div></div>
+        <p class="font-disp font-black uppercase text-4xl leading-[0.95] mt-14 text-sun">Terima<br>kasih!</p>
+        <p class="mt-4 text-sm text-paper/80">Sampai jumpa di hari bahagia kami,<br><b data-bind="brideName">Nadia</b> + <b data-bind="groomName">Raka</b></p>
+      </section>
+    </div>
+  </main>
+</div>
+
+<button id="audio-toggle-btn" class="hard-sm fixed bottom-5 right-5 z-50 w-11 h-11 bg-sun flex items-center justify-center hover:bg-tomato transition" aria-label="Putar musik">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15110c" stroke-width="2.2"><path d="M9 18V6l10-2v12"/><rect x="3.5" y="15.5" width="5" height="5"/><rect x="14" y="13.5" width="5" height="5"/></svg>
+</button>
+<audio id="audio-player" loop src=""></audio>
+<div id="toast-notification" class="hard-sm fixed top-16 left-1/2 z-[120] bg-sun text-ink font-bold text-sm px-5 py-2.5 opacity-0 pointer-events-none transition" style="transform:translate(-50%,-1rem)">Tersalin</div>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+  const toast=t=>{const e=$('#toast-notification');if(!e)return;e.textContent=t;e.style.opacity=1;e.style.transform='translate(-50%,0)';setTimeout(()=>{e.style.opacity=0;e.style.transform='translate(-50%,-1rem)'},1800)};
+  const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const p=new URLSearchParams(location.search),to=p.get('to'),gn=$('#guest-name');
+  if(to&&gn)gn.textContent=to;
+  if(to)$$('[data-bind="guestLabel"]').forEach(e=>e.textContent=to);
+  const gb=$('#guest-badge');if(gb&&p.get('notamu')==='1')gb.style.display='none';
+
+  const gate=$('#gate-cover'),ob=$('#btn-open-invitation');
+  if(gate)document.body.style.overflow='hidden';
+  if(ob)ob.addEventListener('click',()=>{if(gate)gate.classList.add('open');document.body.style.overflow='';const a=$('#audio-player');if(a&&a.getAttribute('src'))a.play().catch(()=>{})});
+
+  const at=$('#audio-toggle-btn'),au=$('#audio-player');
+  if(at&&au)at.addEventListener('click',()=>{if(!au.getAttribute('src')){toast('Musik belum diatur');return}au.paused?au.play():au.pause()});
+
+  const target=new Date('2026-11-14T08:00:00+07:00').getTime();
+  const set=(i,v)=>{const e=document.getElementById(i);if(e)e.textContent=String(v).padStart(2,'0')};
+  const tick=()=>{const d=Math.max(0,target-Date.now());set('cd-days',Math.floor(d/864e5));set('cd-hours',Math.floor(d%864e5/36e5));set('cd-mins',Math.floor(d%36e5/6e4));set('cd-secs',Math.floor(d%6e4/1e3))};
+  tick();setInterval(tick,1000);
+
+  const cb=$('#btn-copy-acc');
+  if(cb)cb.addEventListener('click',()=>{const n=$('#acc-num');if(!n)return;const t=n.textContent.replace(/\s/g,'');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Nomor rekening tersalin')).catch(()=>toast('Salin manual: '+t))});
+
+  const rf=$('#rsvp-form');
+  if(rf)rf.addEventListener('submit',e=>{e.preventDefault();toast('Konfirmasi terkirim');rf.reset()});
+
+  // Ucapan (data contoh; di sistem asli ganti dengan data tamu dari database)
+  const KEY='wishes_demo_pop_v1';
+  let wishes=[
+    {n:'Keluarga Besar Hendra',t:'Barakallahu lakuma wa baraka alaikuma. Semoga menjadi keluarga yang sakinah, mawaddah, warahmah.',d:'2 hari lalu'},
+    {n:'Dina & Fajar',t:'Selamat ya Nad, Raka! Tidak sabar ikut merayakan hari bahagia kalian.',d:'1 hari lalu'},
+    {n:'Pak Imam',t:'Semoga lancar sampai hari H dan langgeng selamanya.',d:'5 jam lalu'}
+  ];
+  try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(Array.isArray(s))wishes=s}catch(e){}
+  const wl=$('#wish-list'),wc=$('#wish-count'),tilt=['-rotate-1','rotate-1','rotate-0'],bg=['bg-sun','bg-blush','bg-paper'];
+  const render=()=>{
+    if(wc)wc.textContent=wishes.length;
+    if(!wl)return;
+    wl.innerHTML=wishes.map((w,i)=>`<li class="hard-sm ${bg[i%3]} ${tilt[i%3]} p-4"><p class="text-sm leading-relaxed break-words">${esc(w.t)}</p><p class="mt-3 text-xs"><b class="font-disp">${esc(w.n)}</b> <span class="text-ink/60">· ${esc(w.d)}</span></p></li>`).join('');
+  };
+  render();
+  const wf=$('#wish-form');
+  if(wf)wf.addEventListener('submit',e=>{
+    e.preventDefault();
+    const n=$('#wish-name'),t=$('#wish-text');if(!n||!t)return;
+    wishes.unshift({n:n.value.trim(),t:t.value.trim(),d:'Baru saja'});
+    try{localStorage.setItem(KEY,JSON.stringify(wishes))}catch(e){}
+    render();wf.reset();toast('Ucapan terkirim');
+  });
+
+  const rv=$$('.reveal');
+  if('IntersectionObserver' in window){const ro=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');ro.unobserve(x.target)}}),{threshold:.2});rv.forEach(e=>ro.observe(e))}else rv.forEach(e=>e.classList.add('in'));
+
+  // Scroll-spy + panel kiri reaktif
+  const secs=$$('[data-panel-section]'),links=$$('.nav a'),imgs=$$('.panel-img'),chaps=$$('.chap'),order=secs.map(s=>s.dataset.panelSection);
+  const act=id=>{
+    links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));
+    imgs.forEach(i=>i.classList.toggle('on',i.dataset.panel===id));
+    chaps.forEach(c=>c.classList.toggle('on',c.dataset.chap===id));
+    const pc=$('#panel-count');if(pc)pc.textContent=String(order.indexOf(id)+1).padStart(2,'0')+' / '+String(order.length).padStart(2,'0');
+  };
+  act('home');
+  if('IntersectionObserver' in window){const so=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting)act(x.target.dataset.panelSection)}),{rootMargin:'-45% 0px -50% 0px'});secs.forEach(s=>so.observe(s))}
+})();
+</script>
+</body>
+</html>

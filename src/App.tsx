@@ -20,6 +20,11 @@ import { JurnalDuaHatiTemplate } from './templates/JurnalDuaHatiTemplate';
 import { ReelSinematikTemplate } from './templates/ReelSinematikTemplate';
 import { CetakBiruTemplate } from './templates/CetakBiruTemplate';
 import { AtlasCintaTemplate } from './templates/AtlasCintaTemplate';
+import { NoirEditorialTemplate } from './templates/NoirEditorialTemplate';
+import { LanteraTemplate } from './templates/LanteraTemplate';
+import { PasangTemplate } from './templates/PasangTemplate';
+import { PopKuningTemplate } from './templates/PopKuningTemplate';
+import { PorselenBiruTemplate } from './templates/PorselenBiruTemplate';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminLoginView } from './components/admin/AdminLoginView';
 import { ClientPortal } from './components/portal/ClientPortal';
@@ -37,7 +42,12 @@ type DemoView =
   | 'demo-jurnal-dua-hati'
   | 'demo-reel-sinematik'
   | 'demo-cetak-biru'
-  | 'demo-atlas-cinta';
+  | 'demo-atlas-cinta'
+  | 'demo-noir-editorial'
+  | 'demo-lantera'
+  | 'demo-pasang'
+  | 'demo-pop-kuning'
+  | 'demo-porselen-biru';
 
 type AppView = 'landing' | 'admin' | 'portal' | 'order-form' | DemoView;
 
@@ -75,6 +85,26 @@ function resolveDemoViewFromId(key?: string | null): DemoView {
   ) {
     return 'demo-atlas-cinta';
   }
+  if (
+    normalized === 'noir-editorial' ||
+    normalized === 'noir' ||
+    normalized === 'azalia-dias' ||
+    normalized === 'monochrome'
+  ) {
+    return 'demo-noir-editorial';
+  }
+  if (normalized === 'lantera' || normalized === 'lantern') {
+    return 'demo-lantera';
+  }
+  if (normalized === 'pasang' || normalized === 'pesisir' || normalized === 'coastal') {
+    return 'demo-pasang';
+  }
+  if (normalized === 'pop-kuning' || normalized === 'pop' || normalized === 'kuning') {
+    return 'demo-pop-kuning';
+  }
+  if (normalized === 'porselen-biru' || normalized === 'porselen' || normalized === 'azulejo') {
+    return 'demo-porselen-biru';
+  }
   return 'demo-editorial';
 }
 
@@ -91,47 +121,77 @@ const DEMO_VIEW_CONFIG: Record<
     }>;
   }
 > = {
+  'demo-noir-editorial': {
+    catalogId: 'noir-editorial',
+    fallbackIdx: 0,
+    querySlug: 'noir-editorial',
+    Component: NoirEditorialTemplate,
+  },
   'demo-editorial': {
     catalogId: 'ruang-rasa',
-    fallbackIdx: 0,
+    fallbackIdx: 1,
     querySlug: 'editorial',
     Component: PrintPlateHerbariumTemplate,
   },
   'demo-malam-zamrud': {
     catalogId: 'malam-zamrud',
-    fallbackIdx: 1,
+    fallbackIdx: 2,
     querySlug: 'malam-zamrud',
     Component: MalamZamrudTemplate,
   },
   'demo-damar-alya': {
     catalogId: 'setangkai',
-    fallbackIdx: 2,
+    fallbackIdx: 3,
     querySlug: 'damar-alya',
     Component: DamarAlyaTemplate,
   },
   'demo-jurnal-dua-hati': {
     catalogId: 'suasana',
-    fallbackIdx: 3,
+    fallbackIdx: 4,
     querySlug: 'jurnal-dua-hati',
     Component: JurnalDuaHatiTemplate,
   },
   'demo-reel-sinematik': {
     catalogId: 'lembayung',
-    fallbackIdx: 4,
+    fallbackIdx: 5,
     querySlug: 'reel-sinematik',
     Component: ReelSinematikTemplate,
   },
   'demo-cetak-biru': {
     catalogId: 'cetak-biru',
-    fallbackIdx: 5,
+    fallbackIdx: 6,
     querySlug: 'cetak-biru',
     Component: CetakBiruTemplate,
   },
   'demo-atlas-cinta': {
     catalogId: 'atlas-cinta',
-    fallbackIdx: 6,
+    fallbackIdx: 7,
     querySlug: 'atlas-cinta',
     Component: AtlasCintaTemplate,
+  },
+  'demo-lantera': {
+    catalogId: 'lantera',
+    fallbackIdx: 8,
+    querySlug: 'lantera',
+    Component: LanteraTemplate,
+  },
+  'demo-pasang': {
+    catalogId: 'pasang',
+    fallbackIdx: 9,
+    querySlug: 'pasang',
+    Component: PasangTemplate,
+  },
+  'demo-pop-kuning': {
+    catalogId: 'pop-kuning',
+    fallbackIdx: 10,
+    querySlug: 'pop-kuning',
+    Component: PopKuningTemplate,
+  },
+  'demo-porselen-biru': {
+    catalogId: 'porselen-biru',
+    fallbackIdx: 11,
+    querySlug: 'porselen-biru',
+    Component: PorselenBiruTemplate,
   },
 };
 

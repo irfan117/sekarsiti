@@ -166,6 +166,10 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
   const groomParents = customData?.groomParents || 'Putra kedua dari Bapak Suryanto Nugraha & Ibu Ratna Dewi';
   const groomInstagram = customData?.groomInstagram || '@adhityanugraha';
 
+  const brideInitial = (brideName.trim().charAt(0) || 'K').toUpperCase();
+  const groomInitial = (groomName.trim().charAt(0) || 'A').toUpperCase();
+  const monogram = `${brideInitial}&${groomInitial}`;
+
   const eventDateFormatted = customData?.eventDateFormatted || 'Minggu, 14 Februari 2027';
   const countdownIsoDate = customData?.countdownIsoDate || '2027-02-14T08:00:00+07:00';
   const akadTime = customData?.akadTime || '08.00 – 09.30 WIB';
@@ -863,7 +867,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
                   title="Sentuh segel untuk membuka undangan"
                   aria-label="Buka undangan pernikahan"
                 >
-                  <span className="tracking-tighter">{brideName[0]}&amp;{groomName[0]}</span>
+                  <span className="tracking-tighter">{monogram}</span>
                 </button>
               </div>
             </div>
@@ -976,7 +980,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
             {/* Art Deco Monogram Crest Medallion & Radiating Sunburst */}
             <Reveal variant="rays" as="div" className="flex flex-col items-center justify-center gap-2 mb-1">
               <div className="w-12 h-12 rounded-full border border-[#C6A356]/80 flex items-center justify-center bg-[#0B0D10]/80 shadow-[0_0_25px_rgba(198,163,86,0.25)] text-[#C6A356] font-['Marcellus',serif] text-sm tracking-widest">
-                {brideName[0]}&amp;{groomName[0]}
+                {monogram}
               </div>
               <ArtDecoSunburst className="zz-sunburst w-24 h-12 text-[#C6A356]" />
             </Reveal>
@@ -1886,7 +1890,7 @@ export const MalamZamrudTemplate: React.FC<MalamZamrudTemplateProps> = ({
           <div className="relative z-10 text-[#FBF3E4] space-y-4 max-w-xs">
             {/* Monogram Crest */}
             <div className="w-12 h-12 rounded-full border border-[#C6A356]/80 flex items-center justify-center bg-[#0B0D10]/80 shadow-[0_0_20px_rgba(198,163,86,0.3)] mx-auto font-['Marcellus',serif] text-sm text-[#C6A356] tracking-widest mb-2">
-              {brideName[0]}&amp;{groomName[0]}
+              {monogram}
             </div>
 
             <div className="flex justify-center mb-3">

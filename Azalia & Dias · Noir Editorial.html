@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Azalia &amp; Dias · Noir Editorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+tailwind.config={theme:{extend:{fontFamily:{serif:['"Cormorant Garamond"','Georgia','serif'],sans:['Inter','system-ui','sans-serif']}}}}
+</script>
+<style>
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{background:#0D0D0D;color:#F8F6F0;font-family:Inter,system-ui,sans-serif}
+body.locked{overflow:hidden}
+.grain::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+#gate-cover{transition:transform 1.2s cubic-bezier(.77,0,.175,1)}
+#gate-cover.open{transform:translateY(-100%)}
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .9s ease,transform .9s ease}
+.in .reveal{opacity:1;transform:none}
+.in .reveal:nth-child(2){transition-delay:.15s}.in .reveal:nth-child(3){transition-delay:.3s}
+.hairline{border:1px solid rgba(255,255,255,.1)}
+.btn-o{height:38px;font-size:11px;letter-spacing:.15em;border:1px solid rgba(255,255,255,.2);transition:.3s;padding:0 14px}
+.btn-o:hover,.btn-o:focus-visible{background:#F8F6F0;color:#0D0D0D}
+.ph img{filter:grayscale(1) contrast(1.05);transition:filter .8s,transform 1.6s}
+.ph:hover img,.ph:active img{filter:grayscale(.15) saturate(.8)}
+.spin{animation:spin 6s linear infinite}.paused{animation-play-state:paused}
+@keyframes spin{to{transform:rotate(360deg)}}
+.field{background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.2);width:100%;padding:12px;font-size:14px;outline:none;color:#F8F6F0}
+.field:focus{border-color:#fff}.field::placeholder{color:#52525B}
+.noscroll{scrollbar-width:none}.noscroll::-webkit-scrollbar{display:none}
+.dock a.active::after{content:"";position:absolute;bottom:2px;left:50%;width:3px;height:3px;border-radius:9px;background:#fff;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+:focus-visible{outline:1px solid #C5BDB5;outline-offset:2px}
+</style>
+</head>
+<body class="locked">
+
+<!-- COVER -->
+<section id="gate-cover" class="grain fixed inset-0 z-50 bg-[#0D0D0D] flex flex-col items-center justify-between text-center px-6 py-10 overflow-hidden" style="padding-top:max(2.5rem,env(safe-area-inset-top))">
+  <svg class="absolute -right-10 -bottom-10 w-72 opacity-[.06]" viewBox="0 0 200 260" fill="none" stroke="#A1A1AA" stroke-width="1.2"><path d="M100 250V120M100 120C60 110 50 50 100 10c50 40 40 100 0 110ZM100 200C70 190 40 170 30 130M100 180c25-10 50-25 62-55"/></svg>
+  <p class="text-[10px] tracking-[.35em] text-zinc-500 self-end font-serif italic">MMXXVI · A &amp; D</p>
+  <div class="relative">
+    <p class="text-[11px] tracking-[.35em] text-[#A1A1AA] uppercase">The Wedding Celebration Of</p>
+    <h1 class="font-serif font-light text-5xl sm:text-6xl mt-6 leading-tight"><span data-bind="brideName">Azalia</span> <span class="italic text-zinc-500">&amp;</span> <span data-bind="groomName">Dias</span></h1>
+    <p class="font-serif italic text-[#A1A1AA] mt-4 text-lg" data-bind="eventDateFormatted">Sabtu, 14 November 2026</p>
+  </div>
+  <div class="relative w-full flex flex-col items-center gap-6">
+    <div id="guest-badge" class="hairline w-[85%] max-w-[320px] py-4 px-4" style="background:rgba(255,255,255,.02)">
+      <p class="text-[11px] text-[#A1A1AA]">Kepada Yth. Bapak/Ibu/Saudara/i:</p>
+      <p id="guest-name" class="font-serif text-2xl mt-1">Nama Tamu Undangan</p>
+    </div>
+    <button id="btn-open-invitation" class="rounded-full px-8 h-11 text-xs tracking-[.2em] uppercase transition hover:bg-[#F8F6F0]/90 hover:text-black" style="border:1px solid rgba(248,246,240,.3)">Buka Undangan</button>
+  </div>
+</section>
+
+<!-- AUDIO -->
+<audio id="audio-player" loop preload="none"></audio>
+<button id="audio-toggle-btn" aria-label="Putar atau jeda musik" class="fixed top-4 right-4 z-40 w-10 h-10 rounded-full hairline backdrop-blur-md flex items-center justify-center" style="top:max(1rem,env(safe-area-inset-top))">
+  <svg id="disc" class="w-5 h-5 spin paused" viewBox="0 0 24 24" fill="none" stroke="#F8F6F0" stroke-width="1.2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r=".6" fill="#F8F6F0"/></svg>
+</button>
+
+<!-- LAYOUT SPLIT (OPSI A) -->
+<div class="lg:flex">
+  <aside class="hidden lg:block lg:w-1/2 h-screen sticky top-0 overflow-hidden">
+    <img data-slot="heroImage" alt="Foto editorial mempelai" class="ph-img w-full h-full object-cover" style="filter:grayscale(1) brightness(.7)">
+    <div class="absolute inset-0 flex flex-col justify-end p-12" style="background:linear-gradient(transparent 40%,#0D0D0D)">
+      <p class="font-serif text-[9rem] leading-none font-light opacity-25">A&amp;D</p>
+      <p class="font-serif italic text-[#A1A1AA]">Bandung, 14 November 2026</p>
+    </div>
+  </aside>
+
+  <main class="lg:w-1/2 flex justify-center">
+    <div class="w-full max-w-[480px] px-6 pb-40" id="scroll-root">
+
+      <!-- 1 HERO -->
+      <section id="home" class="pt-16 text-center lg:pt-0 lg:min-h-screen lg:flex lg:flex-col lg:justify-center">
+        <div class="hidden lg:block mb-10">
+          <p class="text-[11px] tracking-[.35em] text-[#A1A1AA] uppercase">The Wedding Celebration Of</p>
+          <p class="font-serif font-light text-[8rem] leading-none opacity-25 mt-6">A&amp;D</p>
+          <h2 class="font-serif font-light text-5xl -mt-10 relative"><span data-bind="brideName">Azalia</span> <span class="italic text-zinc-500">&amp;</span> <span data-bind="groomName">Dias</span></h2>
+          <div class="w-px h-10 bg-white/20 mx-auto mt-8"></div>
+        </div>
+        <figure class="ph relative overflow-hidden hairline p-1 lg:hidden">
+          <img data-slot="heroImage" alt="Foto mempelai" class="w-full aspect-[3/4] object-cover">
+          <span class="absolute inset-0 grid place-items-center font-serif text-8xl font-light opacity-25 pointer-events-none">A&amp;D</span>
+        </figure>
+        <p class="font-serif italic text-sm text-[#A1A1AA] mt-3 lg:mt-0">Bandung · <span data-bind="eventDateFormatted">Sabtu, 14 November 2026</span></p>
+      </section>
+
+      <!-- 2 KUTIPAN -->
+      <section class="py-24 text-center max-w-md mx-auto reveal-sec">
+        <div class="reveal"><div class="w-px h-10 bg-white/20 mx-auto mb-8"></div>
+        <p class="font-serif italic text-[17px] leading-relaxed text-zinc-200" data-bind="quoteText">“Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan dari jenismu sendiri, supaya kamu merasa tenteram kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang.”</p>
+        <p class="text-xs text-zinc-500 tracking-wider mt-5" style="font-variant:small-caps" data-bind="quoteSource">QS. Ar-Rum : 21</p></div>
+      </section>
+
+      <!-- 3 MEMPELAI -->
+      <section id="couple" class="text-center space-y-10">
+        <div class="reveal-sec"><div class="reveal">
+          <figure class="ph overflow-hidden" style="box-shadow:0 20px 40px -20px #000"><img data-slot="groomPortrait" alt="Mempelai pria" class="w-full aspect-[3/4] object-cover"></figure>
+          <h2 class="font-serif text-[28px] mt-6" data-bind="groomFullName">Dias Taufik</h2>
+          <p class="text-[13px] text-[#A1A1AA] mt-2 leading-relaxed" data-bind="groomParents">Putra kedua dari Bapak Taufik Hidayat<br>&amp; Ibu Ratna Sari</p>
+          <a href="#" class="inline-block mt-2 text-xs text-zinc-500 border-b border-white/10">@diastaufik</a></div></div>
+        <p class="font-serif italic text-5xl text-zinc-600">&amp;</p>
+        <div class="reveal-sec"><div class="reveal">
+          <figure class="ph overflow-hidden" style="box-shadow:0 20px 40px -20px #000"><img data-slot="bridePortrait" alt="Mempelai wanita" class="w-full aspect-[3/4] object-cover"></figure>
+          <h2 class="font-serif text-[28px] mt-6" data-bind="brideFullName">Azalia Fasya</h2>
+          <p class="text-[13px] text-[#A1A1AA] mt-2 leading-relaxed" data-bind="brideParents">Putri pertama dari Bapak Fasya Rahman<br>&amp; Ibu Dewi Lestari</p>
+          <a href="#" class="inline-block mt-2 text-xs text-zinc-500 border-b border-white/10">@azaliafasya</a></div></div>
+      </section>
+
+      <!-- 4 ACARA -->
+      <section id="event" class="pt-28 space-y-5">
+        <h2 class="font-serif text-3xl text-center mb-8">Rangkaian Acara</h2>
+        <article class="hairline bg-[#18181B] p-6 text-center">
+          <h3 class="font-serif text-[22px]">Akad Nikah</h3>
+          <p class="text-sm text-zinc-300 mt-3" data-bind="eventDateFormatted">Sabtu, 14 November 2026</p>
+          <span class="inline-block mt-2 px-3 py-1 text-[11px] rounded-full border border-white/20" data-bind="akadTime">08.00 – 10.00 WIB</span>
+          <p class="font-semibold text-sm mt-4" data-bind="akadVenue">Masjid Agung Al-Furqon</p>
+          <p class="text-[13px] text-zinc-500 mt-1">Jl. Merdeka No. 12, Bandung</p>
+          <div class="flex gap-2 justify-center mt-5 flex-wrap">
+            <a href="https://maps.google.com" target="_blank" rel="noopener" data-bind="mapsUrl" class="btn-o inline-flex items-center">BUKA PETA</a>
+            <button class="btn-o" data-cal>SIMPAN KE KALENDER</button></div>
+        </article>
+        <article class="hairline bg-[#18181B] p-6 text-center">
+          <h3 class="font-serif text-[22px]">Resepsi</h3>
+          <p class="text-sm text-zinc-300 mt-3">Sabtu, 14 November 2026</p>
+          <span class="inline-block mt-2 px-3 py-1 text-[11px] rounded-full border border-white/20" data-bind="resepsiTime">11.00 – 14.00 WIB</span>
+          <p class="font-semibold text-sm mt-4" data-bind="resepsiVenue">Gedung Sasana Budaya</p>
+          <p class="text-[13px] text-zinc-500 mt-1">Jl. Braga No. 45, Bandung</p>
+          <div class="flex gap-2 justify-center mt-5 flex-wrap">
+            <a href="https://maps.google.com" target="_blank" rel="noopener" class="btn-o inline-flex items-center">BUKA PETA</a>
+            <button class="btn-o" data-cal>SIMPAN KE KALENDER</button></div>
+        </article>
+      </section>
+
+      <!-- 5 COUNTDOWN -->
+      <section class="py-24">
+        <div class="grid grid-cols-4 text-center">
+          <div class="border-r border-white/10"><p id="cd-days" class="font-serif font-light text-[40px]">00</p><p class="text-[9px] tracking-[.25em] text-zinc-500 uppercase">Hari</p></div>
+          <div class="border-r border-white/10"><p id="cd-hours" class="font-serif font-light text-[40px]">00</p><p class="text-[9px] tracking-[.25em] text-zinc-500 uppercase">Jam</p></div>
+          <div class="border-r border-white/10"><p id="cd-mins" class="font-serif font-light text-[40px]">00</p><p class="text-[9px] tracking-[.25em] text-zinc-500 uppercase">Menit</p></div>
+          <div><p id="cd-secs" class="font-serif font-light text-[40px]">00</p><p class="text-[9px] tracking-[.25em] text-zinc-500 uppercase">Detik</p></div>
+        </div>
+      </section>
+
+      <!-- 6 GALERI -->
+      <section id="gallery">
+        <h2 class="font-serif text-3xl text-center mb-8">Our Moments</h2>
+        <div class="grid grid-cols-5 gap-2">
+          <figure class="ph col-span-3 row-span-2 overflow-hidden cursor-zoom-in"><img data-slot="galleryImages" alt="Galeri 1" class="w-full h-full object-cover aspect-[3/4]"></figure>
+          <figure class="ph col-span-2 overflow-hidden cursor-zoom-in"><img data-slot="galleryImages" alt="Galeri 2" class="w-full h-full object-cover aspect-square"></figure>
+          <figure class="ph col-span-2 overflow-hidden cursor-zoom-in"><img data-slot="galleryImages" alt="Galeri 3" class="w-full h-full object-cover aspect-square"></figure>
+          <figure class="ph col-span-5 overflow-hidden cursor-zoom-in"><img data-slot="galleryImages" alt="Galeri 4" class="w-full object-cover aspect-video"></figure>
+        </div>
+      </section>
+
+      <!-- 7 KISAH -->
+      <section class="pt-28">
+        <h2 class="font-serif text-3xl text-center mb-10">Kisah Kasih</h2>
+        <div class="relative pl-8 space-y-10">
+          <span class="absolute left-[3px] top-1 bottom-1 w-px bg-white/10"></span>
+          <div class="relative"><span class="absolute -left-8 top-1.5 w-2 h-2 rounded-full border-[1.5px] border-[#F8F6F0] bg-[#0D0D0D]"></span>
+            <p class="font-serif italic text-sm text-[#C5BDB5]">2020</p><h3 class="font-semibold text-base mt-1">Pertemuan Pertama</h3>
+            <p class="text-[13px] text-[#A1A1AA] mt-2 leading-relaxed">Kami bertemu di sebuah diskusi buku di Bandung. Obrolan singkat soal kopi berlanjut jadi bertahun-tahun.</p></div>
+          <div class="relative"><span class="absolute -left-8 top-1.5 w-2 h-2 rounded-full border-[1.5px] border-[#F8F6F0] bg-[#0D0D0D]"></span>
+            <p class="font-serif italic text-sm text-[#C5BDB5]">2024</p><h3 class="font-semibold text-base mt-1">Komitmen &amp; Restu</h3>
+            <p class="text-[13px] text-[#A1A1AA] mt-2 leading-relaxed">Dengan restu kedua keluarga, kami memantapkan niat untuk melangkah bersama.</p></div>
+          <div class="relative"><span class="absolute -left-8 top-1.5 w-2 h-2 rounded-full border-[1.5px] border-[#F8F6F0] bg-[#0D0D0D]"></span>
+            <p class="font-serif italic text-sm text-[#C5BDB5]">2026</p><h3 class="font-semibold text-base mt-1">Hari Bahagia</h3>
+            <p class="text-[13px] text-[#A1A1AA] mt-2 leading-relaxed">Kami mengundang Anda menjadi saksi dimulainya bab baru perjalanan kami.</p></div>
+        </div>
+      </section>
+
+      <!-- 8 GIFT -->
+      <section id="gift" class="pt-28 text-center">
+        <h2 class="font-serif text-3xl">Tanda Kasih</h2>
+        <button id="gift-toggle" class="btn-o mt-6" aria-expanded="false">KIRIM HADIAH VIRTUAL</button>
+        <div id="gift-drawer" class="hidden mt-6 text-left">
+          <div class="flex justify-center gap-6 text-xs mb-4">
+            <button data-tab="rek" class="tab pb-1 border-b border-white">Rekening</button>
+            <button data-tab="kado" class="tab pb-1 border-b border-transparent text-zinc-500">Kado Fisik</button></div>
+          <div id="tab-rek" class="hairline p-6" style="background:#151518">
+            <p class="text-[11px] tracking-[.3em] text-zinc-500" data-bind="bankName">BCA</p>
+            <p id="acc-num" class="font-mono text-lg mt-5 tracking-wider" data-bind="accountNumber">1234  5678  9012</p>
+            <p class="text-[13px] text-[#A1A1AA] mt-1" data-bind="accountHolder">a.n. Azalia Fasya</p>
+            <button id="btn-copy-acc" class="btn-o mt-5 transition-colors">SALIN NOMOR</button></div>
+          <div id="tab-kado" class="hairline p-6 hidden" style="background:#151518">
+            <p class="text-sm leading-relaxed text-zinc-300">Azalia Fasya<br>Jl. Cihampelas No. 88, Bandung 40131</p>
+            <button id="btn-copy-addr" class="btn-o mt-5">SALIN ALAMAT</button></div>
+        </div>
+      </section>
+
+      <!-- 9 RSVP -->
+      <section id="rsvp" class="pt-28">
+        <h2 class="font-serif text-3xl text-center tracking-wide mb-8">RSVP</h2>
+        <form id="rsvp-form" class="space-y-4" onsubmit="return false">
+          <input id="r-name" class="field" placeholder="Nama lengkap" aria-label="Nama lengkap">
+          <div class="flex gap-6 text-sm py-1">
+            <label class="flex items-center gap-2"><input type="radio" name="att" checked> Hadir</label>
+            <label class="flex items-center gap-2"><input type="radio" name="att"> Berhalangan</label></div>
+          <select class="field" aria-label="Jumlah tamu"><option class="bg-black">1 orang</option><option class="bg-black">2 orang</option></select>
+          <textarea id="r-msg" rows="3" class="field" placeholder="Ucapan dan doa hangat" aria-label="Ucapan"></textarea>
+          <button id="r-send" class="w-full h-11 text-xs tracking-[.2em] bg-[#F8F6F0] text-black">KIRIM KONFIRMASI</button>
+        </form>
+        <p class="text-[11px] tracking-[.2em] text-zinc-500 mt-12 mb-3">DAFTAR DOA RESTU</p>
+        <div id="wishes" class="noscroll max-h-[400px] overflow-y-auto space-y-3">
+          <div class="hairline p-4"><div class="flex justify-between"><b class="text-sm font-medium">Rina Putri</b><span class="text-[10px] text-zinc-500">2 jam lalu</span></div><p class="text-[13px] text-[#A1A1AA] mt-1">Selamat berbahagia, semoga langgeng hingga akhir hayat.</p></div>
+          <div class="hairline p-4"><div class="flex justify-between"><b class="text-sm font-medium">Bima Adi</b><span class="text-[10px] text-zinc-500">5 jam lalu</span></div><p class="text-[13px] text-[#A1A1AA] mt-1">Barakallahu lakuma, semoga sakinah mawaddah warahmah.</p></div>
+        </div>
+      </section>
+
+      <!-- 10 FOOTER -->
+      <footer class="pt-28 text-center">
+        <img data-slot="closingImage" alt="Foto penutup" class="w-full aspect-video object-cover mb-10" style="filter:grayscale(1)">
+        <p class="text-[11px] tracking-[.25em] text-zinc-500 mb-5">TURUT MENGUNDANG</p>
+        <div class="grid grid-cols-2 gap-4 text-[13px] text-[#A1A1AA] leading-relaxed">
+          <p>Keluarga Besar<br>Bapak Taufik Hidayat</p><p>Keluarga Besar<br>Bapak Fasya Rahman</p></div>
+        <p class="font-serif text-6xl font-light opacity-25 mt-12">A&amp;D</p>
+        <p class="font-serif italic text-[15px] text-zinc-300 mt-4 leading-relaxed">Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.</p>
+        <div class="w-16 h-px bg-white/10 mx-auto my-8"></div>
+        <p class="text-[10px] text-zinc-600">© 2026 Azalia &amp; Dias</p>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<!-- DOCK -->
+<nav class="dock fixed left-1/2 -translate-x-1/2 z-40 flex gap-1 rounded-full px-3 py-1 hairline backdrop-blur-md" style="bottom:max(1.5rem,env(safe-area-inset-bottom));background:rgba(18,18,18,.85);box-shadow:0 10px 30px rgba(0,0,0,.5)" aria-label="Navigasi">
+  <a href="#home" aria-label="Awal" class="relative w-11 h-11 grid place-items-center active"><svg class="w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></a>
+  <a href="#couple" aria-label="Mempelai" class="relative w-11 h-11 grid place-items-center"><svg class="w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-4 3-6 6-6s6 2 6 6M12 20c0-3 2-5 4-5s6 1 6 5"/></svg></a>
+  <a href="#event" aria-label="Lokasi" class="relative w-11 h-11 grid place-items-center"><svg class="w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 22s7-6 7-12a7 7 0 1 0-14 0c0 6 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg></a>
+  <a href="#gift" aria-label="Tanda kasih" class="relative w-11 h-11 grid place-items-center"><svg class="w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="8" width="18" height="13"/><path d="M3 12h18M12 8v13M12 8C9 8 7 3 10 3s2 5 2 5Zm0 0c3 0 5-5 2-5s-2 5-2 5Z"/></svg></a>
+  <a href="#rsvp" aria-label="RSVP" class="relative w-11 h-11 grid place-items-center"><svg class="w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 7 9 7 9-7"/></svg></a>
+</nav>
+
+<div id="toast-notification" class="fixed left-1/2 -translate-x-1/2 z-[60] px-4 py-2 text-xs bg-[#F8F6F0] text-black opacity-0 pointer-events-none transition-opacity" style="bottom:6rem">Tersalin</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" class="hidden fixed inset-0 z-[70] items-center justify-center" style="background:rgba(0,0,0,.95)">
+  <button id="lb-close" aria-label="Tutup" class="absolute top-5 right-5 w-10 h-10"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.2"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
+  <button id="lb-prev" aria-label="Sebelumnya" class="absolute left-3 text-3xl font-serif px-3">‹</button>
+  <img id="lb-img" alt="" class="max-h-[85vh] max-w-[92vw] object-contain">
+  <button id="lb-next" aria-label="Berikutnya" class="absolute right-3 text-3xl font-serif px-3">›</button>
+</div>
+
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  // Placeholder gambar (SVG data URI, tanpa permintaan jaringan)
+  function ph(w,h,tone){var t=['#2a2a2e','#1f1f23','#34322f'][tone%3];
+    return 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+t+'"/><stop offset="1" stop-color="#0d0d0d"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/><circle cx="'+w/2+'" cy="'+h*0.4+'" r="'+Math.min(w,h)*0.14+'" fill="#ffffff" fill-opacity=".08"/><path d="M'+w*0.2+' '+h+'c0-'+h*0.3+' '+w*0.1+'-'+h*0.38+' '+w*0.3+'-'+h*0.38+'s'+w*0.3+' '+h*0.08+' '+w*0.3+' '+h*0.38+'Z" fill="#ffffff" fill-opacity=".06"/></svg>');}
+  var n=0;document.querySelectorAll('img[data-slot]').forEach(function(im){if(!im.getAttribute('src')){im.src=ph(600,800,n++)}});
+
+  // Nama tamu
+  var q=new URLSearchParams(location.search);
+  if($('guest-name')){var to=q.get('to');if(to)$('guest-name').textContent=to}
+  if($('guest-badge')&&q.get('notamu')==='1')$('guest-badge').style.display='none';
+
+  // Buka undangan
+  var audio=$('audio-player'),disc=$('disc'),playing=false;
+  function setAudio(on){playing=on;if(disc)disc.classList.toggle('paused',!on)}
+  $('btn-open-invitation')?.addEventListener('click',function(){
+    $('gate-cover').classList.add('open');document.body.classList.remove('locked');document.body.style.overflow='auto';
+    if(audio&&audio.getAttribute('src')){audio.volume=0;audio.play().then(function(){setAudio(true);var v=0,s=setInterval(function(){v=Math.min(1,v+.1);audio.volume=v;if(v>=1)clearInterval(s)},150)}).catch(function(){})}
+    setTimeout(function(){$('gate-cover').style.visibility='hidden'},1300);
+  });
+  $('audio-toggle-btn')?.addEventListener('click',function(){
+    if(!audio||!audio.getAttribute('src'))return;
+    if(playing){audio.pause();setAudio(false)}else{audio.play().then(function(){setAudio(true)}).catch(function(){})}
+  });
+
+  // Reveal saat masuk viewport
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.2});
+  document.querySelectorAll('.reveal-sec').forEach(function(el){io.observe(el)});
+
+  // Hitung mundur
+  if($('cd-days')){var target=new Date('2026-11-14T08:00:00+07:00').getTime();
+    var p=function(x){return String(x).padStart(2,'0')};
+    var tick=function(){var d=Math.max(0,target-Date.now());
+      $('cd-days').textContent=p(Math.floor(d/864e5));$('cd-hours').textContent=p(Math.floor(d%864e5/36e5));
+      $('cd-mins').textContent=p(Math.floor(d%36e5/6e4));$('cd-secs').textContent=p(Math.floor(d%6e4/1e3))};
+    tick();setInterval(tick,1000)}
+
+  // Salin + toast
+  function toast(t){var el=$('toast-notification');if(!el)return;el.textContent=t;el.style.opacity=1;setTimeout(function(){el.style.opacity=0},1800)}
+  function copy(text,btn,idle){
+    var done=function(){if(btn){btn.textContent='✓ TERSALIN';btn.style.borderColor='#C5BDB5';setTimeout(function(){btn.textContent=idle;btn.style.borderColor=''},2000)}toast('Tersalin')};
+    if(navigator.clipboard)navigator.clipboard.writeText(text).then(done).catch(done);else done()}
+  var bc=$('btn-copy-acc');bc?.addEventListener('click',function(){copy($('acc-num').textContent.replace(/\s/g,''),bc,'SALIN NOMOR')});
+  var ba=$('btn-copy-addr');ba?.addEventListener('click',function(){copy('Jl. Cihampelas No. 88, Bandung 40131',ba,'SALIN ALAMAT')});
+
+  // Drawer gift & tab
+  var gt=$('gift-toggle');gt?.addEventListener('click',function(){var d=$('gift-drawer');d.classList.toggle('hidden');gt.setAttribute('aria-expanded',!d.classList.contains('hidden'))});
+  document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){
+    $('tab-rek').classList.toggle('hidden',b.dataset.tab!=='rek');$('tab-kado').classList.toggle('hidden',b.dataset.tab!=='kado');
+    document.querySelectorAll('.tab').forEach(function(x){var a=x===b;x.classList.toggle('text-zinc-500',!a);x.style.borderColor=a?'#fff':'transparent'})})});
+
+  // Simpan kalender (.ics)
+  document.querySelectorAll('[data-cal]').forEach(function(b){b.addEventListener('click',function(){
+    var ics='BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Pernikahan Azalia & Dias\nDTSTART:20261114T010000Z\nDTEND:20261114T070000Z\nEND:VEVENT\nEND:VCALENDAR';
+    var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download='undangan.ics';a.click();toast('Kalender diunduh')})});
+
+  // RSVP (statis, hanya tampilan)
+  $('r-send')?.addEventListener('click',function(){
+    var nm=$('r-name').value.trim(),ms=$('r-msg').value.trim();
+    if(!nm){toast('Isi nama lengkap dulu');return}
+    var c=document.createElement('div');c.className='hairline p-4';
+    var h=document.createElement('div');h.className='flex justify-between';
+    var b=document.createElement('b');b.className='text-sm font-medium';b.textContent=nm;
+    var s=document.createElement('span');s.className='text-[10px] text-zinc-500';s.textContent='Baru saja';
+    h.appendChild(b);h.appendChild(s);c.appendChild(h);
+    if(ms){var pp=document.createElement('p');pp.className='text-[13px] text-[#A1A1AA] mt-1';pp.textContent=ms;c.appendChild(pp)}
+    $('wishes').prepend(c);$('r-name').value='';$('r-msg').value='';toast('Konfirmasi terkirim')});
+
+  // Lightbox
+  var gal=[].slice.call(document.querySelectorAll('#gallery img')),gi=0,lb=$('lightbox');
+  function show(i){gi=(i+gal.length)%gal.length;$('lb-img').src=gal[gi].src}
+  gal.forEach(function(im,i){im.addEventListener('click',function(){show(i);lb.classList.remove('hidden');lb.classList.add('flex')})});
+  function close(){lb.classList.add('hidden');lb.classList.remove('flex')}
+  $('lb-close')?.addEventListener('click',close);$('lb-prev')?.addEventListener('click',function(){show(gi-1)});$('lb-next')?.addEventListener('click',function(){show(gi+1)});
+  var sx=0;lb?.addEventListener('touchstart',function(e){sx=e.touches[0].clientX});
+  lb?.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50)show(gi+(dx<0?1:-1))});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+
+  // Indikator dock
+  var links=[].slice.call(document.querySelectorAll('.dock a'));
+  var so=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(l){l.classList.toggle('active',l.getAttribute('href')==='#'+e.target.id)})}})},{rootMargin:'-40% 0px -50% 0px'});
+  links.forEach(function(l){var t=document.querySelector(l.getAttribute('href'));if(t)so.observe(t)});
+})();
+</script>
+</body>
+</html>

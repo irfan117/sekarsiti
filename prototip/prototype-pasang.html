@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Undangan Pernikahan · Pasang</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,700&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { sand:'#F4EEE3', sand2:'#EAE1D0', sea:'#0F3A4A', seamid:'#2F6F7E', foam:'#BFDCD6', foamlt:'#E3F0EC', coral:'#E8806A' },
+  fontFamily: { display:['"Bricolage Grotesque"','system-ui','sans-serif'], serif:['Newsreader','Georgia','serif'], sans:['Manrope','system-ui','sans-serif'] }
+} } }
+</script>
+<style>
+  body { font-family:'Manrope',system-ui,sans-serif; color:#0F3A4A; background:#EAE1D0; }
+  .wave { width:200%; height:100%; animation: flow 9s linear infinite; }
+  .wave.slow { animation-duration:16s; }
+  .wave.rev { animation-direction:reverse; animation-duration:12s; }
+  @keyframes flow { to { transform:translateX(-50%); } }
+  .pebble { border-radius: 48% 52% 50% 50% / 55% 45% 55% 45%; animation: morph 9s ease-in-out infinite alternate; }
+  .pebble.b { animation-delay:-4s; }
+  @keyframes morph { to { border-radius: 55% 45% 42% 58% / 46% 56% 44% 54%; } }
+  .reveal { opacity:0; transform:translateY(30px); transition:opacity .9s ease, transform 1s cubic-bezier(.2,.8,.2,1); transition-delay:var(--d,0s); }
+  .reveal.in { opacity:1; transform:none; }
+  .wipe { clip-path:inset(0 0 100% 0); transition:clip-path 1.2s cubic-bezier(.7,0,.2,1); transition-delay:var(--d,0s); }
+  .wipe.in { clip-path:inset(0 0 0 0); }
+  .rise { display:inline-block; opacity:0; transform:translateY(70%); }
+  .go .rise { animation: rise 1.1s cubic-bezier(.2,.8,.2,1) forwards; animation-delay:var(--d,0s); }
+  @keyframes rise { to { opacity:1; transform:none; } }
+  .bub { position:absolute; bottom:-20px; border-radius:50%; border:1px solid rgba(47,111,126,.35); animation: up var(--t,12s) linear infinite; animation-delay:var(--dl,0s); }
+  @keyframes up { to { transform:translateY(-110vh) translateX(var(--x,20px)); opacity:0; } }
+  #gate-cover { transition: transform 1.4s cubic-bezier(.76,0,.24,1); }
+  #gate-cover.open { transform: translateY(-104%); }
+  .rip { position:relative; overflow:hidden; }
+  .rip span.r { position:absolute; border-radius:50%; background:rgba(255,255,255,.45); transform:scale(0); animation: ripple .7s ease-out forwards; pointer-events:none; }
+  @keyframes ripple { to { transform:scale(4); opacity:0; } }
+  .ring { position:absolute; inset:0; border:1px solid #2F6F7E; border-radius:999px 999px 0 0; animation: ring 5s ease-out infinite; animation-delay:var(--d,0s); }
+  @keyframes ring { from { transform:scale(1); opacity:.6; } to { transform:scale(1.35); opacity:0; } }
+  .tick { animation: tick .45s cubic-bezier(.2,.8,.2,1); }
+  @keyframes tick { from { transform:translateY(-35%); opacity:0; } to { transform:none; opacity:1; } }
+  .spin { animation: spin 5s linear infinite; animation-play-state:paused; }
+  .on .spin { animation-play-state:running; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .toast-on { opacity:1!important; transform:translate(-50%,0)!important; }
+  #water { height: calc(10% + var(--p,0) * 78%); transition:height .5s ease-out; }
+  #lightbox { opacity:0; pointer-events:none; transition:opacity .3s; }
+  #lightbox.show { opacity:1; pointer-events:auto; }
+  @media (prefers-reduced-motion: reduce) { .reveal,.wipe,.rise { opacity:1!important; transform:none!important; clip-path:none!important; animation:none!important; transition:none!important; } .wave,.pebble,.bub,.ring,.spin { animation:none!important; } }
+</style>
+</head>
+<body>
+
+<!-- progress -->
+<div id="tide-bar" class="fixed top-0 left-0 h-[3px] bg-coral z-40 origin-left" style="width:100%;transform:scaleX(0)"></div>
+
+<!-- ============ GATE ============ -->
+<div id="gate-cover" class="fixed inset-0 z-50 bg-sand">
+  <div class="absolute inset-0 flex flex-col items-center justify-between text-center px-8 pt-14 pb-40 overflow-hidden">
+    <p class="font-sans text-[11px] tracking-[.4em] uppercase text-seamid font-semibold">Undangan Pernikahan</p>
+    <div>
+      <div id="guest-badge" class="inline-flex flex-col items-center bg-foamlt border border-foam rounded-3xl px-8 py-4 mb-8">
+        <p class="font-sans text-[10px] tracking-[.3em] uppercase text-seamid">Kepada Yth.</p>
+        <p id="guest-name" class="font-display font-medium text-2xl mt-1">Nama Tamu</p>
+      </div>
+      <h1 class="font-display font-light text-[56px] leading-[.95] tracking-tight">
+        <span data-bind="brideName">Nadia</span><br><span class="font-serif italic text-coral text-4xl">dan</span><br><span data-bind="groomName">Raka</span>
+      </h1>
+    </div>
+    <button id="btn-open-invitation" class="rip relative z-10 flex items-center gap-3 bg-sea text-sand rounded-full pl-7 pr-2.5 py-2.5 text-sm font-semibold tracking-wide active:scale-95 transition-transform">
+      Buka Undangan
+      <span class="grid place-items-center w-10 h-10 rounded-full bg-coral text-sea">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </span>
+    </button>
+  </div>
+  <!-- ombak gerbang -->
+  <div class="absolute bottom-0 inset-x-0 h-40 pointer-events-none">
+    <div class="absolute bottom-0 inset-x-0 h-full opacity-40"><svg class="wave slow" viewBox="0 0 1200 60" preserveAspectRatio="none"><path d="M0 30Q150 5 300 30T600 30T900 30T1200 30V60H0Z" fill="#BFDCD6"/></svg></div>
+    <div class="absolute bottom-0 inset-x-0 h-28 opacity-70"><svg class="wave rev" viewBox="0 0 1200 60" preserveAspectRatio="none"><path d="M0 30Q150 55 300 30T600 30T900 30T1200 30V60H0Z" fill="#2F6F7E"/></svg></div>
+    <div class="absolute bottom-0 inset-x-0 h-16"><svg class="wave" viewBox="0 0 1200 60" preserveAspectRatio="none"><path d="M0 30Q150 5 300 30T600 30T900 30T1200 30V60H0Z" fill="#0F3A4A"/></svg></div>
+  </div>
+  <!-- ombak tepi bawah saat gerbang terangkat -->
+  <div class="absolute top-full inset-x-0 h-10 overflow-hidden -mt-px pointer-events-none"><svg class="wave" viewBox="0 0 1200 40" preserveAspectRatio="none"><path d="M0 0H1200V10Q1050 38 900 10T600 10T300 10T0 10Z" fill="#0F3A4A"/></svg></div>
+</div>
+
+<!-- ============ LAYOUT SPLIT ============ -->
+<div class="lg:grid lg:grid-cols-2 min-h-screen">
+
+  <!-- ===== KIRI (desktop) ===== -->
+  <aside id="left-panel" class="hidden lg:flex sticky top-0 h-screen items-center justify-center bg-sand2 relative overflow-hidden">
+    <div class="absolute inset-0" style="background:radial-gradient(circle at 30% 20%,#F4EEE3 0,transparent 55%)"></div>
+    <div class="relative flex flex-col items-center">
+      <div id="parallax" class="relative w-[340px] h-[500px] rounded-t-full rounded-b-[170px] overflow-hidden shadow-[0_30px_60px_rgba(15,58,74,.25)] border-[8px] border-sand">
+        <img data-slot="heroImage" alt="Foto mempelai" class="absolute inset-0 w-full h-full object-cover bg-foam">
+        <!-- air naik mengikuti scroll -->
+        <div id="water" class="absolute inset-x-0 bottom-0 pointer-events-none">
+          <div class="absolute -top-5 inset-x-0 h-6"><svg class="wave" viewBox="0 0 1200 40" preserveAspectRatio="none"><path d="M0 20Q150 0 300 20T600 20T900 20T1200 20V40H0Z" fill="rgba(15,58,74,.55)"/></svg></div>
+          <div class="absolute inset-0 bg-sea/55"></div>
+        </div>
+      </div>
+      <p class="font-display font-light text-4xl mt-9 tracking-tight">
+        <span data-bind="brideName">Nadia</span> <span class="font-serif italic text-coral text-3xl">&amp;</span> <span data-bind="groomName">Raka</span>
+      </p>
+      <p class="font-sans text-[11px] tracking-[.35em] uppercase text-seamid mt-3" data-bind="eventDateFormatted">Sabtu, 14 November 2026</p>
+    </div>
+  </aside>
+
+  <!-- ===== KANAN ===== -->
+  <div class="bg-sand2">
+  <main class="w-full max-w-[480px] mx-auto min-h-screen relative bg-sand lg:shadow-2xl overflow-x-hidden">
+
+    <!-- HERO -->
+    <section id="hero" class="relative min-h-screen flex flex-col items-center justify-center text-center px-8 py-20 overflow-hidden">
+      <span class="bub w-3 h-3 left-[12%]" style="--t:11s;--x:14px"></span>
+      <span class="bub w-5 h-5 left-[78%]" style="--t:14s;--dl:-4s;--x:-18px"></span>
+      <span class="bub w-2 h-2 left-[50%]" style="--t:9s;--dl:-2s;--x:10px"></span>
+      <span class="bub w-4 h-4 left-[30%]" style="--t:16s;--dl:-9s;--x:-12px"></span>
+
+      <p class="rise font-sans text-[11px] tracking-[.4em] uppercase text-seamid font-semibold" style="--d:.2s">Kami akan menikah</p>
+
+      <div class="lg:hidden rise mt-8 relative w-40 h-56 rounded-t-full rounded-b-[80px] overflow-hidden border-[5px] border-sand shadow-xl" style="--d:.4s">
+        <img data-slot="heroImage" alt="Foto mempelai" class="absolute inset-0 w-full h-full object-cover bg-foam">
+      </div>
+
+      <h2 class="font-display font-light text-[76px] leading-[.88] tracking-tight mt-8 lg:mt-0">
+        <span class="rise" style="--d:.55s" data-bind="brideName">Nadia</span><br>
+        <span class="rise font-serif italic text-coral text-5xl" style="--d:.7s">dan</span><br>
+        <span class="rise" style="--d:.85s" data-bind="groomName">Raka</span>
+      </h2>
+      <p class="rise font-serif italic text-2xl mt-8" style="--d:1.1s" data-bind="eventDateFormatted">Sabtu, 14 November 2026</p>
+      <a href="#pesan" class="rise absolute bottom-7 flex flex-col items-center gap-1 text-[10px] tracking-[.3em] uppercase text-seamid" style="--d:1.4s">
+        Gulir
+        <svg class="animate-bounce" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </a>
+    </section>
+
+    <!-- QUOTE -->
+    <section id="pesan" class="relative bg-sea text-sand px-9 pt-28 pb-24 text-center">
+      <div class="absolute -top-px inset-x-0 h-12 overflow-hidden rotate-180"><svg class="wave slow" viewBox="0 0 1200 60" preserveAspectRatio="none"><path d="M0 30Q150 5 300 30T600 30T900 30T1200 30V60H0Z" fill="#0F3A4A"/></svg></div>
+      <p class="reveal font-serif italic text-[27px] leading-snug" data-bind="quoteText">“Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan pasangan untukmu agar kamu merasa tenteram kepadanya.”</p>
+      <p class="reveal font-sans text-[11px] tracking-[.3em] uppercase text-foam mt-7" style="--d:.15s" data-bind="quoteSource">QS. Ar-Rum: 21</p>
+    </section>
+
+    <!-- MEMPELAI -->
+    <section id="mempelai" class="px-8 py-24">
+      <div class="reveal text-center mb-14">
+        <p class="font-sans text-[11px] tracking-[.35em] uppercase text-seamid font-semibold">Mempelai</p>
+        <h3 class="font-display font-light text-4xl mt-3 tracking-tight">Dua arus, <span class="font-serif italic text-coral">satu muara</span></h3>
+      </div>
+
+      <div class="reveal flex flex-col items-center text-center">
+        <div class="pebble overflow-hidden w-56 h-64 border-[6px] border-sand shadow-xl"><img data-slot="bridePortrait" alt="Mempelai wanita" class="w-full h-full object-cover bg-foam"></div>
+        <h4 class="font-display font-medium text-3xl mt-7 tracking-tight" data-bind="brideFullName">Nadia Safitri Rahmawati</h4>
+        <p class="text-sm text-sea/65 mt-2 max-w-[260px] leading-relaxed" data-bind="brideParents">Putri dari Bapak Hendra Wijaya &amp; Ibu Sri Lestari</p>
+      </div>
+
+      <div class="reveal my-12 flex items-center gap-4"><span class="flex-1 h-px bg-seamid/30"></span><span class="font-serif italic text-4xl text-coral">&amp;</span><span class="flex-1 h-px bg-seamid/30"></span></div>
+
+      <div class="reveal flex flex-col items-center text-center">
+        <div class="pebble b overflow-hidden w-56 h-64 border-[6px] border-sand shadow-xl"><img data-slot="groomPortrait" alt="Mempelai pria" class="w-full h-full object-cover bg-foam"></div>
+        <h4 class="font-display font-medium text-3xl mt-7 tracking-tight" data-bind="groomFullName">Raka Aditya Pratama</h4>
+        <p class="text-sm text-sea/65 mt-2 max-w-[260px] leading-relaxed" data-bind="groomParents">Putra dari Bapak Dedi Kurniawan &amp; Ibu Ratna Dewi</p>
+      </div>
+    </section>
+
+    <!-- COUNTDOWN -->
+    <section id="countdown" class="px-6 py-16 bg-foamlt text-center">
+      <p class="reveal font-sans text-[11px] tracking-[.35em] uppercase text-seamid font-semibold">Air pasang menuju hari itu</p>
+      <div class="reveal mt-7 grid grid-cols-4 gap-2" style="--d:.1s">
+        <div class="bg-sand rounded-2xl py-5 overflow-hidden"><p id="cd-days" class="font-display font-light text-5xl leading-none tabular-nums">00</p><p class="text-[10px] tracking-[.2em] uppercase text-seamid mt-2">Hari</p></div>
+        <div class="bg-sand rounded-2xl py-5 overflow-hidden"><p id="cd-hours" class="font-display font-light text-5xl leading-none tabular-nums">00</p><p class="text-[10px] tracking-[.2em] uppercase text-seamid mt-2">Jam</p></div>
+        <div class="bg-sand rounded-2xl py-5 overflow-hidden"><p id="cd-mins" class="font-display font-light text-5xl leading-none tabular-nums">00</p><p class="text-[10px] tracking-[.2em] uppercase text-seamid mt-2">Menit</p></div>
+        <div class="bg-sea text-sand rounded-2xl py-5 overflow-hidden"><p id="cd-secs" class="font-display font-light text-5xl leading-none tabular-nums">00</p><p class="text-[10px] tracking-[.2em] uppercase text-foam mt-2">Detik</p></div>
+      </div>
+    </section>
+
+    <!-- ACARA -->
+    <section id="acara" class="px-6 py-24">
+      <div class="reveal text-center mb-10">
+        <p class="font-sans text-[11px] tracking-[.35em] uppercase text-seamid font-semibold">Acara</p>
+        <h3 class="font-serif italic text-4xl mt-3" data-bind="eventDateFormatted">Sabtu, 14 November 2026</h3>
+      </div>
+
+      <div class="reveal rounded-3xl bg-foamlt border border-foam overflow-hidden">
+        <div class="bg-sea text-sand px-7 py-4 flex items-center justify-between"><span class="font-display font-medium text-xl">Akad Nikah</span><span class="font-sans text-[10px] tracking-[.3em] uppercase text-foam">Pagi</span></div>
+        <div class="px-7 py-6">
+          <p class="flex items-center gap-2 text-sm font-semibold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-bind="akadTime">08.00 – 10.00 WIB</span></p>
+          <p class="text-sm text-sea/70 mt-3 leading-relaxed" data-bind="akadVenue">Masjid Al-Hikmah, Jl. Dago No. 12, Bandung</p>
+          <a href="https://maps.google.com" target="_blank" rel="noopener" data-bind="mapsUrl" class="rip inline-flex items-center gap-2 mt-5 rounded-full bg-sea text-sand px-5 py-2.5 text-xs font-semibold">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Buka Peta</a>
+        </div>
+      </div>
+
+      <div class="reveal rounded-3xl bg-foamlt border border-foam overflow-hidden mt-5" style="--d:.1s">
+        <div class="bg-coral text-sea px-7 py-4 flex items-center justify-between"><span class="font-display font-medium text-xl">Resepsi</span><span class="font-sans text-[10px] tracking-[.3em] uppercase">Siang</span></div>
+        <div class="px-7 py-6">
+          <p class="flex items-center gap-2 text-sm font-semibold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-bind="resepsiTime">11.00 – 14.00 WIB</span></p>
+          <p class="text-sm text-sea/70 mt-3 leading-relaxed" data-bind="resepsiVenue">Gedung Serbaguna Parahyangan, Bandung</p>
+          <a href="https://maps.google.com" target="_blank" rel="noopener" data-bind="mapsUrl" class="rip inline-flex items-center gap-2 mt-5 rounded-full bg-sea text-sand px-5 py-2.5 text-xs font-semibold">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Buka Peta</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALERI -->
+    <section id="galeri" class="px-6 py-20 bg-sand2">
+      <div class="reveal text-center mb-10">
+        <p class="font-sans text-[11px] tracking-[.35em] uppercase text-seamid font-semibold">Galeri</p>
+        <h3 class="font-serif italic text-4xl mt-3">Yang dibawa ombak</h3>
+        <p class="text-xs text-sea/50 mt-2">ketuk foto untuk memperbesar</p>
+      </div>
+      <div class="grid grid-cols-2 gap-3 items-start">
+        <div class="space-y-3">
+          <img data-slot="galleryImages" alt="Galeri 1" class="gal wipe w-full aspect-[3/4] object-cover rounded-2xl bg-foam cursor-zoom-in">
+          <img data-slot="galleryImages" alt="Galeri 3" class="gal wipe w-full aspect-square object-cover rounded-2xl bg-foam cursor-zoom-in" style="--d:.15s">
+        </div>
+        <div class="space-y-3 mt-10">
+          <img data-slot="galleryImages" alt="Galeri 2" class="gal wipe w-full aspect-square object-cover rounded-2xl bg-foam cursor-zoom-in" style="--d:.08s">
+          <img data-slot="galleryImages" alt="Galeri 4" class="gal wipe w-full aspect-[3/4] object-cover rounded-2xl bg-foam cursor-zoom-in" style="--d:.2s">
+        </div>
+      </div>
+    </section>
+
+    <!-- TANDA KASIH -->
+    <section id="kasih" class="px-7 py-24">
+      <div class="reveal text-center mb-9">
+        <p class="font-sans text-[11px] tracking-[.35em] uppercase text-seamid font-semibold">Tanda kasih</p>
+        <p class="text-sm text-sea/65 mt-4 leading-relaxed max-w-[300px] mx-auto">Doa dan kehadiranmu sudah lebih dari cukup. Bila ingin berbagi kebahagiaan, kami terima dengan syukur.</p>
+      </div>
+      <div class="reveal relative rounded-3xl bg-sea text-sand p-7 overflow-hidden" style="--d:.1s">
+        <div class="absolute -bottom-2 inset-x-0 h-10 opacity-30"><svg class="wave" viewBox="0 0 1200 60" preserveAspectRatio="none"><path d="M0 30Q150 5 300 30T600 30T900 30T1200 30V60H0Z" fill="#BFDCD6"/></svg></div>
+        <p class="relative font-sans text-[10px] tracking-[.3em] uppercase text-foam" data-bind="bankName">Bank Central Asia</p>
+        <p id="acc-num" class="relative font-display font-light text-[34px] tracking-wide mt-3 tabular-nums" data-bind="accountNumber">1234 5678 90</p>
+        <p class="relative text-sm text-sand/70 mt-1">a.n. <span data-bind="accountHolder">Nadia Safitri Rahmawati</span></p>
+        <button id="btn-copy-acc" class="rip relative mt-6 inline-flex items-center gap-2 bg-coral text-sea rounded-full px-5 py-2.5 text-sm font-semibold active:scale-95 transition-transform">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+          Salin nomor
+        </button>
+      </div>
+    </section>
+
+    <!-- PENUTUP -->
+    <section id="penutup" class="px-8 pt-6 pb-36 text-center">
+      <div class="reveal relative inline-block mx-auto">
+        <span class="ring"></span><span class="ring" style="--d:1.6s"></span><span class="ring" style="--d:3.2s"></span>
+        <div class="relative w-52 h-64 rounded-t-full overflow-hidden border-[5px] border-sand shadow-xl"><img data-slot="closingImage" alt="Foto penutup" class="w-full h-full object-cover bg-foam"></div>
+      </div>
+      <p class="reveal font-serif italic text-xl mt-10" style="--d:.1s">Sampai bertemu di tepi pantai kebahagiaan kami</p>
+      <p class="reveal font-display font-light text-5xl mt-4 tracking-tight" style="--d:.15s"><span data-bind="brideName">Nadia</span> <span class="font-serif italic text-coral text-4xl">&amp;</span> <span data-bind="groomName">Raka</span></p>
+    </section>
+  </main>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" class="fixed inset-0 z-[70] bg-sea/90 backdrop-blur-sm grid place-items-center p-6" aria-hidden="true">
+  <img id="lightbox-img" alt="" class="max-h-[85vh] max-w-full rounded-2xl shadow-2xl">
+  <button id="lightbox-close" class="absolute top-5 right-5 w-11 h-11 rounded-full bg-sand text-sea grid place-items-center" aria-label="Tutup"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
+
+<!-- TOAST -->
+<div id="toast-notification" class="fixed left-1/2 bottom-24 z-[80] -translate-x-1/2 translate-y-4 opacity-0 pointer-events-none transition-all duration-300 bg-sea text-sand text-sm px-5 py-3 rounded-full shadow-xl">Nomor rekening berhasil disalin</div>
+
+<!-- AUDIO -->
+<audio id="audio-player" loop preload="none" src=""></audio><!-- isi src dengan URL musik -->
+<button id="audio-toggle-btn" aria-label="Putar atau jeda musik" class="fixed z-40 bottom-5 right-5 w-12 h-12 rounded-full bg-sea text-sand grid place-items-center shadow-lg opacity-0 pointer-events-none transition-opacity duration-500">
+  <svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+</button>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var gate = $('gate-cover'), openBtn = $('btn-open-invitation'), audio = $('audio-player'), tog = $('audio-toggle-btn');
+  var playing = false;
+
+  // Placeholder foto (diganti otomatis oleh sistem upload via data-slot)
+  var tone = { heroImage:'#9CC5BE', bridePortrait:'#F2D3C8', groomPortrait:'#BFD3E0', galleryImages:'#CFE3DD', closingImage:'#9CC5BE' };
+  document.querySelectorAll('img[data-slot]').forEach(function (img) {
+    if (img.getAttribute('src')) return;
+    var c = tone[img.dataset.slot] || '#CFE3DD';
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150"><rect width="120" height="150" fill="' + c + '"/><g fill="none" stroke="#0F3A4A" stroke-width="2" stroke-linecap="round" opacity=".45"><circle cx="60" cy="62" r="16"/><path d="M28 130c3-24 17-34 32-34s29 10 32 34"/></g></svg>';
+    img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  });
+
+  // Nama tamu dari URL
+  var params = new URLSearchParams(location.search);
+  var to = params.get('to');
+  var gName = $('guest-name');
+  if (gName && to) gName.textContent = to;
+  var badge = $('guest-badge');
+  if (badge && params.get('notamu') === '1') badge.style.display = 'none';
+
+  if (gate) document.body.style.overflow = 'hidden';
+
+  function setPlaying(v) { playing = v; document.body.classList.toggle('on', v); }
+  function play() {
+    if (!audio || !audio.getAttribute('src')) { setPlaying(true); return; }
+    audio.play().then(function () { setPlaying(true); }).catch(function () { setPlaying(false); });
+  }
+  function toggle() {
+    if (playing) { if (audio && audio.getAttribute('src')) audio.pause(); setPlaying(false); } else play();
+  }
+
+  openBtn && openBtn.addEventListener('click', function () {
+    gate && gate.classList.add('open');
+    document.body.style.overflow = '';
+    document.body.classList.add('go');
+    if (tog) { tog.style.opacity = '1'; tog.style.pointerEvents = 'auto'; }
+    play();
+    setTimeout(function () { if (gate) gate.style.visibility = 'hidden'; }, 1500);
+  });
+  tog && tog.addEventListener('click', toggle);
+
+  // Ripple pada tombol
+  document.querySelectorAll('.rip').forEach(function (b) {
+    b.addEventListener('pointerdown', function (e) {
+      var r = b.getBoundingClientRect(), s = Math.max(r.width, r.height) / 4;
+      var d = document.createElement('span');
+      d.className = 'r'; d.style.width = d.style.height = s * 2 + 'px';
+      d.style.left = e.clientX - r.left - s + 'px'; d.style.top = e.clientY - r.top - s + 'px';
+      b.appendChild(d); setTimeout(function () { d.remove(); }, 750);
+    });
+  });
+
+  // Reveal saat scroll
+  var els = document.querySelectorAll('.reveal, .wipe');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: .15 });
+    els.forEach(function (el) { io.observe(el); });
+  } else els.forEach(function (el) { el.classList.add('in'); });
+
+  // Air pasang + progress mengikuti scroll
+  var water = $('water'), bar = $('tide-bar'), ticking = false;
+  function onScroll() {
+    var max = document.documentElement.scrollHeight - innerHeight;
+    var p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+    if (water) water.style.setProperty('--p', p);
+    if (bar) bar.style.transform = 'scaleX(' + p + ')';
+    ticking = false;
+  }
+  addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  onScroll();
+
+  // Parallax foto kiri (desktop)
+  var left = $('left-panel'), px = $('parallax');
+  if (left && px) {
+    left.addEventListener('mousemove', function (e) {
+      var r = left.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      px.style.transform = 'translate(' + x * 14 + 'px,' + y * 14 + 'px) rotate(' + x * 1.2 + 'deg)';
+    });
+    left.addEventListener('mouseleave', function () { px.style.transform = ''; });
+    px.style.transition = 'transform .4s ease-out';
+  }
+
+  // Countdown dengan efek tick
+  if ($('cd-days')) {
+    var target = new Date('2026-11-14T08:00:00+07:00').getTime();
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+    var set = function (id, v) {
+      var el = $(id); if (!el) return;
+      var t = pad(v);
+      if (el.textContent !== t) { el.textContent = t; el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); }
+    };
+    var tick = function () {
+      var d = Math.max(0, target - Date.now());
+      set('cd-days', Math.floor(d / 864e5)); set('cd-hours', Math.floor(d % 864e5 / 36e5));
+      set('cd-mins', Math.floor(d % 36e5 / 6e4)); set('cd-secs', Math.floor(d % 6e4 / 1e3));
+    };
+    tick(); setInterval(tick, 1000);
+  }
+
+  // Lightbox galeri
+  var lb = $('lightbox'), lbImg = $('lightbox-img'), lbClose = $('lightbox-close');
+  if (lb && lbImg) {
+    document.querySelectorAll('img.gal').forEach(function (g) {
+      g.addEventListener('click', function () { lbImg.src = g.src; lbImg.alt = g.alt; lb.classList.add('show'); lb.setAttribute('aria-hidden', 'false'); });
+    });
+    var close = function () { lb.classList.remove('show'); lb.setAttribute('aria-hidden', 'true'); };
+    lb.addEventListener('click', function (e) { if (e.target !== lbImg) close(); });
+    lbClose && lbClose.addEventListener('click', close);
+    addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  }
+
+  // Salin rekening
+  var btnCopy = $('btn-copy-acc'), toast = $('toast-notification'), tt;
+  function showToast() {
+    if (!toast) return;
+    toast.classList.add('toast-on'); clearTimeout(tt);
+    tt = setTimeout(function () { toast.classList.remove('toast-on'); }, 2200);
+  }
+  btnCopy && btnCopy.addEventListener('click', function () {
+    var acc = $('acc-num');
+    var num = acc ? acc.textContent.replace(/\s/g, '') : '';
+    var fallback = function () {
+      var t = document.createElement('textarea'); t.value = num; document.body.appendChild(t);
+      t.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(t); showToast();
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(num).then(showToast).catch(fallback);
+    else fallback();
+  });
+})();
+</script>
+</body>
+</html>

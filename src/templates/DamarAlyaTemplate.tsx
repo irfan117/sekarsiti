@@ -49,6 +49,10 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
   const groomName = customData?.groomName || 'Damar';
   const groomFullName = customData?.groomFullName || 'Damar Aji Wibisono';
   const groomParents = customData?.groomParents || 'Putra dari Bapak Sutrisno Wibisono & Ibu Ratna Kusumawati';
+
+  const groomInitial = (groomName.trim().charAt(0) || 'D').toUpperCase();
+  const brideInitial = (brideName.trim().charAt(0) || 'A').toUpperCase();
+
   const eventDateFormatted = customData?.eventDateFormatted || 'Sabtu, 14 November 2026';
   const countdownIsoDate = customData?.countdownIsoDate || '2026-11-14T07:30:00+07:00';
   const akadTime = customData?.akadTime || '07.30 – 09.00 WIB';
@@ -838,9 +842,9 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
 
           <div className="cover-frame-box">
             <div className="cover-crest">
-              <span>{groomName.charAt(0)}</span>
+              <span>{groomInitial}</span>
               <span className="crest-amp">&amp;</span>
-              <span>{brideName.charAt(0)}</span>
+              <span>{brideInitial}</span>
             </div>
 
             <p className="cover-kicker">Undangan Pernikahan</p>
@@ -945,7 +949,7 @@ export const DamarAlyaTemplate: React.FC<DamarAlyaTemplateProps> = ({
             </div>
             <div className="hero-couple-header">
               <div className="hero-crest">
-                <span>{groomName.charAt(0)} &amp; {brideName.charAt(0)}</span>
+                <span>{groomInitial} &amp; {brideInitial}</span>
               </div>
               <p className="hero-kicker">THE WEDDING OF</p>
               <div className="hero-names-wrapper">

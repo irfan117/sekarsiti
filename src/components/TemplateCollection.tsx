@@ -10,33 +10,53 @@ const EDITORIAL_META: Record<
   string,
   { seriesLabel: string; shortDesc: string }
 > = {
+  'noir-editorial': {
+    seriesLabel: 'SERI NO. 01 · NOIR EDITORIAL',
+    shortDesc: 'Estetika monokrom high-fashion, split-screen desktop interaktif, dan monogram berkarakter kuat.',
+  },
   'ruang-rasa': {
-    seriesLabel: 'SERI NO. 01 · EDITORIAL MONOCHROME',
+    seriesLabel: 'SERI NO. 02 · EDITORIAL MONOCHROME',
     shortDesc: 'Eksplorasi tipografi murni, ruang kosong yang bernapas, dan ketenangan kontemporer.',
   },
   'malam-zamrud': {
-    seriesLabel: 'SERI NO. 02 · ART DECO & ONYX',
+    seriesLabel: 'SERI NO. 03 · ART DECO & ONYX',
     shortDesc: 'Kemegahan malam beraksen logam kuningan untuk perayaan yang intim nan berwibawa.',
   },
   'setangkai': {
-    seriesLabel: 'SERI NO. 03 · SAGE & FOLIAGE',
+    seriesLabel: 'SERI NO. 04 · SAGE & FOLIAGE',
     shortDesc: 'Keanggunan botanical sage yang lembut, hadir dalam tata letak dual-pane yang sinematik.',
   },
   'suasana': {
-    seriesLabel: 'SERI NO. 04 · BOTANICAL ARCHIVE',
+    seriesLabel: 'SERI NO. 05 · BOTANICAL ARCHIVE',
     shortDesc: 'Sentuhan tekstur kertas gading dan lipatan interaktif bergaya buku kenangan.',
   },
   'lembayung': {
-    seriesLabel: 'SERI NO. 05 · CINEMATIC 35MM',
+    seriesLabel: 'SERI NO. 06 · CINEMATIC 35MM',
     shortDesc: 'Nostalgia rol film sinematik dengan gerbang sampul dua pintu dan polaroid berserak.',
   },
   'cetak-biru': {
-    seriesLabel: 'SERI NO. 06 · BLUEPRINT ARCHIVIST',
+    seriesLabel: 'SERI NO. 07 · BLUEPRINT ARCHIVIST',
     shortDesc: 'Presisi cetak biru arsitektur dengan tipografi tabular dan komposisi garis geometris.',
   },
   'atlas-cinta': {
-    seriesLabel: "SERI NO. 07 · TRAVELLER'S ATLAS",
+    seriesLabel: "SERI NO. 08 · TRAVELLER'S ATLAS",
     shortDesc: 'Perpaduan peta perjalanan dan kisah yang mengalir dalam format atlas editorial.',
+  },
+  'lantera': {
+    seriesLabel: 'SERI NO. 09 · GOLD & ONYX LANTERN',
+    shortDesc: 'Malam onyx megah beraksen kilau emas, partikel kunang-kunang, dan 3 kolom desktop layout.',
+  },
+  'pasang': {
+    seriesLabel: 'SERI NO. 10 · COASTAL TIDE & SAND',
+    shortDesc: 'Nuansa pesisir tenang dengan rising tide water level interaktif dan bingkai kerikil halus.',
+  },
+  'pop-kuning': {
+    seriesLabel: 'SERI NO. 11 · NEO-BRUTALIST CHEERFUL',
+    shortDesc: 'Gaya pop ceria berani dengan polaroid bertape washi, running marquee, dan panel bab reaktif.',
+  },
+  'porselen-biru': {
+    seriesLabel: 'SERI NO. 12 · AZULEJO PORCELAIN',
+    shortDesc: 'Keanggunan ubin keramik Azulejo biru Delft dengan bingkai lengkung kubah dan tiket bertekstur.',
   },
 };
 
@@ -100,7 +120,7 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
     return map;
   }, [publicPortfolios]);
 
-  const primaryTemplates = TEMPLATES.slice(0, 7);
+  const primaryTemplates = TEMPLATES.slice(0, 12);
   const displayedTemplates = showAll ? TEMPLATES : primaryTemplates;
 
   return (
@@ -270,7 +290,7 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
         </div>
 
         {/* Show all toggle */}
-        {TEMPLATES.length > 7 && (
+        {TEMPLATES.length > 8 && (
           <div className="text-center pt-2">
             <button
               onClick={() => setShowAll(!showAll)}
