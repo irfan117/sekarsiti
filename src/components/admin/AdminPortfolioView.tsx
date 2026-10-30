@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Edit3, Trash2, CheckCircle2, XCircle, Sparkles, Plus, ExternalLink } from 'lucide-react';
+import { Eye, Edit3, Trash2, CheckCircle2, XCircle, Sparkles, Plus, ExternalLink, RotateCcw } from 'lucide-react';
 import { PortfolioItemData } from '../../types/portfolio';
 import { PortfolioStore } from '../../admin/portfolioStore';
 import { TEMPLATE_REGISTRY } from '../../admin/templateRegistry';
@@ -66,11 +66,28 @@ export const AdminPortfolioView: React.FC<AdminPortfolioViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 px-3 py-2 rounded-lg text-xs font-mono shrink-0">
-          <span className="text-stone-500">Total Showcase:</span>
-          <strong className="text-stone-900">{items.length} Item</strong>
-          <span className="text-stone-300">|</span>
-          <span className="text-emerald-700 font-semibold">{publishedCount} Tayang Publik</span>
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 px-3 py-2 rounded-lg text-xs font-mono">
+            <span className="text-stone-500">Total Showcase:</span>
+            <strong className="text-stone-900">{items.length} Item</strong>
+            <span className="text-stone-300">|</span>
+            <span className="text-emerald-700 font-semibold">{publishedCount} Tayang Publik</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={async () => {
+              if (confirm('Sinkronkan & muat ulang semua template default dari katalog ke showcase?')) {
+                await PortfolioStore.resetToDefaultSeed();
+                refreshItems();
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 hover:border-stone-300 rounded-lg text-xs font-medium transition cursor-pointer shadow-2xs"
+            title="Muat ulang seluruh 12 template resmi ke daftar showcase"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-[#C5A880]" />
+            <span>Sinkronkan Katalog ({items.length}/12)</span>
+          </button>
         </div>
       </div>
 

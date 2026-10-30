@@ -4,13 +4,13 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { TEMPLATES } from '../data/catalog';
 import { readPersistedJson, writePersistedJson } from '../utils/persistedStore';
 
-const PORTFOLIO_STORAGE_KEY = 'sekarsiti_portfolio_items_v1';
+const PORTFOLIO_STORAGE_KEY = 'sekarsiti_portfolio_items_v2';
 
 type PortfolioListener = () => void;
 
 // Initial fallback portfolio items generated from catalog defaults
 export const INITIAL_PORTFOLIO_ITEMS: PortfolioItemData[] = TEMPLATES.map((tpl, idx) => ({
-  id: `PF-DEFAULT-00${idx + 1}`,
+  id: `PF-DEFAULT-${String(idx + 1).padStart(3, '0')}`,
   title: tpl.title,
   slug: tpl.id,
   templateId: (tpl.id as any) || 'ruang-rasa',
@@ -19,22 +19,39 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItemData[] = TEMPLATES.map((tpl, 
   galleryImages: [tpl.image],
   songTitle: tpl.demoData?.songTitle || 'Lagu Pernikahan Modern',
   audioUrl: tpl.demoData?.audioUrl || '',
-  quoteText: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya.',
+  quoteText: tpl.demoData?.loveQuote || 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya.',
   quoteSource: 'Ar-Rum: 21',
-  brideName: tpl.title.split('&')[0]?.trim() || 'Kirana',
-  groomName: tpl.title.split('&')[1]?.trim() || 'Adhitya',
-  eventDate: 'Sabtu, 14 Februari 2026',
-  city: 'Jakarta',
+  brideName: tpl.demoData?.brideName || tpl.title.split('&')[0]?.trim() || 'Kirana',
+  groomName: tpl.demoData?.groomName || tpl.title.split('&')[1]?.trim() || 'Adhitya',
+  eventDate: tpl.demoData?.eventDate || 'Sabtu, 14 Februari 2026',
+  city: tpl.demoData?.city || 'Jakarta',
   isPublished: true,
   isClientApproved: true,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
 }));
 
-let memoryPortfolio: PortfolioItemData[] = readPersistedJson<PortfolioItemData[]>(
-  PORTFOLIO_STORAGE_KEY,
-  [...INITIAL_PORTFOLIO_ITEMS]
-);
+// Function to merge persisted portfolio items with any new templates from catalog
+function getMergedInitialPortfolio(): PortfolioItemData[] {
+  const persisted = readPersistedJson<PortfolioItemData[]>(PORTFOLIO_STORAGE_KEY, []);
+  if (!persisted || persisted.length === 0) {
+    return [...INITIAL_PORTFOLIO_ITEMS];
+  }
+
+  // Ensure any newly added templates in TEMPLATES catalog are present
+  const existingSlugs = new Set(persisted.map(item => item.slug.toLowerCase()));
+  const missingDefaults = INITIAL_PORTFOLIO_ITEMS.filter(item => !existingSlugs.has(item.slug.toLowerCase()));
+  
+  if (missingDefaults.length > 0) {
+    const merged = [...persisted, ...missingDefaults];
+    writePersistedJson(PORTFOLIO_STORAGE_KEY, merged);
+    return merged;
+  }
+
+  return persisted;
+}
+
+let memoryPortfolio: PortfolioItemData[] = getMergedInitialPortfolio();
 let isLoadedFromSupabase = false;
 
 export class PortfolioStore {
@@ -71,7 +88,7 @@ export class PortfolioStore {
 
         if (!error && data) {
           if (data.length > 0) {
-            memoryPortfolio = data.map((item: any) => ({
+            const supabaseItems: PortfolioItemData[] = data.map((item: any) => ({
               id: item.id,
               title: item.title,
               slug: item.slug,
@@ -96,9 +113,19 @@ export class PortfolioStore {
               createdAt: item.created_at || new Date().toISOString(),
               updatedAt: item.updated_at || new Date().toISOString()
             }));
+
+            // Merge Supabase items with any missing templates from catalog defaults
+            const supabaseSlugs = new Set(supabaseItems.map(item => item.slug.toLowerCase()));
+            const missingFromCatalog = INITIAL_PORTFOLIO_ITEMS.filter(
+              item => !supabaseSlugs.has(item.slug.toLowerCase())
+            );
+
+            memoryPortfolio = [...supabaseItems, ...missingFromCatalog];
+          } else {
+            memoryPortfolio = [...INITIAL_PORTFOLIO_ITEMS];
           }
           isLoadedFromSupabase = true;
-          this.notify();
+          this.persistToStorage(memoryPortfolio);
           return memoryPortfolio;
         }
       } catch (err) {
@@ -259,6 +286,12 @@ export class PortfolioStore {
     const newStatus = !item.isClientApproved;
     await this.update(id, { isClientApproved: newStatus });
     return newStatus;
+  }
+
+  static async resetToDefaultSeed(): Promise<void> {
+    memoryPortfolio = [...INITIAL_PORTFOLIO_ITEMS];
+    this.persistToStorage(memoryPortfolio);
+    this.notify();
   }
 
   static async delete(id: string): Promise<boolean> {

@@ -510,10 +510,7 @@ export default function App() {
           onOrderViaWhatsApp={handleOrderFromCatalog}
           onOpenDedicatedDemo={handleOpenDedicatedDemo}
           onPreviewPortfolio={(portfolioItem) => {
-            if (portfolioItem.id.startsWith('PF-DEFAULT-')) {
-              handleOpenDedicatedDemo(portfolioItem.templateId);
-              return;
-            }
+            const targetDemo = resolveDemoViewFromId(portfolioItem.templateId);
 
             const realInvitation = portfolioItem.sourceInvitationId
               ? AdminStore.getById(portfolioItem.sourceInvitationId)
@@ -554,13 +551,14 @@ export default function App() {
                 audioUrl: portfolioItem.audioUrl,
                 mediaSlots: {
                   heroImage: portfolioItem.heroImage || portfolioItem.coverImage,
+                  bridePortrait: portfolioItem.coverImage,
+                  groomPortrait: portfolioItem.coverImage,
                   galleryImages: portfolioItem.galleryImages
                 }
               };
               setClientPreviewData(dummyInv);
             }
 
-            const targetDemo = resolveDemoViewFromId(portfolioItem.templateId);
             setCurrentView(targetDemo);
             const { querySlug } = DEMO_VIEW_CONFIG[targetDemo];
             window.history.pushState({}, '', `/?demo=${querySlug}`);
