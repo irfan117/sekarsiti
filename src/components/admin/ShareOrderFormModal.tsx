@@ -9,10 +9,12 @@ import {
   MessageCircle,
   ExternalLink,
   ChevronDown,
-  Globe
+  Globe,
+  Tag
 } from 'lucide-react';
 import { safeCopyToClipboard } from '../../utils/clipboardUtils';
 import { TEMPLATES } from '../../data/catalog';
+import { ReferralStore } from '../../admin/referralStore';
 
 interface ShareOrderFormModalProps {
   onClose: () => void;
@@ -21,15 +23,20 @@ interface ShareOrderFormModalProps {
 export const ShareOrderFormModal: React.FC<ShareOrderFormModalProps> = ({ onClose }) => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('all');
   const [customClientName, setCustomClientName] = useState<string>('');
+  const [selectedReferralCode, setSelectedReferralCode] = useState<string>('');
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedChat, setCopiedChat] = useState(false);
 
+  const resellers = ReferralStore.getResellers();
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ssiti.tech';
   
-  // URL form pemesanan
-  const formUrl = selectedTemplateId && selectedTemplateId !== 'all'
-    ? `${origin}/?order=${encodeURIComponent(selectedTemplateId)}`
-    : `${origin}/?order=all`;
+  // URL form pemesanan dengan dukungan referral
+  const baseOrderParam = selectedTemplateId && selectedTemplateId !== 'all' ? selectedTemplateId : 'all';
+  const queryParts = [`order=${encodeURIComponent(baseOrderParam)}`];
+  if (selectedReferralCode.trim()) {
+    queryParts.push(`ref=${encodeURIComponent(selectedReferralCode.trim().toUpperCase())}`);
+  }
+  const formUrl = `${origin}/?${queryParts.join('&')}`;
 
   // Draft chat WhatsApp
   const greetingName = customClientName.trim() ? `Kak ${customClientName.trim()}` : 'Kak';
@@ -131,6 +138,35 @@ Jika ada hal yang ingin ditanyakan, jangan ragu untuk membalas pesan ini ya! ðŸ¤
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Pilihan Kode Referral / Reseller */}
+            <div className="sm:col-span-2 pt-1 border-t border-stone-200/60">
+              <label className="block text-[11px] font-semibold text-stone-800 mb-1 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-[#C5A880]" />
+                  <span>Kaitkan Kode Referral Reseller (Opsional):</span>
+                </span>
+                {selectedReferralCode && (
+                  <span className="text-[10px] text-emerald-700 font-medium">
+                    Aktif: {selectedReferralCode}
+                  </span>
+                )}
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value={selectedReferralCode}
+                  onChange={(e) => setSelectedReferralCode(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:border-[#C5A880]"
+                >
+                  <option value="">Tanpa Referral (Order Langsung / Organik)</option>
+                  {resellers.map((r) => (
+                    <option key={r.code} value={r.code}>
+                      {r.code} â€” {r.name} (Komisi: Rp {r.defaultCommission.toLocaleString('id-ID')})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 

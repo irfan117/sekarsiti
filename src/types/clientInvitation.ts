@@ -128,4 +128,9 @@ export interface ClientInvitationData {
   // Tamu & RSVP
   guestbookEntries?: { name: string; message: string; time: string }[];
   rsvpList?: { name: string; attendance: string; count: number; date: string }[];
+
+  // Partner / Reseller Referral Tracking
+  referralCode?: string; // Kode referral partner e.g. "DINA20"
+  referralCommission?: number; // Nilai komisi referral (IDR)
+  referralPaidAt?: string; // Tanggal komisi dibayarkan (ISO string)
 }

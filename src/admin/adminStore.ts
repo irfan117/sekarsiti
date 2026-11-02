@@ -11,6 +11,7 @@ import { buildInvitationUrl } from '../utils/subdomainUtils';
 import { sanitizeAudioUrl } from '../utils/audioUrl';
 import { readPersistedJson, writePersistedJson } from '../utils/persistedStore';
 import { getPortalSession, isAuthorizedPortalSession } from '../utils/portalAuth';
+import { ReferralStore } from './referralStore';
 
 const ADMIN_ORDERS_STORAGE_KEY = 'sekarsiti_admin_orders_v1';
 
@@ -367,6 +368,9 @@ export class AdminStore {
       },
       accessCode: payload.accessCode || slug || id,
       pinCode: payload.pinCode || String(Math.floor(1000 + Math.random() * 9000)),
+      referralCode: payload.referralCode || '',
+      referralCommission: payload.referralCommission,
+      referralPaidAt: payload.referralPaidAt,
       guestLinks: payload.guestLinks || [],
       guestbookEntries: payload.guestbookEntries || [],
       rsvpList: payload.rsvpList || []
@@ -375,6 +379,17 @@ export class AdminStore {
     orders.unshift(newOrder);
     this.saveStore(orders);
     this.syncToSupabase(newOrder);
+
+    if (newOrder.referralCode) {
+      ReferralStore.syncInvitationReferral({
+        invitationId: newOrder.id,
+        clientName: newOrder.clientName,
+        templateId: newOrder.templateId,
+        isPublished: newOrder.status === 'published',
+        referralCode: newOrder.referralCode
+      });
+    }
+
     return newOrder;
   }
 
@@ -677,6 +692,17 @@ export class AdminStore {
     orders[index] = updated;
     this.saveStore(orders);
     this.syncToSupabase(updated);
+
+    if (updated.referralCode) {
+      ReferralStore.syncInvitationReferral({
+        invitationId: updated.id,
+        clientName: updated.clientName,
+        templateId: updated.templateId,
+        isPublished: updated.status === 'published',
+        referralCode: updated.referralCode
+      });
+    }
+
     return updated;
   }
 

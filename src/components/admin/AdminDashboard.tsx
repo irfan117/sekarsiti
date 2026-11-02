@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, CheckCircle2, Send, MessageCircle } from 'lucide-react';
+import { Plus, CheckCircle2, Send, MessageCircle, Users } from 'lucide-react';
 import { ClientInvitationData, OrderStatus } from '../../types/clientInvitation';
 import { PortfolioItemData } from '../../types/portfolio';
 import { AdminStore } from '../../admin/adminStore';
@@ -8,6 +8,7 @@ import { safeCopyToClipboard } from '../../utils/clipboardUtils';
 import { ClientOrderEditor } from './ClientOrderEditor';
 import { GuestLinkModal } from './GuestLinkModal';
 import { ShareOrderFormModal } from './ShareOrderFormModal';
+import { ReferralPartnerModal } from './ReferralPartnerModal';
 import { AdminSidebar } from './dashboard/AdminSidebar';
 import { AdminStatsCards } from './dashboard/AdminStatsCards';
 import { AdminOrdersTable, SortField } from './dashboard/AdminOrdersTable';
@@ -40,6 +41,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const [guestLinkOrder, setGuestLinkOrder] = useState<ClientInvitationData | null>(null);
   const [isShareOrderModalOpen, setIsShareOrderModalOpen] = useState(false);
+  const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const [exportingOrderId, setExportingOrderId] = useState<string | null>(null);
 
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -239,6 +241,7 @@ Di dalam Portal Mempelai, Anda dapat langsung mengunggah foto prewedding/galeri,
         onSelectPortfolioView={() => setViewState('portfolio')}
         onCreateNew={handleCreateNew}
         onOpenClientPortal={() => onOpenClientPortal && onOpenClientPortal()}
+        onOpenReferralModal={() => setIsReferralModalOpen(true)}
         onChangeStatusFilter={(status) => {
           setStatusFilter(status);
           setViewState('list');
@@ -272,6 +275,16 @@ Di dalam Portal Mempelai, Anda dapat langsung mengunggah foto prewedding/galeri,
           <div className="flex items-center gap-2.5">
             {viewState === 'list' && (
               <>
+                <button
+                  type="button"
+                  onClick={() => setIsReferralModalOpen(true)}
+                  className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
+                  title="Buka panel manajemen mitra reseller & pantau komisi"
+                >
+                  <Users className="w-3.5 h-3.5 text-[#C5A880]" />
+                  <span>Mitra Reseller</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setIsShareOrderModalOpen(true)}
@@ -397,6 +410,12 @@ Di dalam Portal Mempelai, Anda dapat langsung mengunggah foto prewedding/galeri,
       {isShareOrderModalOpen && (
         <ShareOrderFormModal
           onClose={() => setIsShareOrderModalOpen(false)}
+        />
+      )}
+
+      {isReferralModalOpen && (
+        <ReferralPartnerModal
+          onClose={() => setIsReferralModalOpen(false)}
         />
       )}
     </div>

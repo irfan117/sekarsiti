@@ -27,7 +27,7 @@ export const ClientUploadForm: React.FC<ClientUploadFormProps> = ({
   currentSongTitle,
   currentAudioUrl,
   onSelect,
-  addUploadsToCatalog = true,
+  addUploadsToCatalog = false,
 }) => {
   const [tracks, setTracks] = useState<MusicTrack[]>([]);
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);

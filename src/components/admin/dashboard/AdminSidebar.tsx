@@ -8,7 +8,8 @@ import {
   RefreshCw,
   ArrowLeft,
   LogOut,
-  Sparkles
+  Sparkles,
+  Users
 } from 'lucide-react';
 import { OrderStatus } from '../../../types/clientInvitation';
 import { AdminStoreStats } from '../../../admin/adminStore';
@@ -23,6 +24,7 @@ interface AdminSidebarProps {
   onSelectPortfolioView: () => void;
   onCreateNew: () => void;
   onOpenClientPortal?: () => void;
+  onOpenReferralModal?: () => void;
   onChangeStatusFilter: (status: 'all' | OrderStatus) => void;
   onExportBackup: () => void;
   onTriggerImportBackup: () => void;
@@ -39,6 +41,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   onSelectPortfolioView,
   onCreateNew,
   onOpenClientPortal,
+  onOpenReferralModal,
   onChangeStatusFilter,
   onExportBackup,
   onTriggerImportBackup,
@@ -115,6 +118,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         >
           <Heart className="w-4 h-4 text-[#C5A880]" />
           <span>Portal Mempelai</span>
+        </button>
+
+        <button
+          onClick={() => onOpenReferralModal && onOpenReferralModal()}
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors cursor-pointer text-stone-400 hover:text-white hover:bg-[#1A1918]"
+          title="Kelola mitra reseller & pantau komisi"
+        >
+          <Users className="w-4 h-4 text-[#C5A880]" />
+          <span>Mitra Reseller &amp; Komisi</span>
         </button>
 
         <div className="pt-4 pb-1 px-3">

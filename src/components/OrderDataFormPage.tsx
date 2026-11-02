@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -13,7 +13,11 @@ import {
   MapPin,
   CreditCard,
   Music,
-  Loader2
+  Loader2,
+  Play,
+  Pause,
+  Disc,
+  Check
 } from 'lucide-react';
 import { AdminStore } from '../admin/adminStore';
 import { TEMPLATES } from '../data/catalog';
@@ -22,6 +26,7 @@ import { InvitationItem } from '../types';
 import { TemplateId, ClientInvitationData } from '../types/clientInvitation';
 import { uploadToCloudinary, isCloudinaryConfigured } from '../utils/cloudinaryUpload';
 import { smartPlaceAssets } from '../services/mediaAssetAssistant';
+import { fetchMusicTracks, MusicTrack } from '../services/musicService';
 
 interface OrderDataFormPageProps {
   initialTemplate?: InvitationItem | null;
@@ -60,6 +65,13 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
+  const [referralCode, setReferralCode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('ref') || '';
+    }
+    return '';
+  });
   const [brideName, setBrideName] = useState('');
   const [brideFullName, setBrideFullName] = useState('');
   const [brideParents, setBrideParents] = useState('');
@@ -76,12 +88,20 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   const [city, setCity] = useState('');
   const [mapsUrl, setMapsUrl] = useState('');
 
-  // Amplop & Musik
+  // Amplop Digital
   const [bankName, setBankName] = useState('BCA');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountHolder, setAccountHolder] = useState('');
-  const [songTitle, setSongTitle] = useState('Until I Found You - Stephen Sanchez');
   const [notes, setNotes] = useState('');
+
+  // Pilihan Musik Awal: 'theme' (bawaan tema) | 'catalog' (katalog Sekarsiti)
+  // Musik kustom sendiri akan diunggah oleh klien di Portal Mempelai setelah undangan jadi
+  const [musicChoice, setMusicChoice] = useState<'theme' | 'catalog'>('theme');
+  const [catalogTracks, setCatalogTracks] = useState<MusicTrack[]>([]);
+  const [selectedCatalogTrack, setSelectedCatalogTrack] = useState<MusicTrack | null>(null);
+  const [playingCatalogId, setPlayingCatalogId] = useState<string | null>(null);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
+  const audioPreviewRef = useRef<HTMLAudioElement | null>(null);
 
   // Upload Media
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
@@ -155,6 +175,43 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     setUploadedPhotos((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  // Fetch katalog musik resmi Sekarsiti untuk pilihan di form
+  useEffect(() => {
+    setIsLoadingCatalog(true);
+    fetchMusicTracks()
+      .then((data) => {
+        setCatalogTracks(data || []);
+      })
+      .catch((err) => {
+        console.warn('Gagal memuat katalog musik di form:', err);
+      })
+      .finally(() => {
+        setIsLoadingCatalog(false);
+      });
+
+    return () => {
+      audioPreviewRef.current?.pause();
+      audioPreviewRef.current = null;
+    };
+  }, []);
+
+  const handleTogglePreviewCatalog = (track: MusicTrack) => {
+    if (playingCatalogId === track.id) {
+      audioPreviewRef.current?.pause();
+      setPlayingCatalogId(null);
+      return;
+    }
+    if (!audioPreviewRef.current) {
+      audioPreviewRef.current = new Audio();
+    }
+    audioPreviewRef.current.src = track.audio_url;
+    audioPreviewRef.current
+      .play()
+      .then(() => setPlayingCatalogId(track.id))
+      .catch(() => {});
+    audioPreviewRef.current.onended = () => setPlayingCatalogId(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -178,6 +235,17 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
       templateId as TemplateId,
       uploadedPhotos
     );
+
+    // Tentukan musik awal: pilihan katalog Sekarsiti atau bawaan tema (lagu kustom sendiri nanti diunggah di Portal Mempelai)
+    let finalSongTitle = activeTemplateDef.defaultData?.songTitle || 'Instrumen Pernikahan Romantis';
+    let finalAudioUrl = activeTemplateDef.defaultData?.audioUrl || '';
+    let musicSummary = `Bawaan Tema (${selectedTemplate.title})`;
+
+    if (musicChoice === 'catalog' && selectedCatalogTrack) {
+      finalSongTitle = `${selectedCatalogTrack.title} - ${selectedCatalogTrack.artist}`;
+      finalAudioUrl = selectedCatalogTrack.audio_url;
+      musicSummary = `Katalog Sekarsiti (${finalSongTitle})`;
+    }
 
     const newOrder = AdminStore.create({
       clientName: displayClientName,
@@ -203,7 +271,9 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
       bankName: bankName.trim(),
       accountNumber: accountNumber.trim(),
       accountHolder: accountHolder.trim(),
-      songTitle: songTitle.trim(),
+      referralCode: referralCode.trim().toUpperCase() || undefined,
+      songTitle: finalSongTitle,
+      audioUrl: finalAudioUrl,
       mediaSlots: {
         ...placedMedia,
         heroImage: placedMedia.heroImage || uploadedPhotos[0] || '',
@@ -228,7 +298,8 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
 • *WhatsApp:* ${clientPhone || '-'}
 • *Mempelai:* ${brideName} & ${groomName}
 • *Tanggal Acara:* ${eventDateFormatted || '-'}
-• *Kota / Lokasi:* ${city ? `${city} · ` : ''}${resepsiVenue || '-'}
+• *Kota / Lokasi:* ${city ? `${city} · ` : ''}${resepsiVenue || '-'}${referralCode ? `\n• *Kode Referral:* ${referralCode}` : ''}
+• *Musik Latar:* ${musicSummary}
 • *Jumlah Foto Diunggah:* ${uploadedPhotos.length} foto${gdriveLink ? `\n• *Link Google Drive:* ${gdriveLink}` : ''}
 ${notes ? `• *Catatan Tambahan:* ${notes}\n` : ''}
 Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
@@ -383,6 +454,24 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                     placeholder="email@anda.com"
                     className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                    Kode Referral / Partner Reseller (Opsional)
+                  </label>
+                  <input
+                    type="text"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                    placeholder="Contoh: DINA20 (Kosongkan jika tidak ada)"
+                    className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white font-mono uppercase focus:outline-none focus:border-[#414A35]"
+                  />
+                  {referralCode && (
+                    <p className="text-[10px] text-emerald-700 mt-1 font-medium">
+                      ✓ Pesanan ini akan tercatat dengan kode referral: <strong>{referralCode}</strong>
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -734,17 +823,165 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1">
-                  Judul Musik Latar Favorit
-                </label>
-                <input
-                  type="text"
-                  value={songTitle}
-                  onChange={(e) => setSongTitle(e.target.value)}
-                  placeholder="Contoh: Until I Found You - Stephen Sanchez"
-                  className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white"
-                />
+              {/* Pengaturan Musik Pengiring Undangan */}
+              <div className="p-4 sm:p-5 bg-[#FAF8F5] border border-stone-200/80 rounded-2xl space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Music className="w-4 h-4 text-[#C5A880]" />
+                    <span className="text-xs font-bold text-stone-800 uppercase tracking-wider">
+                      Musik Pengiring Undangan
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-stone-500 font-medium">Bisa diubah kapan saja</span>
+                </div>
+
+                <p className="text-xs text-stone-600 leading-relaxed">
+                  Pilih musik pengiring yang akan diputar otomatis saat tamu membuka undangan. Jika ada kendala mengunggah file sekarang, Anda bisa memilih musik katalog terlebih dahulu dan menggantinya nanti di Portal Mempelai.
+                </p>
+
+                {/* 2 Tab Mode Pemilihan Musik Awal */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setMusicChoice('theme')}
+                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                      musicChoice === 'theme'
+                        ? 'border-[#414A35] bg-white shadow-xs text-stone-900 font-bold'
+                        : 'border-stone-200 bg-stone-50/60 hover:bg-white text-stone-600'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <Disc className={`w-3.5 h-3.5 ${musicChoice === 'theme' ? 'text-[#C5A880]' : 'text-stone-400'}`} />
+                      <span>1. Musik Bawaan Tema (Default)</span>
+                    </div>
+                    <p className="text-[10px] text-stone-400 font-normal mt-0.5 truncate">
+                      Tema {selectedTemplate.title} ({selectedTemplate.styleLabel})
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMusicChoice('catalog')}
+                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                      musicChoice === 'catalog'
+                        ? 'border-[#414A35] bg-white shadow-xs text-stone-900 font-bold'
+                        : 'border-stone-200 bg-stone-50/60 hover:bg-white text-stone-600'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <Music className={`w-3.5 h-3.5 ${musicChoice === 'catalog' ? 'text-[#C5A880]' : 'text-stone-400'}`} />
+                      <span>2. Pilih dari Katalog Sekarsiti</span>
+                    </div>
+                    <p className="text-[10px] text-stone-400 font-normal mt-0.5 truncate">
+                      {selectedCatalogTrack ? selectedCatalogTrack.title : `${catalogTracks.length} Pilihan Lagu Tersedia`}
+                    </p>
+                  </button>
+                </div>
+
+                {/* KONTEN TAB 1: BAWAAN TEMA */}
+                {musicChoice === 'theme' && (
+                  <div className="p-3 bg-white border border-stone-200 rounded-xl flex items-center justify-between text-xs animate-fade-in">
+                    <div>
+                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                        Musik Terpilih:
+                      </span>
+                      <p className="font-semibold text-stone-800 mt-0.5">
+                        Alunan Musik Tema {selectedTemplate.title} ({selectedTemplate.styleLabel})
+                      </p>
+                    </div>
+                    <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-semibold">
+                      Otomatis Terpasang
+                    </span>
+                  </div>
+                )}
+
+                {/* KONTEN TAB 2: KATALOG RESMI SEKARSITI */}
+                {musicChoice === 'catalog' && (
+                  <div className="p-3 bg-white border border-stone-200 rounded-xl space-y-2 animate-fade-in">
+                    <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+                      <span className="text-[11px] font-bold text-stone-700">
+                        Pilih Lagu dari Pustaka Musik Resmi Sekarsiti:
+                      </span>
+                      <span className="text-[10px] text-stone-400">
+                        Klik tombol play untuk dengar
+                      </span>
+                    </div>
+
+                    {isLoadingCatalog ? (
+                      <div className="p-4 text-center text-xs text-stone-500 flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-[#C5A880]" />
+                        <span>Memuat pustaka musik...</span>
+                      </div>
+                    ) : catalogTracks.length === 0 ? (
+                      <div className="p-3 text-stone-400 text-xs text-center border border-dashed rounded-lg">
+                        Belum ada koleksi katalog. Musik bawaan tema akan otomatis digunakan.
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        {catalogTracks.map((track) => {
+                          const isSelected = selectedCatalogTrack?.id === track.id;
+                          const isPlaying = playingCatalogId === track.id;
+                          return (
+                            <div
+                              key={track.id}
+                              className={`p-2 rounded-lg border flex items-center justify-between gap-2 text-xs transition-colors ${
+                                isSelected
+                                  ? 'border-[#414A35] bg-[#F7F5EF]'
+                                  : 'border-stone-100 hover:bg-stone-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleTogglePreviewCatalog(track)}
+                                  className="p-1.5 rounded-full bg-white border border-stone-200 text-stone-700 hover:text-black cursor-pointer shrink-0 shadow-2xs"
+                                  title="Dengar preview musik"
+                                >
+                                  {isPlaying ? (
+                                    <Pause className="w-3.5 h-3.5 text-[#C5A880]" />
+                                  ) : (
+                                    <Play className="w-3.5 h-3.5" />
+                                  )}
+                                </button>
+                                <div className="truncate">
+                                  <p className="font-semibold text-stone-900 truncate text-[11px]">
+                                    {track.title}
+                                  </p>
+                                  <p className="text-[10px] text-stone-500 truncate">
+                                    {track.artist}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => setSelectedCatalogTrack(track)}
+                                className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer shrink-0 ${
+                                  isSelected
+                                    ? 'bg-[#414A35] text-white'
+                                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                                }`}
+                              >
+                                {isSelected ? 'Terpilih ✓' : 'Pilih Lagu'}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Info Card Musik Kustom di Portal */}
+                <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs text-amber-900 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-[11px]">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Ingin Memakai Lagu Sendiri?</span>
+                  </div>
+                  <p className="text-[11px] text-amber-800/90 leading-relaxed">
+                    Untuk memastikan proses pemesanan awal berjalan cepat &amp; lancar tanpa kendala jaringan, silakan pilih musik bawaan atau katalog di atas terlebih dahulu. Nanti setelah draf undangan siap, Anda dapat <strong>mengunggah file lagu Anda sendiri (.mp3)</strong> secara bebas di <strong>Portal Mempelai</strong>.
+                  </p>
+                </div>
               </div>
 
               <div>

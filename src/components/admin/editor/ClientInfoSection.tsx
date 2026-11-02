@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { ClientInvitationData, OrderStatus } from '../../../types/clientInvitation';
-import { UserCheck, Phone, Mail, Link as LinkIcon, Copy, Check } from 'lucide-react';
+import { UserCheck, Phone, Mail, Link as LinkIcon, Copy, Check, Tag } from 'lucide-react';
 import { buildInvitationUrl } from '../../../utils/subdomainUtils';
 import { safeCopyToClipboard } from '../../../utils/clipboardUtils';
+import { ReferralStore } from '../../../admin/referralStore';
 
 interface ClientInfoSectionProps {
   formData: ClientInvitationData;
@@ -138,6 +139,51 @@ export const ClientInfoSection: React.FC<ClientInfoSectionProps> = ({
             placeholder="klien@gmail.com"
             className="w-full p-2.5 bg-white border border-stone-300 rounded-lg text-xs text-stone-900 focus:outline-none focus:border-[#C5A880]"
           />
+        </div>
+
+        {/* Referral / Reseller Code */}
+        <div className="sm:col-span-2 p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
+          <label className="block text-xs font-semibold text-stone-800 flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5 text-[#C5A880]" />
+              <span>Kode Referral / Reseller Partner (Opsional)</span>
+            </span>
+            {formData.referralCode && (
+              <span className="text-[10px] font-mono text-stone-500">
+                Tercatat
+              </span>
+            )}
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={formData.referralCode || ''}
+              onChange={(e) => onChange('referralCode', e.target.value.toUpperCase().trim())}
+              placeholder="Contoh: RESELLER01"
+              className="flex-1 p-2 bg-white border border-stone-300 rounded-lg text-xs font-mono uppercase text-stone-900 focus:outline-none focus:border-[#C5A880]"
+            />
+          </div>
+          {(() => {
+            if (!formData.referralCode) return null;
+            const partner = ReferralStore.getResellerByCode(formData.referralCode);
+            if (partner) {
+              return (
+                <div className="text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded-md flex items-center justify-between">
+                  <span>
+                    Partner: <strong>{partner.name}</strong> ({partner.phone})
+                  </span>
+                  <span className="font-semibold">
+                    Komisi: Rp {partner.defaultCommission.toLocaleString('id-ID')}
+                  </span>
+                </div>
+              );
+            }
+            return (
+              <p className="text-[11px] text-amber-700">
+                Kode &ldquo;{formData.referralCode}&rdquo; belum terdaftar di master reseller, namun tetap tercatat pada pesanan ini.
+              </p>
+            );
+          })()}
         </div>
       </div>
     </div>

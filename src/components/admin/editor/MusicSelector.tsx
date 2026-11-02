@@ -134,11 +134,19 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
 
     try {
       const audioUrl = await uploadMusicToCloudinary(file);
-      const title = newTitle.trim() || file.name.replace(/\.[^/.]+$/, '');
-      const artist = newArtist.trim() || (isClientMode ? 'Lagu Pilihan Mempelai' : 'Sekarsiti Audio');
+      // Bersihkan nama berkas otomatis: buang ekstensi, ganti underscore/dash dengan spasi
+      const cleanFileName = file.name
+        .replace(/\.[^/.]+$/, '')
+        .replace(/[-_]+/g, ' ')
+        .trim();
+
+      const title = isClientMode
+        ? (cleanFileName || 'Musik Pilihan Mempelai')
+        : (newTitle.trim() || cleanFileName || 'Musik');
+      const artist = isClientMode ? 'Lagu Kustom Mempelai' : (newArtist.trim() || 'Sekarsiti Audio');
 
       if (isClientMode) {
-        // CLIENT MODE: Simpan sebagai 1 lagu kustom privat mempelai (TIDAK MASUK KE KATALOG MASTER ADMIN)
+        // CLIENT MODE: Simpan eksklusif hanya untuk portal mempelai ini (TIDAK MASUK KE KATALOG MASTER ADMIN SEKARSITI)
         const customTrack: ClientCustomMusicTrack = {
           id: `custom-track-${Date.now()}`,
           title,
@@ -180,8 +188,13 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
     }
   };
 
-  // Direct URL handler: distinguishes between client custom track vs admin catalog
+  // Direct URL handler: hanya untuk mode admin
   const handleDirectUrlAdd = async () => {
+    if (isClientMode) {
+      setUploadError('Klien hanya diperkenankan mengunggah berkas audio langsung dari perangkat, bukan memasukkan tautan (link).');
+      return;
+    }
+
     const normalizedUrl = sanitizeAudioUrl(newDirectUrl);
     if (!normalizedUrl) {
       setUploadError('Masukkan URL audio langsung (.mp3/.m4a/.wav), URL Cloudinary, atau link Google Drive yang valid.');
@@ -302,7 +315,7 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
           </p>
         </div>
 
-        {/* Action Button: Untuk Admin (Upload ke Katalog) atau Untuk Client (Jika belum punya lagu kustom) */}
+        {/* Action Button: Untuk Admin (Upload ke Katalog) atau Untuk Client (Upload file musik sendiri langsung) */}
         {!isClientMode ? (
           <button
             type="button"
@@ -315,14 +328,39 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
         ) : !hasClientCustomTrack ? (
           <button
             type="button"
-            onClick={() => setShowUploadForm(!showUploadForm)}
-            className="text-[11px] font-semibold text-[#8C6D3F] hover:text-[#6F5229] bg-[#F4EDE2] hover:bg-[#EAE0D1] border border-[#DCD3C5] px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors self-start sm:self-auto"
+            disabled={isUploading}
+            onClick={() => fileInputRef.current?.click()}
+            className="text-[11px] font-semibold text-[#8C6D3F] hover:text-[#6F5229] bg-[#F4EDE2] hover:bg-[#EAE0D1] border border-[#DCD3C5] px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors self-start sm:self-auto disabled:opacity-50"
           >
-            <Upload className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span>{showUploadForm ? 'Tutup Upload' : '+ Unggah Lagu Kustom (Maks. 1)'}</span>
+            {isUploading ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C5A880]" />
+                <span>Mengunggah Musik...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-3.5 h-3.5 text-[#C5A880]" />
+                <span>+ Upload Musik Sendiri (.mp3)</span>
+              </>
+            )}
           </button>
         ) : null}
       </div>
+
+      {/* Input File Tersembunyi untuk Pemilihan Berkas Audio */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="audio/*,.mp3,.wav,.m4a,.ogg,.webm,.aac"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
+      {uploadError && (
+        <p className="text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200 font-medium">
+          {uploadError}
+        </p>
+      )}
 
       {/* STATUS MUSIK TERPILIH SAAT INI */}
       <div className="p-3 bg-white border border-stone-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs">
@@ -345,38 +383,22 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
         )}
       </div>
 
-      {/* FORM UPLOAD (Admin atau Client) */}
-      {showUploadForm && (
+      {/* FORM UPLOAD (Khusus Admin untuk Menambah Koleksi Katalog Master) */}
+      {!isClientMode && showUploadForm && (
         <div className="p-4 bg-white border-2 border-[#C5A880]/50 rounded-xl space-y-3 shadow-xs">
           <div className="flex items-center justify-between border-b border-stone-100 pb-2">
             <div className="flex items-center gap-2">
               <Upload className="w-4 h-4 text-[#C5A880]" />
               <span className="text-xs font-bold text-stone-900">
-                {isClientMode ? 'Unggah 1 Lagu Kustom Mempelai' : 'Tambah Lagu ke Katalog Master Admin'}
+                Tambah Lagu ke Katalog Master Admin
               </span>
             </div>
             <span className="text-[10px] uppercase font-bold text-[#C5A880] bg-[#FAF7F2] px-2 py-0.5 rounded border border-[#E5E0D8]">
-              {isClientMode ? 'Privat (Khusus Undangan Anda)' : 'Katalog Master'}
+              Katalog Master
             </span>
           </div>
 
-          {isClientMode && (
-            <div className="p-2.5 bg-[#FAF7F2] border border-[#E5E0D8] rounded-lg text-[11px] text-stone-600 flex items-start gap-2">
-              <Info className="w-3.5 h-3.5 text-[#C5A880] shrink-0 mt-0.5" />
-              <p>
-                <strong>Ketentuan Lagu Kustom:</strong> Maksimal 1 lagu kustom. Lagu ini hanya tersimpan
-                pada undangan Anda dan tidak dapat dilihat maupun digunakan oleh pasangan lain.
-              </p>
-            </div>
-          )}
-
-          {uploadError && (
-            <p className="text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200 font-medium">
-              {uploadError}
-            </p>
-          )}
-
-          {/* Toggle Tab: File Audio vs Direct Link */}
+          {/* Toggle Tab: File Audio vs Direct Link (Hanya Admin) */}
           <div className="flex items-center gap-2 pt-1">
             <button
               type="button"
@@ -431,13 +453,6 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
 
           {uploadMode === 'file' ? (
             <div className="pt-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="audio/*,.mp3,.wav,.m4a,.ogg,.webm,.aac"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
               <button
                 type="button"
                 disabled={isUploading}
@@ -595,10 +610,21 @@ export const MusicSelector: React.FC<MusicSelectorProps> = ({
               </span>
               <button
                 type="button"
-                onClick={() => setShowUploadForm(true)}
-                className="py-1 px-3 bg-[#FAF7F2] hover:bg-[#F2ECE1] border border-[#D5CDBC] text-[#8C6D3F] rounded-lg text-[11px] font-semibold cursor-pointer shrink-0 transition-colors"
+                disabled={isUploading}
+                onClick={() => fileInputRef.current?.click()}
+                className="py-1.5 px-3 bg-[#181816] hover:bg-stone-800 text-white rounded-lg text-[11px] font-semibold cursor-pointer shrink-0 transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-2xs"
               >
-                + Unggah 1 Lagu Kustom
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C5A880]" />
+                    <span>Mengunggah Musik...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-3.5 h-3.5 text-[#C5A880]" />
+                    <span>Upload Musik Sendiri (.mp3)</span>
+                  </>
+                )}
               </button>
             </div>
           )}
