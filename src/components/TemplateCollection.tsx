@@ -58,6 +58,14 @@ const EDITORIAL_META: Record<
     seriesLabel: 'SERI NO. 12 · AZULEJO PORCELAIN',
     shortDesc: 'Keanggunan ubin keramik Azulejo biru Delft dengan bingkai lengkung kubah dan tiket bertekstur.',
   },
+  'senja-kinanti': {
+    seriesLabel: 'SERI NO. 13 · TERRACOTTA SUNSET',
+    shortDesc: 'Pesona golden hour sinematik dengan video latar senja, sundial berputar, dan background photo parallax ikrar janji suci.',
+  },
+  'kraton-heritage': {
+    seriesLabel: 'SERI NO. 14 · ROYAL KRATON HERITAGE',
+    shortDesc: 'Adiluhung tradisi kebesaran Keraton Jawa dengan gerbang Kori Agung berstempel segel emas, background photo sakral, dan kidung laras madya.',
+  },
 };
 
 function getEditorialMeta(id: string) {
@@ -120,7 +128,7 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
     return map;
   }, [publicPortfolios]);
 
-  const primaryTemplates = TEMPLATES.slice(0, 12);
+  const primaryTemplates = TEMPLATES.slice(0, 16);
   const displayedTemplates = showAll ? TEMPLATES : primaryTemplates;
 
   return (

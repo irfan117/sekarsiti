@@ -918,5 +918,191 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
       accountHolder: 'Nadia Safitri Putri',
       songTitle: 'Classical Violin & Cello Serenade'
     }
+  },
+  'senja-kinanti': {
+    id: 'senja-kinanti',
+    name: 'Senja Kinanti (Terracotta Golden Hour)',
+    styleLabel: 'Terracotta Rust & Golden Hour Cinematic',
+    demoComponentKey: 'senja-kinanti',
+    coverThumbnail: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75',
+    description: 'Kehangatan tembaga terakota dan pesona golden hour sinematik dengan latar video atmosferik, sundial countdown melingkar, dan background photo parallax pada ikrar janji suci.',
+    hasDresscode: false,
+    hasFilmstrip: false,
+    hasStoryChapters: false,
+    hasWaxSeal: false,
+    mediaSlots: [
+      {
+        key: 'heroImage',
+        label: 'Foto / Poster Video Hero',
+        description: 'Foto sampul pembuka berlatar senja keemasan.',
+        aspectRatio: '16:9 atau 4:5',
+        acceptsVideo: true
+      },
+      {
+        key: 'heroVideo',
+        label: 'Video Latar Sinematik Senja (Opsional)',
+        description: 'Video latar bergerak sinematik pada sampul pembuka (contoh: /videos/wedding-evening.mp4).',
+        aspectRatio: '16:9',
+        acceptsVideo: true,
+        videoOnly: true
+      },
+      {
+        key: 'bridePortrait',
+        label: 'Potret Mempelai Wanita',
+        description: 'Foto pengantin wanita dengan lengkung terakota hangat.',
+        aspectRatio: '3:4'
+      },
+      {
+        key: 'groomPortrait',
+        label: 'Potret Mempelai Pria',
+        description: 'Foto pengantin pria dengan lengkung terakota hangat.',
+        aspectRatio: '3:4'
+      },
+      {
+        key: 'spotlightImage',
+        label: 'Background Photo Section Janji Suci (Akad & Resepsi)',
+        description: 'Foto lanskap bertekstur hangat sebagai latar belakang parallax section jadwal acara.',
+        aspectRatio: '16:9'
+      },
+      {
+        key: 'galleryImages',
+        label: 'Galeri Momen Senja',
+        description: 'Koleksi album foto kenangan berbingkai tembaga hangat.',
+        aspectRatio: 'Bebas',
+        isMultiple: true
+      },
+      {
+        key: 'closingImage',
+        label: 'Foto Penutup Siluet',
+        description: 'Foto penutup penuh kehangatan bersama doa restu.',
+        aspectRatio: '4:5'
+      }
+    ],
+    defaultData: {
+      brideName: 'Kinanti',
+      brideFullName: 'Kinanti Sekar Arum, S.Ars.',
+      brideParents: 'Putri pertama dari Bapak Ir. Bambang Soediro & Ibu Ratih Kumala',
+      groomName: 'Bagas',
+      groomFullName: 'Bagas Dananjaya, M.Sc.',
+      groomParents: 'Putra kedua dari Bapak Dr. H. Gunawan Wibisono & Ibu Siti Rahayu',
+      eventDateFormatted: 'Minggu, 20 Desember 2026',
+      countdownIsoDate: '2026-12-20T08:00:00+07:00',
+      akadTime: '08.00 – 10.00 WIB',
+      akadVenue: 'Plataran Dharmawangsa, Jl. Dharmawangsa Raya No. 6',
+      resepsiTime: '11.30 – 14.30 WIB',
+      resepsiVenue: 'Kinanti Sunset Garden Ballroom, Plataran Dharmawangsa',
+      city: 'Jakarta Selatan',
+      mapsUrl: 'https://maps.google.com',
+      quoteText: 'Maka luruhlah senja pada ketenangan pelukanmu. Cinta yang datang bukan sekadar singgah, melainkan takdir yang pulang ke rumah yang semestinya.',
+      quoteSource: 'Kidung Kinanti · 2026',
+      bankName: 'Bank Mandiri',
+      accountNumber: '1370 0192 8472 1',
+      accountHolder: 'Kinanti Sekar Arum',
+      songTitle: 'Golden Sunset Acoustic Romance',
+      audioUrl: '',
+      mediaSlots: {
+        heroVideo: '/videos/wedding-evening.mp4',
+        spotlightImage: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1400&q=75',
+        galleryImages: [
+          'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75',
+          'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=700&q=70',
+          'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=600&q=70',
+          'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=700&q=70'
+        ]
+      }
+    }
+  },
+  'kraton-heritage': {
+    id: 'kraton-heritage',
+    name: 'Kraton Heritage (Royal Pradana Klasik)',
+    styleLabel: 'Royal Javanese Keraton & Prada Emas',
+    demoComponentKey: 'kraton-heritage',
+    coverThumbnail: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=900&q=80',
+    description: 'Kemegahan warisan adiluhung Keraton Jawa berpadu sentuhan modern. Dihiasi ornamen gunungan prada emas, gerbang Kori Agung interaktif, latar video megah, dan alunan laras madya royal symphony.',
+    hasDresscode: true,
+    hasFilmstrip: false,
+    hasStoryChapters: true,
+    hasWaxSeal: true,
+    mediaSlots: [
+      {
+        key: 'heroImage',
+        label: 'Foto Cover Gerbang Kraton',
+        description: 'Foto potret berbusana adat atau formal anggun berlatar megah.',
+        aspectRatio: '9:16 atau 3:4'
+      },
+      {
+        key: 'heroVideo',
+        label: 'Video Sinematik Kraton (Opsional)',
+        description: 'Video latar belakang pembuka atau klip adat tradisi.',
+        aspectRatio: '9:16 atau 16:9'
+      },
+      {
+        key: 'bridePortrait',
+        label: 'Potret Mempelai Wanita (Putri)',
+        description: 'Foto mempelai wanita dalam busana kebesaran adat / kebaya ageng.',
+        aspectRatio: '3:4'
+      },
+      {
+        key: 'groomPortrait',
+        label: 'Potret Mempelai Pria (Kakung)',
+        description: 'Foto mempelai pria dalam busana beskap / jas formal ageng.',
+        aspectRatio: '3:4'
+      },
+      {
+        key: 'spotlightImage',
+        label: 'Background Photo Section Akad & Panggih',
+        description: 'Foto ornamen pendopo ageng atau suasana sakral sebagai latar parallax.',
+        aspectRatio: '16:9'
+      },
+      {
+        key: 'galleryImages',
+        label: 'Koleksi Dokumentasi Titian Kasih',
+        description: 'Galeri foto prosesi adat, siraman, dan momen berharga berbingkai prada emas.',
+        aspectRatio: 'Bebas',
+        isMultiple: true
+      },
+      {
+        key: 'closingImage',
+        label: 'Foto Penutup Sesanti Restu',
+        description: 'Foto penutup penuh welas asih dan wibawa.',
+        aspectRatio: '4:5'
+      }
+    ],
+    defaultData: {
+      brideName: 'Sekar',
+      brideFullName: 'Raden Ajeng Sekar Ayu Wardhani, S.Hum.',
+      brideParents: 'Putri tercinta K.P.H. Haryo Danusubroto & R.Ay. Kusuma Ningrum',
+      groomName: 'Danang',
+      groomFullName: 'Raden Mas Danang Pradipta Kusumo, M.B.A.',
+      groomParents: 'Putra tercinta K.R.T. Suryo Hadikusumo & R.Ay. Sri Handayani',
+      eventDateFormatted: 'Sabtu Kliwon, 28 November 2026',
+      countdownIsoDate: '2026-11-28T08:00:00+07:00',
+      akadTime: '08.00 – 10.00 WIB',
+      akadVenue: 'Gedhong Dalem Ageng Pringgitan, Sasana Adiguna',
+      resepsiTime: '11.00 – 14.30 WIB',
+      resepsiVenue: 'Pendopo Sasana Kencana, Jl. Danurejan No. 8',
+      city: 'Yogyakarta',
+      mapsUrl: 'https://maps.google.com',
+      quoteText: 'Mulat sarira angrasa wani, memayu hayuning bawana. Katresnan kang tulus sejati liring lintang panjer rina, nyawiji lahir batin salaminya.',
+      quoteSource: 'Serat Pustaka Kencana · 2026',
+      bankName: 'Bank BCA',
+      accountNumber: '8910 2831 09',
+      accountHolder: 'R.A. Sekar Ayu Wardhani',
+      secondaryBankName: 'Bank Mandiri',
+      secondaryAccountNumber: '1370 0928 1729 0',
+      secondaryAccountHolder: 'R.M. Danang Pradipta Kusumo',
+      songTitle: 'Kidung Wilujeng - Laras Madya Royal Symphony',
+      audioUrl: '',
+      mediaSlots: {
+        heroVideo: '/videos/wedding-cinematic.mp4',
+        spotlightImage: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1400&q=75',
+        galleryImages: [
+          'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=75',
+          'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75',
+          'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=700&q=70',
+          'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=700&q=70'
+        ]
+      }
+    }
   }
 };

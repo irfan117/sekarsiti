@@ -135,6 +135,8 @@ export function extractAllMediaUrlsFromText(text: string): string[] {
  */
 export const TEMPLATE_FALLBACK_ASSETS: Record<TemplateId, {
   heroImage: string;
+  heroVideo?: string;
+  spotlightImage?: string;
   bridePortrait: string;
   groomPortrait: string;
   galleryImages: string[];
@@ -274,6 +276,32 @@ export const TEMPLATE_FALLBACK_ASSETS: Record<TemplateId, {
       'https://images.unsplash.com/photo-1522413452208-996ff3f3e740?auto=format&fit=crop&w=500&q=70',
       'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=500&q=70',
       'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=600&q=70'
+    ]
+  },
+  'senja-kinanti': {
+    heroImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75',
+    heroVideo: '/videos/wedding-evening.mp4',
+    bridePortrait: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=75',
+    groomPortrait: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=600&q=75',
+    spotlightImage: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1400&q=75',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75',
+      'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=700&q=70',
+      'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=600&q=70',
+      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=700&q=70'
+    ]
+  },
+  'kraton-heritage': {
+    heroImage: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=75',
+    heroVideo: '/videos/wedding-cinematic.mp4',
+    bridePortrait: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=75',
+    groomPortrait: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=600&q=75',
+    spotlightImage: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1400&q=75',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=75',
+      'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75',
+      'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=700&q=70',
+      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=700&q=70'
     ]
   }
 };

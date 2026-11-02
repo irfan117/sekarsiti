@@ -25,6 +25,8 @@ import { LanteraTemplate } from './templates/LanteraTemplate';
 import { PasangTemplate } from './templates/PasangTemplate';
 import { PopKuningTemplate } from './templates/PopKuningTemplate';
 import { PorselenBiruTemplate } from './templates/PorselenBiruTemplate';
+import { SenjaKinantiTemplate } from './templates/SenjaKinantiTemplate';
+import { KratonHeritageTemplate } from './templates/KratonHeritageTemplate';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminLoginView } from './components/admin/AdminLoginView';
 import { ClientPortal } from './components/portal/ClientPortal';
@@ -47,7 +49,9 @@ type DemoView =
   | 'demo-lantera'
   | 'demo-pasang'
   | 'demo-pop-kuning'
-  | 'demo-porselen-biru';
+  | 'demo-porselen-biru'
+  | 'demo-senja-kinanti'
+  | 'demo-kraton-heritage';
 
 type AppView = 'landing' | 'admin' | 'portal' | 'order-form' | DemoView;
 
@@ -104,6 +108,23 @@ function resolveDemoViewFromId(key?: string | null): DemoView {
   }
   if (normalized === 'porselen-biru' || normalized === 'porselen' || normalized === 'azulejo') {
     return 'demo-porselen-biru';
+  }
+  if (
+    normalized === 'senja-kinanti' ||
+    normalized === 'senja' ||
+    normalized === 'kinanti' ||
+    normalized === 'terracotta'
+  ) {
+    return 'demo-senja-kinanti';
+  }
+  if (
+    normalized === 'kraton-heritage' ||
+    normalized === 'kraton' ||
+    normalized === 'heritage' ||
+    normalized === 'jawa' ||
+    normalized === 'pradana'
+  ) {
+    return 'demo-kraton-heritage';
   }
   return 'demo-editorial';
 }
@@ -192,6 +213,18 @@ const DEMO_VIEW_CONFIG: Record<
     fallbackIdx: 11,
     querySlug: 'porselen-biru',
     Component: PorselenBiruTemplate,
+  },
+  'demo-senja-kinanti': {
+    catalogId: 'senja-kinanti',
+    fallbackIdx: 12,
+    querySlug: 'senja-kinanti',
+    Component: SenjaKinantiTemplate,
+  },
+  'demo-kraton-heritage': {
+    catalogId: 'kraton-heritage',
+    fallbackIdx: 13,
+    querySlug: 'kraton-heritage',
+    Component: KratonHeritageTemplate,
   },
 };
 

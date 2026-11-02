@@ -10,7 +10,9 @@ export type TemplateId =
   | 'lantera'
   | 'pasang'
   | 'pop-kuning'
-  | 'porselen-biru';
+  | 'porselen-biru'
+  | 'senja-kinanti'
+  | 'kraton-heritage';
 
 export type OrderStatus = 'pending' | 'in_progress' | 'review' | 'published';
 
