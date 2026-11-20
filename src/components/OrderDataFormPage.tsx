@@ -17,16 +17,26 @@ import {
   Play,
   Pause,
   Disc,
-  Check
+  Check,
+  ShieldCheck,
+  Lock,
+  ExternalLink,
+  Copy,
+  Zap,
+  Info,
+  Layers
 } from 'lucide-react';
 import { AdminStore } from '../admin/adminStore';
 import { TEMPLATES } from '../data/catalog';
+import { STANDARD_TEMPLATES } from '../data/standardCatalog';
 import { TEMPLATE_REGISTRY } from '../admin/templateRegistry';
 import { InvitationItem } from '../types';
 import { TemplateId, ClientInvitationData } from '../types/clientInvitation';
 import { uploadToCloudinary, isCloudinaryConfigured } from '../utils/cloudinaryUpload';
 import { smartPlaceAssets } from '../services/mediaAssetAssistant';
 import { fetchMusicTracks, MusicTrack } from '../services/musicService';
+import { triggerMidtransCheckout, isMidtransConfigured } from '../services/midtransService';
+import { safeCopyToClipboard } from '../utils/clipboardUtils';
 
 interface OrderDataFormPageProps {
   initialTemplate?: InvitationItem | null;
@@ -34,6 +44,7 @@ interface OrderDataFormPageProps {
 }
 
 const ADMIN_PHONE = '6283850714456';
+const ORDERABLE_TEMPLATES: InvitationItem[] = [...STANDARD_TEMPLATES, ...TEMPLATES];
 
 function formatEventDate(dateValue: string): string {
   if (!dateValue) return '';
@@ -58,8 +69,12 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   initialTemplate,
   onBackToLanding,
 }) => {
-  const defaultTemplate = initialTemplate || TEMPLATES[0];
+  const defaultTemplate = initialTemplate || STANDARD_TEMPLATES[0] || TEMPLATES[0];
   const [templateId, setTemplateId] = useState<string>(defaultTemplate.id);
+
+  // Paket Layanan & Mode Visual
+  const [packageTier, setPackageTier] = useState<'essential' | 'editorial'>('essential');
+  const [designMode, setDesignMode] = useState<'with_photos' | 'typography_pure'>('with_photos');
 
   // Data Pemesan & Mempelai
   const [clientName, setClientName] = useState('');
@@ -110,12 +125,15 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   const [uploadProgressText, setUploadProgressText] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Status Submit
+  // Status Submit & Pembayaran Gateway
   const [submittedOrder, setSubmittedOrder] = useState<ClientInvitationData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isPaidSettled, setIsPaidSettled] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const selectedTemplate = useMemo(
-    () => TEMPLATES.find((item) => item.id === templateId) || TEMPLATES[0],
+    () => ORDERABLE_TEMPLATES.find((item) => item.id === templateId) || ORDERABLE_TEMPLATES[0],
     [templateId]
   );
 
@@ -124,11 +142,18 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     [templateId]
   );
 
+  const finalPrice = useMemo(() => {
+    if (packageTier === 'essential') {
+      return STANDARD_TEMPLATES.some((item) => item.id === templateId) ? selectedTemplate.price : 99000;
+    }
+    return selectedTemplate.price || 199000;
+  }, [packageTier, selectedTemplate]);
+
   const formattedPrice = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     maximumFractionDigits: 0,
-  }).format(selectedTemplate.price);
+  }).format(finalPrice);
 
   // Upload handler langsung ke Cloudinary
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -212,8 +237,13 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     audioPreviewRef.current.onended = () => setPlayingCatalogId(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCopyText = (key: string, text: string) => {
+    safeCopyToClipboard(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const handleProcessOrder = async (withMidtrans: boolean) => {
     setIsSubmitting(true);
 
     const displayClientName =
@@ -252,7 +282,10 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
       clientPhone,
       clientEmail,
       templateId: templateId as TemplateId,
-      status: 'pending', // Masuk sebagai draf pending siap ditinjau admin
+      status: 'pending',
+      packageTier,
+      designMode,
+      paymentStatus: 'unpaid',
       slug: buildSlug(brideName, groomName),
       brideName: brideName.trim(),
       brideFullName: brideFullName.trim() || brideName.trim(),
@@ -284,15 +317,18 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     });
 
     setSubmittedOrder(newOrder);
-    setIsSubmitting(false);
 
-    // Buka WhatsApp konfirmasi ke admin
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ssiti.tech';
-    const previewUrl = `${origin}/?client=${encodeURIComponent(newOrder.slug || newOrder.id)}`;
+    const openWhatsAppDirect = () => {
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ssiti.tech';
+      const previewUrl = `${origin}/?client=${encodeURIComponent(newOrder.slug || newOrder.id)}`;
+      const tierName = packageTier === 'essential' ? 'Seri Esensial Editorial' : 'Seri Editorial Signature';
+      const modeName = designMode === 'typography_pure' ? 'Mode Tipografi & Ornamen (Tanpa Foto Prewed)' : 'Dengan Foto Prewedding';
 
-    const message = `Halo Sekarsiti Studio, saya sudah mengirim formulir data pesanan undangan digital:
+      const message = `Halo Sekarsiti Studio, saya sudah mengirim formulir data pesanan undangan digital:
 
 • *ID Pemesanan:* ${newOrder.id}
+• *Paket Layanan:* ${tierName}
+• *Mode Visual:* ${modeName}
 • *Template:* ${selectedTemplate.title} (${selectedTemplate.styleLabel})
 • *Nama Pemesan:* ${displayClientName}
 • *WhatsApp:* ${clientPhone || '-'}
@@ -304,11 +340,64 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
 ${notes ? `• *Catatan Tambahan:* ${notes}\n` : ''}
 Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
 
-    window.open(
-      `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
+      window.open(
+        `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`,
+        '_blank',
+        'noopener,noreferrer'
+      );
+    };
+
+    if (withMidtrans && isMidtransConfigured()) {
+      setIsProcessingPayment(true);
+      try {
+        await triggerMidtransCheckout(
+          {
+            orderId: newOrder.id,
+            grossAmount: finalPrice,
+            clientName: displayClientName,
+            clientEmail: clientEmail.trim() || undefined,
+            clientPhone: clientPhone.trim() || undefined,
+            templateTitle: `${packageTier === 'essential' ? 'Seri Esensial' : 'Seri Editorial'} - ${selectedTemplate.title}`,
+          },
+          {
+            onSuccess: (result) => {
+              const paidOrder = AdminStore.markAsPaidAndPublished(newOrder.id);
+              setSubmittedOrder(paidOrder);
+              setIsPaidSettled(true);
+              setIsProcessingPayment(false);
+              setIsSubmitting(false);
+            },
+            onPending: (result) => {
+              setIsProcessingPayment(false);
+              setIsSubmitting(false);
+            },
+            onError: (err) => {
+              console.error('Midtrans payment error:', err);
+              setIsProcessingPayment(false);
+              setIsSubmitting(false);
+              openWhatsAppDirect();
+            },
+            onClose: () => {
+              setIsProcessingPayment(false);
+              setIsSubmitting(false);
+            }
+          }
+        );
+      } catch (err) {
+        console.error('Midtrans checkout error:', err);
+        setIsProcessingPayment(false);
+        setIsSubmitting(false);
+        openWhatsAppDirect();
+      }
+    } else {
+      setIsSubmitting(false);
+      openWhatsAppDirect();
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleProcessOrder(isMidtransConfigured());
   };
 
   return (
@@ -343,36 +432,207 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
             </p>
           </div>
 
-          {/* Success Banner */}
+          {/* Success & Celebration Banner */}
           {submittedOrder && (
-            <div className="p-5 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-900 space-y-3 shadow-xs animate-fade-in">
+            <div className={`p-5 sm:p-6 rounded-2xl border space-y-4 shadow-sm animate-fade-in ${
+              isPaidSettled || submittedOrder.status === 'published'
+                ? 'bg-gradient-to-br from-emerald-50 via-teal-50/40 to-emerald-50 border-emerald-300 text-emerald-950'
+                : 'bg-amber-50/90 border-amber-300 text-amber-950'
+            }`}>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-bold text-sm">Data Berhasil Terkirim &amp; Draf Siap Ditinjau!</h3>
-                  <p className="text-xs text-emerald-800 mt-1">
-                    Pesanan Anda dengan nomor draf <strong>{submittedOrder.id}</strong> telah tercatat di sistem kami.
-                    Tim kurator Sekarsiti akan meninjau dan mengaktifkan undangan Anda segera.
+                <div className="space-y-1">
+                  <h3 className="font-bold text-sm sm:text-base">
+                    {isPaidSettled || submittedOrder.status === 'published'
+                      ? 'Pembayaran Terverifikasi & Undangan Aktif Seketika! 🎉'
+                      : 'Data Berhasil Terkirim & Draf Siap Ditinjau!'}
+                  </h3>
+                  <p className="text-xs text-stone-700 leading-relaxed">
+                    {isPaidSettled || submittedOrder.status === 'published'
+                      ? `Selamat! Undangan digital Anda (${submittedOrder.clientName}) kini telah resmi aktif dan siap disebarkan ke para tamu.`
+                      : `Pesanan Anda dengan nomor draf ${submittedOrder.id} telah tercatat di sistem kami. Tim kurator Sekarsiti akan segera meninjau pesanan Anda.`}
                   </p>
+                </div>
+              </div>
+
+              {/* Tautan Undangan & Kredensial Portal Mempelai */}
+              <div className="bg-white/90 backdrop-blur-xs p-4 rounded-xl border border-stone-200/80 space-y-3 text-xs">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
+                    Tautan Publik Undangan Anda:
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${typeof window !== 'undefined' ? window.location.origin : 'https://ssiti.tech'}/?client=${submittedOrder.slug || submittedOrder.id}`}
+                      className="w-full text-xs p-2 bg-stone-50 border border-stone-200 rounded-lg font-mono text-stone-800"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleCopyText(
+                          'inv-link',
+                          `${typeof window !== 'undefined' ? window.location.origin : 'https://ssiti.tech'}/?client=${submittedOrder.slug || submittedOrder.id}`
+                        )
+                      }
+                      className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer shrink-0 transition-colors"
+                    >
+                      {copiedKey === 'inv-link' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedKey === 'inv-link' ? 'Tersalin' : 'Salin'}</span>
+                    </button>
+                    <a
+                      href={`/?client=${encodeURIComponent(submittedOrder.slug || submittedOrder.id)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-2 bg-[#414A35] hover:bg-[#343B2A] text-white rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer shrink-0 transition-colors shadow-xs"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Buka Undangan</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Info Login Portal Mempelai */}
+                <div className="pt-2 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#93754F] block">
+                      Akses Portal Mempelai (Kelola Data &amp; Tamu):
+                    </span>
+                    <p className="text-xs text-stone-700">
+                      Kode Akses: <strong className="font-mono">{submittedOrder.accessCode || submittedOrder.slug}</strong> &middot; PIN:{' '}
+                      <strong className="font-mono">{submittedOrder.pinCode}</strong>
+                    </p>
+                  </div>
+                  <a
+                    href={`/?portal=${encodeURIComponent(submittedOrder.accessCode || submittedOrder.slug)}&pin=${encodeURIComponent(submittedOrder.pinCode || '')}`}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-stone-900 hover:bg-black text-[#F7F5EF] rounded-lg text-xs font-semibold transition-colors shadow-xs"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+                    <span>Masuk ke Portal Mempelai</span>
+                  </a>
                 </div>
               </div>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* STEP 1: PILIH TEMPLATE */}
-            <div className="bg-white border border-[#EBE6DD] rounded-2xl p-5 sm:p-7 shadow-xs space-y-4">
+            {/* STEP 1: PILIH PAKET LAYANAN & DESAIN TEMA */}
+            <div className="bg-white border border-[#EBE6DD] rounded-2xl p-5 sm:p-7 shadow-xs space-y-6">
               <div className="flex items-center gap-2 border-b border-[#F2EFE8] pb-3">
                 <Sparkles className="w-4 h-4 text-[#C5A880]" />
-                <h2 className="text-sm font-bold text-[#2C2E28]">1. Pilihan Desain &amp; Tema</h2>
+                <h2 className="text-sm font-bold text-[#2C2E28]">1. Pilihan Paket Layanan &amp; Desain Tema</h2>
               </div>
 
+              {/* 1A: PILIHAN TINGKAT LAYANAN */}
               <div>
                 <label className="block text-xs font-semibold text-[#414A35] mb-2">
-                  Template Undangan Digital
+                  Tingkat Layanan (Pilih Seri yang Sesuai Kebutuhan Anda)
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Card Seri Esensial Editorial */}
+                  <div
+                    onClick={() => setPackageTier('essential')}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      packageTier === 'essential'
+                        ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
+                        : 'border-stone-200 hover:border-stone-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="text-xs font-bold text-[#2C2E28]">Seri Esensial Editorial</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                        Aktivasi Instan &amp; Mandiri
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-600 leading-relaxed mb-3">
+                      Solusi praktis &amp; mandiri. Data diisi mandiri, bayar instan via QRIS/VA Midtrans, langsung aktif seketika dengan Portal Mempelai.
+                    </p>
+                    <div className="flex items-baseline justify-between pt-2 border-t border-stone-200/60">
+                      <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Biaya Investasi</span>
+                      <span className="text-sm font-bold text-[#414A35]">Rp99.000</span>
+                    </div>
+                  </div>
+
+                  {/* Card Seri Editorial Signature */}
+                  <div
+                    onClick={() => setPackageTier('editorial')}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      packageTier === 'editorial'
+                        ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
+                        : 'border-stone-200 hover:border-stone-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="text-xs font-bold text-[#2C2E28]">Seri Editorial Signature</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C5A880]/30 text-[#846741]">
+                        Kurasi &amp; Pendampingan Penuh
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-600 leading-relaxed mb-3">
+                      Didampingi desainer Sekarsiti, konsultasi palet warna &amp; tipografi kustom, revisi fleksibel, dan fitur WA blast massal.
+                    </p>
+                    <div className="flex items-baseline justify-between pt-2 border-t border-stone-200/60">
+                      <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Biaya Investasi</span>
+                      <span className="text-sm font-bold text-[#414A35]">
+                        Rp{selectedTemplate.price.toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 1B: PILIHAN MODE VISUAL (DENGAN FOTO VS TANPA FOTO) */}
+              <div>
+                <label className="block text-xs font-semibold text-[#414A35] mb-2">
+                  Mode Visual &amp; Dokumentasi
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div
+                    onClick={() => setDesignMode('with_photos')}
+                    className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3 ${
+                      designMode === 'with_photos'
+                        ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
+                        : 'border-stone-200 hover:border-stone-300 bg-white'
+                    }`}
+                  >
+                    <ImageIcon className={`w-5 h-5 shrink-0 mt-0.5 ${designMode === 'with_photos' ? 'text-[#414A35]' : 'text-stone-400'}`} />
+                    <div>
+                      <p className="font-bold text-xs text-stone-900">Dengan Foto Prewedding</p>
+                      <p className="text-[11px] text-stone-500 mt-0.5 leading-relaxed">
+                        Menampilkan potret mempelai di sampul utama, profil kedua mempelai, dan galeri momen bahagia.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setDesignMode('typography_pure')}
+                    className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3 ${
+                      designMode === 'typography_pure'
+                        ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
+                        : 'border-stone-200 hover:border-stone-300 bg-white'
+                    }`}
+                  >
+                    <Sparkles className={`w-5 h-5 shrink-0 mt-0.5 ${designMode === 'typography_pure' ? 'text-[#C5A880]' : 'text-stone-400'}`} />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-bold text-xs text-stone-900">Mode Tipografi &amp; Ornamen Klasik</p>
+                      </div>
+                      <p className="text-[11px] text-stone-500 mt-0.5 leading-relaxed">
+                        Solusi anggun <strong>tanpa foto prewedding</strong>. Didesain dengan monogram inisial artistik, ornamen klasik, dan fokus pada doa serta kata-kata bermakna.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 1C: PILIH TEMPLATE */}
+              <div>
+                <label className="block text-xs font-semibold text-[#414A35] mb-2">
+                  Pilih Tema Desain
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {TEMPLATES.map((item) => {
+                  {ORDERABLE_TEMPLATES.map((item) => {
                     const isSelected = templateId === item.id;
                     return (
                       <div
@@ -397,7 +657,7 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                             <p className="text-[10px] text-stone-500">{item.styleLabel}</p>
                           </div>
                           <span className="text-[11px] font-bold text-[#414A35]">
-                            Rp{item.price.toLocaleString('id-ID')}
+                            {packageTier === 'essential' && !STANDARD_TEMPLATES.some((standard) => standard.id === item.id) ? 'Rp99.000' : `Rp${item.price.toLocaleString('id-ID')}`}
                           </span>
                         </div>
                       </div>
@@ -683,9 +943,21 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                 <h2 className="text-sm font-bold text-[#2C2E28]">5. Unggah Foto &amp; Media Dokumentasi</h2>
               </div>
 
-              <p className="text-xs text-stone-600">
-                Unggah foto prewedding atau momen terbaik Anda (bebas jumlah, tanpa batasan). Foto yang diunggah akan otomatis dipetakan secara cerdas ke sampul utama, potret mempelai, dan galeri momen.
-              </p>
+              {designMode === 'typography_pure' ? (
+                <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-1.5 text-xs text-emerald-900">
+                  <div className="flex items-center gap-1.5 font-bold text-xs text-emerald-950">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Mode Tipografi &amp; Ornamen Klasik Aktif</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-emerald-800">
+                    Anda memilih mode tanpa foto prewedding. Undangan Anda akan otomatis didesain dengan monogram inisial anggun dan ornamen floral artistik. Unggah foto di bawah bersifat <strong>sepenuhnya opsional</strong> (boleh dikosongkan atau diisi 1-2 foto cincin/arsitektur jika ada).
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-stone-600">
+                  Unggah foto prewedding atau momen terbaik Anda (bebas jumlah, tanpa batasan). Foto yang diunggah akan otomatis dipetakan secara cerdas ke sampul utama, potret mempelai, dan galeri momen.
+                </p>
+              )}
 
               {/* Upload Dropzone */}
               <div className="border-2 border-dashed border-[#C5A880]/60 rounded-xl p-6 text-center bg-[#FAF8F5] space-y-3">
@@ -999,31 +1271,71 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
             </div>
 
             {/* Bottom Actions */}
-            <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-[#F2EFE8]">
+            <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-[#F2EFE8]">
               <div>
-                <span className="text-xs text-stone-500 block">Paket Desain:</span>
-                <span className="text-sm font-bold text-[#414A35]">
-                  {selectedTemplate.title} &middot; {formattedPrice}
-                </span>
+                <span className="text-xs text-stone-500 block">Total Investasi:</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg font-bold text-[#414A35]">
+                    {formattedPrice}
+                  </span>
+                  <span className="text-[11px] text-stone-500 font-medium">
+                    ({packageTier === 'essential' ? 'Seri Esensial' : 'Seri Signature'} &middot; {designMode === 'typography_pure' ? 'Mode Tipografi' : 'Dengan Foto'})
+                  </span>
+                </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting || isUploadingFiles}
-                className="inline-flex items-center justify-center gap-2 py-3 px-8 bg-[#414A35] hover:bg-[#343B2A] disabled:opacity-50 text-[#F7F5EF] rounded-full text-sm font-semibold transition-all cursor-pointer shadow-md active:scale-95"
-              >
-                {isSubmitting ? (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                {isMidtransConfigured() ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Menyimpan Draf Pesanan...</span>
+                    <button
+                      type="button"
+                      disabled={isSubmitting || isUploadingFiles || isProcessingPayment}
+                      onClick={() => handleProcessOrder(false)}
+                      className="inline-flex items-center justify-center gap-2 py-2.5 px-5 border border-stone-300 hover:bg-stone-100 disabled:opacity-50 text-stone-700 rounded-full text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 text-stone-500" />
+                      <span>Simpan &amp; Konfirmasi Manual (WA)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isSubmitting || isUploadingFiles || isProcessingPayment}
+                      onClick={() => handleProcessOrder(true)}
+                      className="inline-flex items-center justify-center gap-2 py-3 px-7 bg-[#414A35] hover:bg-[#343B2A] disabled:opacity-50 text-[#F7F5EF] rounded-full text-sm font-semibold transition-all cursor-pointer shadow-md active:scale-95"
+                    >
+                      {isProcessingPayment || isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Menyiapkan Pembayaran...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShieldCheck className="w-4 h-4 text-[#C5A880]" />
+                          <span>Bayar Instan &amp; Aktifkan ({formattedPrice})</span>
+                        </>
+                      )}
+                    </button>
                   </>
                 ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    <span>Kirim Data Pesanan &amp; Konfirmasi WA</span>
-                  </>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || isUploadingFiles}
+                    className="inline-flex items-center justify-center gap-2 py-3 px-8 bg-[#414A35] hover:bg-[#343B2A] disabled:opacity-50 text-[#F7F5EF] rounded-full text-sm font-semibold transition-all cursor-pointer shadow-md active:scale-95"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Menyimpan Draf Pesanan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        <span>Kirim Data Pesanan &amp; Konfirmasi WA</span>
+                      </>
+                    )}
+                  </button>
                 )}
-              </button>
+              </div>
             </div>
           </form>
 

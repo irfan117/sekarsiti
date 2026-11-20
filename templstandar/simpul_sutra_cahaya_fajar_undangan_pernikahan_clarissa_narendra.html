@@ -1,0 +1,1757 @@
+<!--
+DESIGN CONCEPT BRIEF — "SIMPUL SUTRA & CAHAYA FAJAR (DAWN ALABASTER, MIDNIGHT SLATE & SAFFRON AMBER)"
+Narasi: Undangan pernikahan bergaya katalog pameran arsitektur & tenun sutra untuk Clarissa & Narendra, memaknai ikatan dua keluarga sebagai simpul benang sutra yang tak terputus.
+Palet 60-30-10 (:root): 60% Dawn Alabaster (#F8F6F1 & #EFECE4), 30% Midnight Slate (#1B263B & #273755), 10% Saffron Amber (#D47A2A & #E9A86B).
+Pasangan Font: Display 'Instrument Serif' (serif editorial tinggi berproporsi modern-klasik) & Body 'Plus Jakarta Sans' (sans-serif geometris bersih).
+Signature Element: Gerbang Kertas Dua Pintu yang diikat oleh "Simpul Sutra Tak Berujung" interaktif pada sampul + Rel Indeks Vertikal (01–08) di sisi kiri yang memandu 8 ruang layar penuh (100svh).
+Tata Letak Khas: Komposisi broadsheet asimetris dengan rel navigasi vertikal di sisi kiri, tipografi raksasa terpotong tepi, jalur benang SVG tergambar saat scroll, dan kartu berundak.
+-->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Clarissa &amp; Narendra — Simpul Sutra &amp; Cahaya Fajar | Undangan Pernikahan</title>
+
+  <!-- Google Fonts: Instrument Serif (Display) & Plus Jakarta Sans (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dawn: {
+              50: '#FCFAF7',
+              100: '#F8F6F1',
+              200: '#EFECE4',
+              300: '#E2DDD2'
+            },
+            slateink: {
+              950: '#101826',
+              900: '#1B263B',
+              800: '#273755',
+              700: '#374B70',
+              400: '#7B8FB2',
+              200: '#C5D0E3'
+            },
+            saffron: {
+              600: '#B8631B',
+              500: '#D47A2A',
+              400: '#E29248',
+              300: '#E9A86B',
+              200: '#F4CEAA'
+            }
+          },
+          fontFamily: {
+            display: ['"Instrument Serif"', 'Georgia', 'serif'],
+            body: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* =====================================================================
+       1. DESIGN TOKENS & CSS VARIABLES (60-30-10 RATIO, ZERO GREEN/GOLD/BLACK)
+    ====================================================================== */
+    :root {
+      --bg-dawn: #F8F6F1;            /* 60% Dawn Alabaster */
+      --bg-dawn-tint: #EFECE4;       /* Secondary Warm Paper */
+      --ink-slate: #1B263B;          /* 30% Midnight Slate */
+      --ink-slate-deep: #101826;
+      --ink-slate-mid: #273755;
+      --accent-saffron: #D47A2A;     /* 10% Saffron Amber */
+      --accent-saffron-soft: #E9A86B;
+      --font-display: 'Instrument Serif', Georgia, serif;
+      --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--ink-slate-deep);
+      color: var(--ink-slate);
+      font-family: var(--font-body);
+      overflow: hidden;
+    }
+
+    /* Subtle Architectural Grid Lines on Alabaster Paper */
+    .atelier-grid-bg {
+      background-image:
+        linear-gradient(to right, rgba(27, 38, 59, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(27, 38, 59, 0.04) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+
+    /* =====================================================================
+       2. FULL-SVH SCROLL-SNAP STAGE (EXACT 100svh PER ROOM)
+    ====================================================================== */
+    .atelier-scroller {
+      height: 100svh;
+      width: 100%;
+      overflow-y: hidden; /* Unlocked upon untying the Silk Knot Cover */
+      overflow-x: hidden;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      position: relative;
+    }
+
+    .atelier-scroller.is-unlocked {
+      overflow-y: auto;
+    }
+
+    .atelier-scroller::-webkit-scrollbar {
+      width: 3px;
+    }
+    .atelier-scroller::-webkit-scrollbar-track {
+      background: var(--ink-slate-deep);
+    }
+    .atelier-scroller::-webkit-scrollbar-thumb {
+      background: var(--accent-saffron);
+    }
+
+    .atelier-room {
+      height: 100svh;
+      min-height: 100svh;
+      max-height: 100svh;
+      width: 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* =====================================================================
+       3. SPLIT-LEAF SILK KNOT COVER GATE (SIGNATURE INTERACTION)
+    ====================================================================== */
+    #silk-gate-cover {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      height: 100svh;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    #silk-gate-cover.is-dismissed {
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .gate-panel {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 50.5svh;
+      transition: transform 920ms cubic-bezier(0.77, 0, 0.175, 1);
+      will-change: transform;
+    }
+
+    #gate-top-panel {
+      top: 0;
+      background-color: var(--bg-dawn);
+      border-bottom: 1px solid rgba(27, 38, 59, 0.18);
+    }
+
+    #gate-bottom-panel {
+      bottom: 0;
+      background-color: var(--ink-slate);
+      border-top: 1px solid rgba(212, 122, 42, 0.45);
+    }
+
+    #silk-gate-cover.is-parting #gate-top-panel {
+      transform: translateY(-102%);
+    }
+
+    #silk-gate-cover.is-parting #gate-bottom-panel {
+      transform: translateY(102%);
+    }
+
+    /* Center Endless Silk Knot Medallion */
+    #silk-knot-trigger {
+      transition: transform 650ms cubic-bezier(0.77, 0, 0.175, 1), opacity 480ms ease;
+      will-change: transform, opacity;
+    }
+
+    #silk-gate-cover.is-parting #silk-knot-trigger {
+      transform: translate(-50%, -50%) scale(1.22) rotate(90deg);
+      opacity: 0;
+    }
+
+    @keyframes knotHaloPulse {
+      0% { transform: scale(0.96); opacity: 0.75; }
+      75% { transform: scale(1.3); opacity: 0; }
+      100% { transform: scale(1.3); opacity: 0; }
+    }
+    .knot-halo {
+      animation: knotHaloPulse 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    }
+
+    /* =====================================================================
+       4. EDITORIAL MOTION CHOREOGRAPHY (TEXT MASK, THREAD DRAW, FLIP)
+    ====================================================================== */
+    .line-clip {
+      overflow: hidden;
+      display: block;
+    }
+    .line-clip-inner {
+      display: block;
+      transform: translateY(108%);
+      opacity: 0;
+      transition: transform 820ms cubic-bezier(0.22, 1, 0.36, 1), opacity 620ms ease;
+    }
+    .room-in-view .line-clip-inner {
+      transform: translateY(0%);
+      opacity: 1;
+    }
+
+    /* Slow Architectural Sunburst / Knot Rotation */
+    @keyframes slowCelestialTurn {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .knot-ambient-spin {
+      animation: slowCelestialTurn 42s linear infinite;
+    }
+
+    /* Countdown Digit Flip */
+    @keyframes numberFlipUp {
+      0% { opacity: 0; transform: translateY(52%); }
+      100% { opacity: 1; transform: translateY(0%); }
+    }
+    .digit-animate-up {
+      display: inline-block;
+      animation: numberFlipUp 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Audio Disc Rotation */
+    @keyframes reelSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .reel-spinning {
+      animation: reelSpin 9s linear infinite;
+    }
+    .reel-paused {
+      animation-play-state: paused;
+    }
+
+    /* New Guestbook Wish Entrance */
+    @keyframes wishSlideIn {
+      0% { opacity: 0; transform: translateY(-10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .wish-item-new {
+      animation: wishSlideIn 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* =====================================================================
+       5. ACCESSIBILITY: PREFERS-REDUCED-MOTION
+    ====================================================================== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .line-clip-inner {
+        transform: none !important;
+        opacity: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-saffron-500 selection:text-dawn-50">
+
+  <!-- =====================================================================
+       SHARED INLINE SVG VECTOR SYMBOLS (ENDLESS SILK KNOT & SUNBURST FAMILY)
+  ====================================================================== -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden" aria-hidden="true">
+    <defs>
+      <!-- 1. ENDLESS SILK KNOT MEDALLION (#sym-silk-knot) -->
+      <symbol id="sym-silk-knot" viewBox="0 0 200 200">
+        <!-- Outer Fine Architectural Compass Ring -->
+        <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-opacity="0.24" stroke-width="1" />
+        <circle cx="100" cy="100" r="84" fill="none" stroke="#D47A2A" stroke-opacity="0.65" stroke-width="0.9" stroke-dasharray="3 4" />
+        <!-- Interlocking Diagonal Silk Loops (Fourfold Endless Knot) -->
+        <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="64" y="64" width="72" height="72" rx="18" transform="rotate(45 100 100)" />
+          <rect x="64" y="64" width="72" height="72" rx="18" />
+          <circle cx="100" cy="49" r="11" stroke="#D47A2A" stroke-width="1.5" />
+          <circle cx="151" cy="100" r="11" stroke="#D47A2A" stroke-width="1.5" />
+          <circle cx="100" cy="151" r="11" stroke="#D47A2A" stroke-width="1.5" />
+          <circle cx="49" cy="100" r="11" stroke="#D47A2A" stroke-width="1.5" />
+        </g>
+        <!-- Center Sunburst Core -->
+        <circle cx="100" cy="100" r="18" fill="#D47A2A" fill-opacity="0.16" stroke="#D47A2A" stroke-width="1.2" />
+        <circle cx="100" cy="100" r="4.5" fill="#D47A2A" />
+      </symbol>
+
+      <!-- 2. HORIZONTAL SILK THREAD DIVIDER (#sym-thread-divider) -->
+      <symbol id="sym-thread-divider" viewBox="0 0 320 28">
+        <line x1="4" y1="14" x2="128" y2="14" stroke="currentColor" stroke-opacity="0.25" stroke-width="1" />
+        <line x1="192" y1="14" x2="316" y2="14" stroke="currentColor" stroke-opacity="0.25" stroke-width="1" />
+        <path d="M136 14 C144 5, 154 23, 160 14 C166 5, 176 23, 184 14" fill="none" stroke="#D47A2A" stroke-width="1.6" stroke-linecap="round" />
+        <circle cx="160" cy="14" r="2.5" fill="currentColor" />
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- Desktop Subtle Ambient Architectural Watermark Backdrop -->
+  <div class="fixed inset-0 pointer-events-none hidden md:flex items-center justify-between px-12 opacity-20 text-dawn-100" aria-hidden="true">
+    <svg class="w-80 h-80 knot-ambient-spin"><use href="#sym-silk-knot" /></svg>
+    <svg class="w-80 h-80 knot-ambient-spin" style="animation-direction: reverse;"><use href="#sym-silk-knot" /></svg>
+  </div>
+
+  <!-- =====================================================================
+       SPLIT-LEAF SILK KNOT COVER GATE (100svh INTERACTIVE OPENING)
+  ====================================================================== -->
+  <section id="silk-gate-cover" aria-label="Sampul Undangan Clarissa dan Narendra">
+    <!-- TOP ALABASTER PAPER LEAF -->
+    <div id="gate-top-panel" class="gate-panel atelier-grid-bg text-slateink-900 flex flex-col justify-between px-6 sm:px-10 pt-6 pb-16">
+      <div class="flex items-center justify-between border-b border-slateink-900/15 pb-3">
+        <div>
+          <p class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-saffron-600">
+            KATALOG UNDANGAN PERNIKAHAN
+          </p>
+          <p class="text-[11px] tracking-[0.16em] uppercase text-slateink-900/75 mt-0.5">
+            MINGGU, 14 FEBRUARI 2027 • JAKARTA
+          </p>
+        </div>
+        <!-- Bespoke Interlocking C&N Monogram -->
+        <svg class="w-11 h-11 text-slateink-900" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+          <rect x="4" y="4" width="48" height="48" stroke="currentColor" stroke-opacity="0.25" stroke-width="1" />
+          <path d="M25 18C20 18 16 22.5 16 28C16 33.5 20 38 25 38" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          <path d="M29 38V18L40 38V18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="28" cy="10" r="2.2" fill="#D47A2A" />
+        </svg>
+      </div>
+
+      <div class="my-auto max-w-[420px]">
+        <span class="inline-block px-2.5 py-1 bg-slateink-900 text-dawn-50 text-[9px] font-bold tracking-[0.26em] uppercase mb-2">
+          THE WEDDING CELEBRATION
+        </span>
+        <h1 class="font-display text-[clamp(3.1rem,12vw,4.8rem)] leading-[0.9] font-normal text-slateink-900">
+          Clarissa <span class="italic text-saffron-500">&amp;</span> Narendra
+        </h1>
+      </div>
+    </div>
+
+    <!-- BOTTOM MIDNIGHT SLATE PAPER LEAF -->
+    <div id="gate-bottom-panel" class="gate-panel text-dawn-100 flex flex-col justify-between px-6 sm:px-10 pt-16 pb-7">
+      <div class="my-auto mx-auto w-full max-w-[380px] text-center">
+        <p class="text-[9px] font-bold tracking-[0.28em] uppercase text-saffron-300">
+          KEPADA YTH. BAPAK / IBU / SAUDARA/I
+        </p>
+        <p id="cover-guest-recipient" class="mt-1.5 font-display text-2xl sm:text-3xl text-dawn-50 break-words">
+          Tamu Undangan Terhormat
+        </p>
+        <p class="mt-2 text-xs text-dawn-100/75 leading-relaxed">
+          Ketuk simpul sutra di tengah untuk membuka lembaran undangan kami.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-between border-t border-dawn-100/15 pt-3 text-[9.5px] font-semibold tracking-[0.24em] uppercase text-dawn-100/60">
+        <span>HUTAN KOTA BY PLATARAN</span>
+        <span>SENAYAN, JAKARTA</span>
+      </div>
+    </div>
+
+    <!-- CENTER INTERACTIVE ENDLESS SILK KNOT BUTTON -->
+    <button
+      id="silk-knot-trigger"
+      type="button"
+      aria-label="Ketuk simpul sutra untuk membuka undangan Clarissa dan Narendra"
+      class="group fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-28 h-28 sm:w-32 sm:h-32 rounded-full flex items-center justify-center cursor-pointer focus:outline-none"
+    >
+      <span class="knot-halo absolute inset-0 rounded-full border border-saffron-400"></span>
+      <span class="relative w-full h-full rounded-full bg-dawn-50 border-2 border-saffron-500 shadow-[0_14px_34px_rgba(16,24,38,0.55)] flex flex-col items-center justify-center transition-transform duration-300 group-hover:scale-105">
+        <svg class="w-16 h-16 text-slateink-900 transition-transform duration-500 group-hover:rotate-45" aria-hidden="true">
+          <use href="#sym-silk-knot" />
+        </svg>
+        <span class="text-[8px] font-bold tracking-[0.22em] uppercase text-saffron-600 -mt-1">
+          BUKA SIMPUL
+        </span>
+      </span>
+    </button>
+  </section>
+
+  <!-- =====================================================================
+       CENTERED ATELIER BROADSHEET SHELL (MOBILE-FIRST + DESKTOP CENTERED)
+  ====================================================================== -->
+  <div class="relative mx-auto w-full max-w-[520px] h-[100svh] bg-dawn-100 shadow-[0_0_90px_rgba(0,0,0,0.65)] border-x border-dawn-100/15 flex overflow-hidden">
+
+    <!-- ===================================================================
+         LEFT ARCHITECTURAL INDEX RAIL (LIVE CHAPTER RULER 01 – 08)
+    ==================================================================== -->
+    <nav aria-label="Navigasi Bab Undangan" class="w-11 sm:w-12 shrink-0 h-[100svh] bg-slateink-950 text-dawn-100 border-r border-dawn-100/15 flex flex-col items-center justify-between py-4 z-40 select-none">
+      <!-- Top Live Chapter Counter -->
+      <div class="text-center">
+        <span id="rail-active-num" class="block text-[11px] font-bold tracking-wider text-saffron-400 tabular-nums">01</span>
+        <span class="block w-3 h-[1px] bg-dawn-100/25 mx-auto my-1"></span>
+        <span class="block text-[9px] text-dawn-100/50 tabular-nums">08</span>
+      </div>
+
+      <!-- Interactive Chapter Ticks -->
+      <div id="rail-ticks" class="flex flex-col items-center gap-2.5 my-auto">
+        <button type="button" data-target="0" aria-label="Bab 01 Sampul" class="rail-tick w-5 h-1.5 bg-saffron-500 transition-all cursor-pointer"></button>
+        <button type="button" data-target="1" aria-label="Bab 02 Ayat Suci" class="rail-tick w-2 h-1.5 bg-dawn-100/30 hover:bg-dawn-100/60 transition-all cursor-pointer"></button>
+        <button type="button" data-target="2" aria-label="Bab 03 Mempelai" class="rail-tick w-2 h-1.5 bg-dawn-100/30 hover:bg-dawn-100/60 transition-all cursor-pointer"></button>
+        <button type="button" data-target="3" aria-label="Bab 04 Kisah" class="rail-tick w-2 h-1.5 bg-dawn-100/30 hover:bg-dawn-100/60 transition-all cursor-pointer"></button>
+        <button type="button" data-target="4" aria-label="Bab 05 Acara" class="rail-tick w-2 h-1.5 bg-dawn-100/30 hover:bg-dawn-100/60 transition-all cursor-pointer"></button>
+        <button type="button" data-target="5" aria-label="Bab 06 Hitung Mundur" class="rail-tick w-2 h-1.5 bg-dawn-100/30 hover:bg-dawn-100/60 transition-all cursor-pointer"></button>
+        <button type="button" data-target="6" aria-label="Bab 07 Tanda Kasih" class="rail-tick w-2 h-1.5 bg-dawn-100/30 hover:bg-dawn-100/60 transition-all cursor-pointer"></button>
+        <button type="button" data-target="7" aria-label="Bab 08 Buku Doa & RSVP" class="rail-tick w-2 h-1.5 bg-dawn-100/30 hover:bg-dawn-100/60 transition-all cursor-pointer"></button>
+      </div>
+
+      <!-- Vertical Couple Monogram Mark -->
+      <div class="py-2">
+        <span class="block text-[9px] font-bold tracking-[0.28em] uppercase text-dawn-100/55 [writing-mode:vertical-rl] rotate-180">
+          C &amp; N • 2027
+        </span>
+      </div>
+    </nav>
+
+    <!-- ===================================================================
+         RIGHT MAIN SCROLL-SNAP VIEWPORT DECK (8 FULL-SVH ROOMS)
+    ==================================================================== -->
+    <div class="relative flex-1 h-[100svh] overflow-hidden">
+      <!-- Top Hairline Progress Bar -->
+      <div class="absolute top-0 inset-x-0 h-[3px] bg-slateink-900/15 z-40 pointer-events-none">
+        <div id="top-progress-line" class="h-full w-0 bg-saffron-500 transition-[width] duration-100"></div>
+      </div>
+
+      <main id="atelier-scroller" class="atelier-scroller">
+
+        <!-- ===============================================================
+             ROOM 01 (01/08): HERO EDITORIAL (ASYMMETRIC GRID + CROPPED KNOT)
+        ================================================================ -->
+        <section id="room-01" data-idx="0" data-num="01" aria-label="Halaman Utama Clarissa dan Narendra" class="atelier-room atelier-grid-bg bg-dawn-100 text-slateink-900">
+          <!-- Giant Top-Right Cropped Endless Silk Knot Emblem -->
+          <div id="hero-knot-parallax" aria-hidden="true" class="pointer-events-none absolute -top-16 -right-20 w-[320px] h-[320px] text-slateink-900 will-change-transform">
+            <svg class="w-full h-full knot-ambient-spin">
+              <use href="#sym-silk-knot" />
+            </svg>
+          </div>
+
+          <!-- Giant Cropped Background Year Watermark -->
+          <div aria-hidden="true" class="pointer-events-none select-none absolute -bottom-10 -right-4 font-display italic text-[10.5rem] leading-none text-slateink-900/[0.045]">
+            ’27
+          </div>
+
+          <div class="relative z-10 h-full flex flex-col justify-between px-5 sm:px-8 pt-8 pb-16">
+            <!-- Top Left Monogram & Subtitle -->
+            <div>
+              <svg class="w-14 h-14 text-slateink-900" viewBox="0 0 64 64" fill="none" aria-label="Monogram Clarissa dan Narendra">
+                <rect x="3" y="3" width="58" height="58" stroke="currentColor" stroke-opacity="0.25" stroke-width="1" />
+                <rect x="8" y="8" width="48" height="48" stroke="#D47A2A" stroke-opacity="0.55" stroke-width="0.9" />
+                <path d="M29 21C23.5 21 19 26 19 32C19 38 23.5 43 29 43" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                <path d="M33 43V21L45 43V21" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="32" cy="13" r="2.2" fill="#D47A2A" />
+              </svg>
+              <p class="mt-3 text-[9.5px] font-bold tracking-[0.28em] uppercase text-saffron-600">
+                UNDANGAN PERNIKAHAN
+              </p>
+            </div>
+
+            <!-- Left-Aligned Masked Monumental Couple Title -->
+            <div class="my-auto">
+              <h2 class="font-display text-[clamp(3.3rem,13vw,5rem)] leading-[0.89] font-normal text-slateink-900">
+                <span class="line-clip">
+                  <span class="line-clip-inner" style="transition-delay: 100ms;">Clarissa</span>
+                </span>
+                <span class="line-clip">
+                  <span class="line-clip-inner italic text-saffron-500 pl-6" style="transition-delay: 220ms;">
+                    <span class="not-italic text-slateink-900">&amp;</span> Narendra
+                  </span>
+                </span>
+              </h2>
+
+              <svg class="w-48 h-5 my-4 text-slateink-900" aria-hidden="true">
+                <use href="#sym-thread-divider" />
+              </svg>
+
+              <span class="line-clip">
+                <span class="line-clip-inner text-xs font-bold tracking-[0.24em] uppercase text-slateink-900" style="transition-delay: 320ms;">
+                  MINGGU, 14 FEBRUARI 2027
+                </span>
+              </span>
+              <span class="line-clip">
+                <span class="line-clip-inner text-xs text-slateink-900/75 mt-1" style="transition-delay: 400ms;">
+                  Hutan Kota by Plataran • Senayan, Jakarta
+                </span>
+              </span>
+            </div>
+
+            <!-- Bottom Architectural Coordinates -->
+            <div class="flex items-center justify-between border-t border-slateink-900/15 pt-3 text-[9px] font-bold tracking-[0.24em] uppercase text-slateink-900/60">
+              <span>6°13'22"S 106°48'15"E</span>
+              <span class="text-saffron-600">GULIR KE BAWAH ↓</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ROOM 02 (02/08): KUTIPAN & AYAT SUCI (SCROLL-DRAWN SILK THREAD)
+        ================================================================ -->
+        <section id="room-02" data-idx="1" data-num="02" aria-labelledby="verse-heading" class="atelier-room bg-slateink-900 text-dawn-100">
+          <!-- Continuous Silk Thread Path Drawn Dynamically With Scroll -->
+          <svg aria-hidden="true" class="pointer-events-none absolute inset-0 w-full h-full opacity-45" viewBox="0 0 400 720" preserveAspectRatio="none" fill="none">
+            <path
+              id="scroll-silk-thread"
+              d="M-10 90 C140 130, 60 290, 210 340 C360 390, 120 540, 410 620"
+              stroke="#D47A2A"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              pathLength="1"
+              stroke-dasharray="1"
+              stroke-dashoffset="1"
+            />
+          </svg>
+
+          <div class="relative z-10 h-full flex flex-col justify-between px-5 sm:px-8 pt-8 pb-16">
+            <div class="flex items-center justify-between border-b border-dawn-100/15 pb-3">
+              <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-saffron-400">
+                DOA &amp; HARAPAN
+              </span>
+              <span class="text-[10px] tracking-[0.22em] uppercase text-dawn-100/65">
+                QS. AR-RUM : 21
+              </span>
+            </div>
+
+            <!-- Right-Weighted Contemplative Scripture Block -->
+            <div class="ml-auto max-w-[380px] text-right my-auto">
+              <p class="font-display italic text-xl text-saffron-300 mb-3">
+                Assalamu’alaikum Warahmatullahi Wabarakatuh
+              </p>
+              <h2 id="verse-heading" class="sr-only">Ayat Suci Pernikahan</h2>
+              <blockquote class="font-display text-[clamp(1.38rem,4.9vw,1.82rem)] leading-[1.48] text-dawn-50 font-normal">
+                “Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang.”
+              </blockquote>
+              <cite class="block not-italic text-[10px] font-bold tracking-[0.28em] uppercase text-saffron-400 mt-5">
+                — SURAH AR-RUM AYAT 21
+              </cite>
+            </div>
+
+            <div class="text-right text-[9.5px] tracking-[0.22em] uppercase text-dawn-100/55">
+              <span>MEMOHON RESTU &amp; KEHADIRAN</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ROOM 03 (03/08): PROFIL MEMPELAI (OFFSET TYPOGRAPHIC DUET)
+        ================================================================ -->
+        <section id="room-03" data-idx="2" data-num="03" aria-labelledby="couple-heading" class="atelier-room atelier-grid-bg bg-dawn-100 text-slateink-900">
+          <div class="relative z-10 h-full flex flex-col justify-between px-5 sm:px-8 pt-8 pb-16">
+            <div class="flex items-end justify-between border-b border-slateink-900/15 pb-2.5">
+              <div>
+                <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-saffron-600">
+                  MEMPELAI BERBAHAGIA
+                </span>
+                <h2 id="couple-heading" class="font-display text-3xl text-slateink-900 mt-0.5">
+                  Dua Jiwa
+                </h2>
+              </div>
+              <span class="font-display italic text-xl text-saffron-600">C &amp; N</span>
+            </div>
+
+            <!-- Staggered Asymmetric Couple Cards -->
+            <div class="my-auto space-y-6">
+              <!-- Bride Card (Left-Anchored Alabaster Relief) -->
+              <article class="mr-4 bg-dawn-50 border border-slateink-900/15 border-l-4 border-l-saffron-500 p-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-[9px] font-bold tracking-[0.26em] uppercase text-saffron-600">
+                    MEMPELAI WANITA
+                  </span>
+                  <span class="font-display italic text-base text-slateink-900/50">01</span>
+                </div>
+                <h3 class="font-display text-3xl leading-tight font-normal text-slateink-900 mt-1">
+                  Clarissa Kinanti, M.Ars.
+                </h3>
+                <p class="mt-2 text-xs leading-relaxed text-slateink-900/80">
+                  Putri Pertama dari<br />
+                  <strong class="font-semibold text-slateink-900">Bpk. Ir. H. Bagus Prakoso</strong> &amp;<br />
+                  <strong class="font-semibold text-slateink-900">Ibu Hj. Larasati Kusuma</strong>
+                </p>
+              </article>
+
+              <!-- Center Silk Knot Connector -->
+              <div class="flex items-center justify-center">
+                <svg class="w-full h-5 text-slateink-900" aria-hidden="true">
+                  <use href="#sym-thread-divider" />
+                </svg>
+              </div>
+
+              <!-- Groom Card (Right-Indented Midnight Slate Block) -->
+              <article class="ml-4 bg-slateink-900 text-dawn-100 border-r-4 border-r-saffron-400 p-4 text-right">
+                <div class="flex items-center justify-between">
+                  <span class="font-display italic text-base text-dawn-100/45">02</span>
+                  <span class="text-[9px] font-bold tracking-[0.26em] uppercase text-saffron-300">
+                    MEMPELAI PRIA
+                  </span>
+                </div>
+                <h3 class="font-display text-3xl leading-tight font-normal text-dawn-50 mt-1">
+                  Narendra Maheswara, S.T.
+                </h3>
+                <p class="mt-2 text-xs leading-relaxed text-dawn-100/85">
+                  Putra Kedua dari<br />
+                  <strong class="font-semibold text-dawn-50">Bpk. Drs. Hendro Wibowo</strong> &amp;<br />
+                  <strong class="font-semibold text-dawn-50">Ibu Sri Rahayu Ningsih</strong>
+                </p>
+              </article>
+            </div>
+
+            <div class="flex justify-between text-[9.5px] font-semibold tracking-[0.22em] uppercase text-slateink-900/60">
+              <span>JAKARTA SELATAN</span>
+              <span>YOGYAKARTA</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ROOM 04 (04/08): JEJAK KISAH (INTERACTIVE 3-ACT CHRONICLE DECK)
+        ================================================================ -->
+        <section id="room-04" data-idx="3" data-num="04" aria-labelledby="story-heading" class="atelier-room bg-dawn-200 text-slateink-900">
+          <div class="h-full flex flex-col justify-between px-5 sm:px-8 pt-8 pb-16">
+            <div class="flex items-end justify-between border-b border-slateink-900/15 pb-2.5">
+              <div>
+                <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-saffron-600">
+                  KRONOLOGI KAMI
+                </span>
+                <h2 id="story-heading" class="font-display text-3xl text-slateink-900 mt-0.5">
+                  Tiga Babak Simpul
+                </h2>
+              </div>
+              <span class="text-[10px] font-bold tracking-[0.2em] uppercase text-slateink-900/60">2022–2027</span>
+            </div>
+
+            <!-- Interactive Act Selector Tabs -->
+            <div class="my-auto">
+              <div role="tablist" aria-label="Pilih babak kisah cinta" class="grid grid-cols-3 gap-2 mb-4">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  data-act="0"
+                  class="story-tab-btn py-2.5 px-2 bg-slateink-900 text-dawn-50 text-[9.5px] font-bold tracking-[0.2em] uppercase border border-slateink-900 transition-colors cursor-pointer"
+                >
+                  I • 2022
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  data-act="1"
+                  class="story-tab-btn py-2.5 px-2 bg-dawn-50 text-slateink-900 text-[9.5px] font-bold tracking-[0.2em] uppercase border border-slateink-900/20 hover:border-saffron-500 transition-colors cursor-pointer"
+                >
+                  II • 2025
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  data-act="2"
+                  class="story-tab-btn py-2.5 px-2 bg-dawn-50 text-slateink-900 text-[9.5px] font-bold tracking-[0.2em] uppercase border border-slateink-900/20 hover:border-saffron-500 transition-colors cursor-pointer"
+                >
+                  III • 2027
+                </button>
+              </div>
+
+              <!-- Featured Chronicle Stage Card -->
+              <article class="bg-dawn-50 border border-slateink-900/20 border-t-4 border-t-saffron-500 p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span id="story-act-kicker" class="text-[9.5px] font-bold tracking-[0.24em] uppercase text-saffron-600">
+                    BABAK I • PERTEMUAN PERTAMA
+                  </span>
+                  <svg class="w-7 h-7 text-slateink-900" aria-hidden="true">
+                    <use href="#sym-silk-knot" />
+                  </svg>
+                </div>
+
+                <h3 id="story-act-title" class="mt-3 font-display text-3xl leading-tight text-slateink-900">
+                  Simposium Arsitektur Senayan
+                </h3>
+
+                <p id="story-act-body" class="mt-3 text-xs sm:text-[13px] leading-relaxed text-slateink-900/80">
+                  Pertemuan tak terduga di ruang diskusi tata kota membuka percakapan panjang tentang ruang, cahaya, dan masa depan yang perlahan menyatukan langkah kami.
+                </p>
+
+                <div class="mt-4 pt-3 border-t border-slateink-900/15 flex items-center justify-between text-[10px] font-semibold tracking-[0.18em] uppercase text-slateink-900/65">
+                  <span id="story-act-place">JAKARTA PUSAT</span>
+                  <span id="story-act-year" class="text-saffron-600">OKTOBER 2022</span>
+                </div>
+              </article>
+            </div>
+
+            <div class="text-[9.5px] font-semibold tracking-[0.22em] uppercase text-slateink-900/60">
+              <span>KETUK TAB DI ATAS UNTUK MENELUSURI BABAK</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ROOM 05 (05/08): RANGKAIAN ACARA (AKAD & RESEPSI + MAPS)
+        ================================================================ -->
+        <section id="room-05" data-idx="4" data-num="05" aria-labelledby="events-heading" class="atelier-room bg-slateink-900 text-dawn-100">
+          <div class="h-full flex flex-col justify-between px-5 sm:px-8 pt-8 pb-16">
+            <div class="flex items-end justify-between border-b border-dawn-100/15 pb-2.5">
+              <div>
+                <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-saffron-400">
+                  WAKTU &amp; LOKASI
+                </span>
+                <h2 id="events-heading" class="font-display text-3xl text-dawn-50 mt-0.5">
+                  Rangkaian Acara
+                </h2>
+              </div>
+              <span class="text-[10px] font-bold tracking-[0.2em] uppercase text-dawn-100/65">JAKARTA</span>
+            </div>
+
+            <div class="my-auto space-y-4">
+              <!-- Akad Nikah -->
+              <article class="bg-dawn-100 text-slateink-900 p-4 border-l-4 border-saffron-500">
+                <div class="flex items-center justify-between text-[9.5px] font-bold tracking-[0.22em] uppercase text-saffron-600">
+                  <span>01 • AKAD NIKAH</span>
+                  <span>08.00 – 10.00 WIB</span>
+                </div>
+                <h3 class="font-display text-2xl font-normal text-slateink-900 mt-1">
+                  Ikrar Suci Pernikahan
+                </h3>
+                <p class="mt-1.5 text-xs leading-relaxed text-slateink-900/80">
+                  Minggu, 14 Februari 2027<br />
+                  <strong class="font-semibold text-slateink-900">Glasshouse Paviliun — Hutan Kota by Plataran</strong><br />
+                  Jl. Jenderal Sudirman Kav. 54–55, Senayan, Jakarta
+                </p>
+                <a
+                  href="https://maps.google.com/?q=Hutan+Kota+by+Plataran+Jakarta"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mt-3 inline-flex items-center gap-2 px-3.5 py-2 bg-slateink-900 hover:bg-saffron-500 text-dawn-50 text-[9.5px] font-bold tracking-[0.2em] uppercase transition-colors"
+                >
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 21C16 17 19 13.4183 19 9C19 5.13401 15.866 2 12 2C8.13401 2 5 5.13401 5 9C5 13.4183 8 17 12 21Z" />
+                    <circle cx="12" cy="9" r="2.5" />
+                  </svg>
+                  <span>Buka Google Maps</span>
+                </a>
+              </article>
+
+              <!-- Resepsi -->
+              <article class="bg-slateink-800 border border-dawn-100/20 border-r-4 border-r-saffron-400 p-4 text-right">
+                <div class="flex items-center justify-between text-[9.5px] font-bold tracking-[0.22em] uppercase text-saffron-300">
+                  <span>11.30 – 14.30 WIB</span>
+                  <span>02 • RESEPSI</span>
+                </div>
+                <h3 class="font-display text-2xl font-normal text-dawn-50 mt-1">
+                  Perjamuan &amp; Silaturahmi
+                </h3>
+                <p class="mt-1.5 text-xs leading-relaxed text-dawn-100/85">
+                  Minggu, 14 Februari 2027<br />
+                  <strong class="font-semibold text-dawn-50">Taman Melati &amp; Langit Senayan</strong><br />
+                  Jl. Jenderal Sudirman Kav. 54–55, Senayan, Jakarta
+                </p>
+                <a
+                  href="https://maps.google.com/?q=Hutan+Kota+by+Plataran+Jakarta"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mt-3 inline-flex items-center gap-2 px-3.5 py-2 bg-saffron-500 hover:bg-dawn-100 text-dawn-50 hover:text-slateink-900 text-[9.5px] font-bold tracking-[0.2em] uppercase transition-colors"
+                >
+                  <span>Buka Google Maps</span>
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 21C16 17 19 13.4183 19 9C19 5.13401 15.866 2 12 2C8.13401 2 5 5.13401 5 9C5 13.4183 8 17 12 21Z" />
+                    <circle cx="12" cy="9" r="2.5" />
+                  </svg>
+                </a>
+              </article>
+            </div>
+
+            <div class="text-[9.5px] tracking-[0.22em] uppercase text-dawn-100/60">
+              <span>KEHADIRAN ANDA ADALAH KEHORMATAN BAGI KAMI</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ROOM 06 (06/08): HITUNG MUNDUR & PANDUAN BUSANA
+        ================================================================ -->
+        <section id="room-06" data-idx="5" data-num="06" aria-labelledby="countdown-heading" class="atelier-room atelier-grid-bg bg-dawn-100 text-slateink-900">
+          <div class="h-full flex flex-col justify-between px-5 sm:px-8 pt-8 pb-16">
+            <div>
+              <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-saffron-600">
+                HITUNG MUNDUR &amp; BUSANA
+              </span>
+              <h2 id="countdown-heading" class="font-display text-3xl text-slateink-900 mt-0.5">
+                Menanti Hari Bahagia
+              </h2>
+            </div>
+
+            <div class="my-auto space-y-5">
+              <!-- 4-Column Realtime Countdown Grid -->
+              <div class="grid grid-cols-4 gap-2 border-y border-slateink-900/20 py-3.5">
+                <div class="border-r border-slateink-900/15 pr-1 text-center">
+                  <div class="h-10 flex items-center justify-center overflow-hidden">
+                    <span id="cd-days" class="font-display text-4xl text-slateink-900 tabular-nums">00</span>
+                  </div>
+                  <span class="block text-[9px] font-bold tracking-[0.22em] uppercase text-slateink-900/65 mt-0.5">HARI</span>
+                </div>
+
+                <div class="border-r border-slateink-900/15 px-1 text-center">
+                  <div class="h-10 flex items-center justify-center overflow-hidden">
+                    <span id="cd-hours" class="font-display text-4xl text-slateink-900 tabular-nums">00</span>
+                  </div>
+                  <span class="block text-[9px] font-bold tracking-[0.22em] uppercase text-slateink-900/65 mt-0.5">JAM</span>
+                </div>
+
+                <div class="border-r border-slateink-900/15 px-1 text-center">
+                  <div class="h-10 flex items-center justify-center overflow-hidden">
+                    <span id="cd-minutes" class="font-display text-4xl text-slateink-900 tabular-nums">00</span>
+                  </div>
+                  <span class="block text-[9px] font-bold tracking-[0.22em] uppercase text-slateink-900/65 mt-0.5">MENIT</span>
+                </div>
+
+                <div class="bg-slateink-900 text-dawn-50 py-1 px-1 text-center">
+                  <div class="h-9 flex items-center justify-center overflow-hidden">
+                    <span id="cd-seconds" class="font-display text-3xl text-saffron-400 tabular-nums">00</span>
+                  </div>
+                  <span class="block text-[8.5px] font-bold tracking-[0.22em] uppercase text-dawn-100/75">DETIK</span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between gap-2">
+                <p id="cd-status-line" class="text-[10.5px] font-semibold tracking-[0.16em] uppercase text-saffron-600">
+                  MINGGU, 14 FEBRUARI 2027 • 08.00 WIB
+                </p>
+                <button
+                  id="download-ics-btn"
+                  type="button"
+                  class="shrink-0 px-3 py-1.5 bg-slateink-900 hover:bg-saffron-500 text-dawn-50 text-[9px] font-bold tracking-[0.2em] uppercase transition-colors cursor-pointer"
+                >
+                  + Kalender
+                </button>
+              </div>
+
+              <!-- Interactive Guest Attire Palette -->
+              <div class="bg-dawn-50 border border-slateink-900/20 p-3.5">
+                <div class="flex items-center justify-between mb-2.5">
+                  <span class="text-[9px] font-bold tracking-[0.24em] uppercase text-slateink-900">
+                    PALET BUSANA TAMU
+                  </span>
+                  <span id="attire-active-title" class="text-[9px] font-bold tracking-[0.18em] uppercase text-saffron-600">
+                    MIDNIGHT SLATE
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    data-title="MIDNIGHT SLATE"
+                    data-desc="Setelan jas biru tua, beskap modern, atau kebaya beludru malam."
+                    class="palette-btn flex flex-col items-start cursor-pointer"
+                  >
+                    <span class="w-full h-7 bg-[#1B263B] border-2 border-saffron-500"></span>
+                    <span class="mt-1 text-[8.5px] font-bold uppercase">Slate</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    data-title="DAWN ALABASTER"
+                    data-desc="Kemeja putih gading, kebaya encim klasik, atau tenun alabaster."
+                    class="palette-btn flex flex-col items-start cursor-pointer"
+                  >
+                    <span class="w-full h-7 bg-[#F8F6F1] border border-slateink-900/30"></span>
+                    <span class="mt-1 text-[8.5px] font-bold uppercase">Alabaster</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    data-title="SAFFRON AMBER"
+                    data-desc="Selendang sutra kuning kunyit hangat, dasi sutra, atau gaun senja."
+                    class="palette-btn flex flex-col items-start cursor-pointer"
+                  >
+                    <span class="w-full h-7 bg-[#D47A2A] border border-slateink-900/20"></span>
+                    <span class="mt-1 text-[8.5px] font-bold uppercase">Saffron</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    data-title="WARM SAND"
+                    data-desc="Nuansa krem pasir lembut atau batik sogan kontemporer."
+                    class="palette-btn flex flex-col items-start cursor-pointer"
+                  >
+                    <span class="w-full h-7 bg-[#E2DDD2] border border-slateink-900/20"></span>
+                    <span class="mt-1 text-[8.5px] font-bold uppercase">Sand</span>
+                  </button>
+                </div>
+
+                <p id="attire-active-desc" class="mt-2.5 pt-2 border-t border-slateink-900/12 text-xs text-slateink-900/80">
+                  Setelan jas biru tua, beskap modern, atau kebaya beludru malam.
+                </p>
+              </div>
+            </div>
+
+            <div class="text-[9.5px] tracking-[0.22em] uppercase text-slateink-900/60">
+              <span>DRESS CODE: FORMAL &amp; BATIK NUSANTARA</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ROOM 07 (07/08): TANDA KASIH (AMPLOP DIGITAL + COPY + TOAST)
+        ================================================================ -->
+        <section id="room-07" data-idx="6" data-num="07" aria-labelledby="gift-heading" class="atelier-room atelier-grid-bg bg-dawn-100 text-slateink-900">
+          <div class="h-full flex flex-col justify-between px-5 sm:px-8 pt-8 pb-16">
+            <div>
+              <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-saffron-600">
+                TANDA KASIH
+              </span>
+              <h2 id="gift-heading" class="font-display text-3xl text-slateink-900 mt-0.5">
+                Amplop Digital
+              </h2>
+              <p class="mt-1.5 text-xs leading-relaxed text-slateink-900/75">
+                Doa restu Anda merupakan karunia terindah bagi kami. Apabila berkenan memberikan tanda kasih secara nontunai, dapat melalui rekening berikut:
+              </p>
+            </div>
+
+            <div class="my-auto space-y-4">
+              <!-- Bank Card 1 -->
+              <div class="bg-slateink-900 text-dawn-100 p-4 border-l-4 border-saffron-500">
+                <div class="flex items-center justify-between border-b border-dawn-100/15 pb-2">
+                  <span class="text-[10px] font-bold tracking-[0.24em] uppercase text-saffron-300">
+                    BANK CENTRAL ASIA (BCA)
+                  </span>
+                  <span class="text-[9px] tracking-[0.2em] uppercase text-dawn-100/55">014</span>
+                </div>
+                <p class="mt-2.5 font-display text-2xl sm:text-[28px] tracking-[0.12em] text-dawn-50 select-all">
+                  8420 5193 77
+                </p>
+                <p class="mt-0.5 text-xs text-dawn-100/80">
+                  a.n. <strong class="font-semibold text-dawn-50">Narendra Maheswara</strong>
+                </p>
+                <button
+                  type="button"
+                  data-copy-val="8420519377"
+                  data-copy-name="Rekening BCA"
+                  class="copy-rekening-btn mt-3 w-full py-2 px-4 bg-saffron-500 hover:bg-saffron-400 text-dawn-50 text-[9.5px] font-bold tracking-[0.22em] uppercase flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" />
+                    <path d="M5 15H4V4H15V5" />
+                  </svg>
+                  <span>Salin Nomor Rekening</span>
+                </button>
+              </div>
+
+              <!-- Bank Card 2 -->
+              <div class="bg-dawn-50 text-slateink-900 p-4 border border-slateink-900/20 border-r-4 border-r-slateink-900">
+                <div class="flex items-center justify-between border-b border-slateink-900/15 pb-2">
+                  <span class="text-[10px] font-bold tracking-[0.24em] uppercase text-slateink-900">
+                    BANK MANDIRI
+                  </span>
+                  <span class="text-[9px] tracking-[0.2em] uppercase text-slateink-900/55">008</span>
+                </div>
+                <p class="mt-2.5 font-display text-2xl sm:text-[28px] tracking-[0.12em] text-slateink-900 select-all">
+                  1240 0983 6152 4
+                </p>
+                <p class="mt-0.5 text-xs text-slateink-900/80">
+                  a.n. <strong class="font-semibold text-slateink-900">Clarissa Kinanti</strong>
+                </p>
+                <button
+                  type="button"
+                  data-copy-val="1240098361524"
+                  data-copy-name="Rekening Mandiri"
+                  class="copy-rekening-btn mt-3 w-full py-2 px-4 bg-slateink-900 hover:bg-saffron-500 text-dawn-50 text-[9.5px] font-bold tracking-[0.22em] uppercase flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" />
+                    <path d="M5 15H4V4H15V5" />
+                  </svg>
+                  <span>Salin Nomor Rekening</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="text-[9.5px] tracking-[0.22em] uppercase text-slateink-900/60">
+              <span>TERIMA KASIH ATAS KEMURAHAN HATI ANDA</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ROOM 08 (08/08): BUKU DOA, KONFIRMASI RSVP REALTIME & PENUTUP
+        ================================================================ -->
+        <section id="room-08" data-idx="7" data-num="08" aria-labelledby="rsvp-heading" class="atelier-room bg-slateink-900 text-dawn-100">
+          <div class="h-full flex flex-col justify-between px-5 sm:px-8 pt-7 pb-16">
+            <!-- Header + Live RSVP Counters -->
+            <div class="flex items-end justify-between border-b border-dawn-100/20 pb-2">
+              <div>
+                <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-saffron-400">
+                  KONFIRMASI KEHADIRAN
+                </span>
+                <h2 id="rsvp-heading" class="font-display text-2xl sm:text-3xl text-dawn-50">
+                  Buku Doa &amp; RSVP
+                </h2>
+              </div>
+              <div class="flex gap-3 text-right">
+                <div>
+                  <span id="rsvp-cnt-hadir" class="block font-display text-lg text-saffron-400 leading-none">2</span>
+                  <span class="text-[8px] tracking-widest uppercase text-dawn-100/60">HADIR</span>
+                </div>
+                <div>
+                  <span id="rsvp-cnt-ragu" class="block font-display text-lg text-dawn-50 leading-none">1</span>
+                  <span class="text-[8px] tracking-widest uppercase text-dawn-100/60">RAGU</span>
+                </div>
+                <div>
+                  <span id="rsvp-cnt-tidak" class="block font-display text-lg text-dawn-100/45 leading-none">0</span>
+                  <span class="text-[8px] tracking-widest uppercase text-dawn-100/60">ABSEN</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Validated RSVP & Guestbook Form -->
+            <form id="atelier-rsvp-form" novalidate class="mt-2.5 space-y-2">
+              <div>
+                <label for="field-guest-name" class="sr-only">Nama Lengkap</label>
+                <input
+                  id="field-guest-name"
+                  type="text"
+                  maxlength="60"
+                  required
+                  placeholder="Nama Lengkap Anda"
+                  class="w-full bg-slateink-950/90 border border-dawn-100/25 focus:border-saffron-400 px-3 py-2 text-xs text-dawn-50 placeholder-dawn-100/45 focus:outline-none"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label for="field-attendance" class="sr-only">Kehadiran</label>
+                  <select
+                    id="field-attendance"
+                    class="w-full bg-slateink-950/90 border border-dawn-100/25 focus:border-saffron-400 px-2.5 py-2 text-xs text-dawn-50 focus:outline-none"
+                  >
+                    <option value="Hadir">Hadir</option>
+                    <option value="Ragu">Ragu</option>
+                    <option value="Tidak Hadir">Tidak Hadir</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="field-guest-qty" class="sr-only">Jumlah Tamu</label>
+                  <select
+                    id="field-guest-qty"
+                    class="w-full bg-slateink-950/90 border border-dawn-100/25 focus:border-saffron-400 px-2.5 py-2 text-xs text-dawn-50 focus:outline-none"
+                  >
+                    <option value="1 Tamu">1 Tamu</option>
+                    <option value="2 Tamu" selected>2 Tamu</option>
+                    <option value="Keluarga">Keluarga</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label for="field-wish-text" class="sr-only">Ucapan &amp; Doa</label>
+                <textarea
+                  id="field-wish-text"
+                  rows="2"
+                  maxlength="280"
+                  required
+                  placeholder="Tuliskan doa restu untuk Clarissa & Narendra..."
+                  class="w-full bg-slateink-950/90 border border-dawn-100/25 focus:border-saffron-400 px-3 py-2 text-xs text-dawn-50 placeholder-dawn-100/45 focus:outline-none resize-none"
+                ></textarea>
+              </div>
+
+              <p id="form-error-note" class="hidden text-[11px] text-saffron-200 bg-saffron-500/20 border border-saffron-400/50 px-3 py-1">
+                Mohon lengkapi nama dan ucapan doa Anda terlebih dahulu.
+              </p>
+
+              <button
+                type="submit"
+                class="w-full py-2.5 px-4 bg-saffron-500 hover:bg-saffron-400 text-dawn-50 text-[10px] font-bold tracking-[0.22em] uppercase transition-colors cursor-pointer"
+              >
+                Kirim Ucapan &amp; Konfirmasi
+              </button>
+            </form>
+
+            <!-- Internal Scrollable Guestbook Feed -->
+            <div class="mt-2.5 flex-1 min-h-0 flex flex-col border-t border-dawn-100/20 pt-2">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[9px] font-bold tracking-[0.24em] uppercase text-dawn-100/65">
+                  UNTAIAN DOA TAMU
+                </span>
+                <span id="wishes-count-badge" class="text-[9.5px] font-bold text-saffron-400">
+                  3 UCAPAN
+                </span>
+              </div>
+
+              <div id="guestbook-feed" class="space-y-2 overflow-y-auto pr-1 max-h-[160px] sm:max-h-[190px]">
+                <article class="bg-slateink-950/85 border-l-2 border-saffron-400 p-2.5">
+                  <div class="flex items-center justify-between gap-2">
+                    <h4 class="font-display text-lg text-dawn-50">Kezia &amp; Armand</h4>
+                    <span class="px-2 py-0.5 bg-saffron-500/25 text-saffron-200 text-[8.5px] font-bold tracking-wider uppercase">Hadir • 2 Tamu</span>
+                  </div>
+                  <p class="mt-0.5 text-[11px] leading-relaxed text-dawn-100/85">
+                    Selamat menempuh hidup baru Clarissa &amp; Narendra! Semoga simpul cinta kalian selalu kokoh dan penuh berkah.
+                  </p>
+                </article>
+
+                <article class="bg-slateink-950/85 border-l-2 border-saffron-300 p-2.5">
+                  <div class="flex items-center justify-between gap-2">
+                    <h4 class="font-display text-lg text-dawn-50">Dimas Prasetyo</h4>
+                    <span class="px-2 py-0.5 bg-saffron-500/25 text-saffron-200 text-[8.5px] font-bold tracking-wider uppercase">Hadir • 1 Tamu</span>
+                  </div>
+                  <p class="mt-0.5 text-[11px] leading-relaxed text-dawn-100/85">
+                    Turut berbahagia untuk sahabat kampus terbaik! Sampai bertemu di Hutan Kota Senayan.
+                  </p>
+                </article>
+
+                <article class="bg-slateink-950/85 border-l-2 border-dawn-100/35 p-2.5">
+                  <div class="flex items-center justify-between gap-2">
+                    <h4 class="font-display text-lg text-dawn-50">Nadia Rahmawati</h4>
+                    <span class="px-2 py-0.5 bg-dawn-100/15 text-dawn-100/85 text-[8.5px] font-bold tracking-wider uppercase">Ragu • 2 Tamu</span>
+                  </div>
+                  <p class="mt-0.5 text-[11px] leading-relaxed text-dawn-100/85">
+                    Barakallahu lakuma wa baraka ‘alaikuma. Doa tulus selalu menyertai langkah kalian berdua.
+                  </p>
+                </article>
+              </div>
+            </div>
+
+            <!-- Closing Thank-You Sign-Off -->
+            <footer class="mt-2 pt-2 border-t border-dawn-100/15 flex items-center justify-between text-[9px] font-semibold tracking-[0.22em] uppercase text-dawn-100/75">
+              <span>TERIMA KASIH — CLARISSA &amp; NARENDRA</span>
+              <span class="text-saffron-400">14.02.2027</span>
+            </footer>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       FLOATING AUDIO CONTROLLER PILL (BOTTOM-RIGHT)
+  ====================================================================== -->
+  <div class="fixed bottom-4 right-4 z-50">
+    <button
+      id="ambient-audio-btn"
+      type="button"
+      aria-label="Kontrol Musik Latar"
+      aria-pressed="false"
+      class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-slateink-950/95 border border-saffron-400/50 hover:border-saffron-300 text-dawn-50 shadow-xl transition-colors cursor-pointer"
+    >
+      <svg id="audio-knot-icon" class="w-5 h-5 text-dawn-50 reel-spinning reel-paused" aria-hidden="true">
+        <use href="#sym-silk-knot" />
+      </svg>
+      <span id="audio-state-label" class="text-[9px] font-bold tracking-[0.2em] uppercase">
+        MUSIK
+      </span>
+    </button>
+  </div>
+
+  <!-- =====================================================================
+       AUTO-DISMISS TOAST NOTIFICATION (2 SECONDS)
+  ====================================================================== -->
+  <div
+    id="atelier-toast-box"
+    role="status"
+    aria-live="polite"
+    class="pointer-events-none fixed bottom-16 left-1/2 -translate-x-1/2 z-50 opacity-0 translate-y-2 transition-all duration-250 w-[calc(100%-36px)] max-w-[380px]"
+  >
+    <div class="bg-slateink-950 border-l-4 border-saffron-500 border-y border-r border-dawn-100/25 text-dawn-50 px-4 py-2.5 shadow-2xl flex items-center gap-2.5">
+      <svg class="w-4 h-4 text-saffron-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+      <span id="atelier-toast-text" class="text-xs tracking-wide">
+        Berhasil disalin
+      </span>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODULAR VANILLA JAVASCRIPT (ZERO EXTERNAL DEPENDENCIES)
+  ====================================================================== -->
+  <script>
+    (() => {
+      'use strict';
+
+      const WEDDING_TARGET_ISO = '2027-02-14T08:00:00+07:00';
+
+      /* -------------------------------------------------------------------
+         1. GUEST RECIPIENT RESOLVER (?to= / ?u= WITH SAFE textContent)
+      -------------------------------------------------------------------- */
+      function initGuestResolver() {
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get('to') || params.get('u');
+        const coverTarget = document.getElementById('cover-guest-recipient');
+        const rsvpNameField = document.getElementById('field-guest-name');
+
+        if (raw && raw.trim().length > 0) {
+          const clean = raw.replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 64);
+          if (clean.length > 0) {
+            if (coverTarget) coverTarget.textContent = clean;
+            if (rsvpNameField) rsvpNameField.value = clean;
+          }
+        }
+      }
+
+      /* -------------------------------------------------------------------
+         2. SILK KNOT AMBIENT CHIME / HARP SYNTH ENGINE (SAFE AUTOPLAY)
+      -------------------------------------------------------------------- */
+      class SilkAmbientSynth {
+        constructor() {
+          this.ctx = null;
+          this.masterGain = null;
+          this.isPlaying = false;
+          this.intervalId = null;
+          this.step = 0;
+          // Serene Dmaj9 -> F#m7 -> Gmaj7 -> A6 arpeggio
+          this.notes = [
+            293.66, 369.99, 440.00, 554.37,
+            369.99, 440.00, 554.37, 659.25,
+            392.00, 493.88, 587.33, 739.99,
+            440.00, 554.37, 659.25, 880.00
+          ];
+        }
+
+        async play() {
+          try {
+            if (!this.ctx) {
+              const AudioCtx = window.AudioContext || window.webkitAudioContext;
+              if (!AudioCtx) return false;
+              this.ctx = new AudioCtx();
+              this.masterGain = this.ctx.createGain();
+              this.masterGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+              this.masterGain.connect(this.ctx.destination);
+            }
+            if (this.ctx.state === 'suspended') {
+              await this.ctx.resume();
+            }
+            if (this.isPlaying) return true;
+
+            this.isPlaying = true;
+            const now = this.ctx.currentTime;
+            this.masterGain.gain.cancelScheduledValues(now);
+            this.masterGain.gain.setValueAtTime(0.0001, now);
+            this.masterGain.gain.linearRampToValueAtTime(0.62, now + 0.8);
+
+            const pluck = () => {
+              if (!this.isPlaying || !this.ctx) return;
+              const t = this.ctx.currentTime;
+              const freq = this.notes[this.step % this.notes.length];
+              const osc = this.ctx.createOscillator();
+              const env = this.ctx.createGain();
+
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, t);
+
+              env.gain.setValueAtTime(0.0001, t);
+              env.gain.linearRampToValueAtTime(0.042, t + 0.07);
+              env.gain.exponentialRampToValueAtTime(0.0001, t + 2.7);
+
+              osc.connect(env);
+              env.connect(this.masterGain);
+
+              osc.start(t);
+              osc.stop(t + 2.8);
+              this.step++;
+            };
+
+            pluck();
+            this.intervalId = setInterval(pluck, 760);
+            return true;
+          } catch (_) {
+            this.isPlaying = false;
+            return false;
+          }
+        }
+
+        pause() {
+          this.isPlaying = false;
+          if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+          }
+          if (this.ctx && this.masterGain) {
+            const now = this.ctx.currentTime;
+            this.masterGain.gain.cancelScheduledValues(now);
+            this.masterGain.gain.setValueAtTime(Math.max(0.0001, this.masterGain.gain.value), now);
+            this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.35);
+          }
+        }
+
+        async toggle() {
+          if (this.isPlaying) {
+            this.pause();
+            return false;
+          }
+          return await this.play();
+        }
+      }
+
+      /* -------------------------------------------------------------------
+         3. SCROLL-LINKED MOTION ENGINE & LEFT RAIL RULER SYNC
+      -------------------------------------------------------------------- */
+      function initScrollEngine() {
+        const scroller = document.getElementById('atelier-scroller');
+        const progressBar = document.getElementById('top-progress-line');
+        const railNumEl = document.getElementById('rail-active-num');
+        const rooms = Array.from(document.querySelectorAll('.atelier-room'));
+        const ticks = Array.from(document.querySelectorAll('.rail-tick'));
+
+        // Parallax & SVG Draw Targets
+        const heroRoom = document.getElementById('room-01');
+        const heroKnot = document.getElementById('hero-knot-parallax');
+        const verseRoom = document.getElementById('room-02');
+        const silkThread = document.getElementById('scroll-silk-thread');
+
+        let dirty = true;
+        let lastIdx = -1;
+
+        if (scroller) {
+          scroller.addEventListener('scroll', () => {
+            dirty = true;
+          }, { passive: true });
+        }
+
+        ticks.forEach((tick) => {
+          tick.addEventListener('click', () => {
+            const idx = Number(tick.getAttribute('data-target') || 0);
+            if (rooms[idx] && scroller) {
+              rooms[idx].scrollIntoView({ behavior: 'smooth' });
+            }
+          });
+        });
+
+        const sync = () => {
+          if (!scroller) return;
+          const vh = window.innerHeight || 1;
+          const maxScroll = Math.max(1, scroller.scrollHeight - scroller.clientHeight);
+          const ratio = Math.min(1, Math.max(0, scroller.scrollTop / maxScroll));
+          if (progressBar) progressBar.style.width = `${ratio * 100}%`;
+
+          let currentIdx = 0;
+          let minDist = Infinity;
+
+          rooms.forEach((room, idx) => {
+            const rect = room.getBoundingClientRect();
+            const isVisible = rect.top < vh * 0.65 && rect.bottom > vh * 0.25;
+            if (isVisible) room.classList.add('room-in-view');
+
+            const dist = Math.abs(rect.top);
+            if (dist < minDist) {
+              minDist = dist;
+              currentIdx = idx;
+            }
+          });
+
+          // 1. Hero Silk Knot Parallax
+          if (heroRoom && heroKnot) {
+            const rect = heroRoom.getBoundingClientRect();
+            const exit = Math.min(1, Math.max(0, -rect.top / vh));
+            heroKnot.style.transform = `translate3d(${exit * 18}px, ${exit * 44}px, 0)`;
+          }
+
+          // 2. Verse Room Scroll-Drawn Silk Thread
+          if (verseRoom && silkThread) {
+            const rect = verseRoom.getBoundingClientRect();
+            const p = Math.min(1, Math.max(0, 1 - (rect.top / (vh * 0.85))));
+            silkThread.setAttribute('stroke-dashoffset', String((1 - p).toFixed(3)));
+          }
+
+          if (currentIdx !== lastIdx && rooms[currentIdx]) {
+            lastIdx = currentIdx;
+            const num = rooms[currentIdx].getAttribute('data-num') || '01';
+            if (railNumEl) railNumEl.textContent = num;
+
+            ticks.forEach((t, tIdx) => {
+              if (tIdx === currentIdx) {
+                t.classList.remove('w-2', 'bg-dawn-100/30');
+                t.classList.add('w-5', 'bg-saffron-500');
+              } else {
+                t.classList.remove('w-5', 'bg-saffron-500');
+                t.classList.add('w-2', 'bg-dawn-100/30');
+              }
+            });
+          }
+        };
+
+        const tickLoop = () => {
+          if (dirty) {
+            sync();
+            dirty = false;
+          }
+          requestAnimationFrame(tickLoop);
+        };
+        requestAnimationFrame(tickLoop);
+
+        return {
+          refresh: () => {
+            dirty = true;
+            sync();
+          }
+        };
+      }
+
+      /* -------------------------------------------------------------------
+         4. INTERACTIVE 3-ACT CHRONICLE TABS (ROOM 04)
+      -------------------------------------------------------------------- */
+      function initChronicleTabs() {
+        const acts = [
+          {
+            kicker: 'BABAK I • PERTEMUAN PERTAMA',
+            title: 'Simposium Arsitektur Senayan',
+            body: 'Pertemuan tak terduga di ruang diskusi tata kota membuka percakapan panjang tentang ruang, cahaya, dan masa depan yang perlahan menyatukan langkah kami.',
+            place: 'JAKARTA PUSAT',
+            year: 'OKTOBER 2022'
+          },
+          {
+            kicker: 'BABAK II • IKATAN RESTU',
+            title: 'Lamaran Keluarga di Yogyakarta',
+            body: 'Di hadapan kedua orang tua dan keluarga besar, niat tulus untuk melangkah bersama diikat dengan restu hangat penuh syukur.',
+            place: 'YOGYAKARTA',
+            year: 'AGUSTUS 2025'
+          },
+          {
+            kicker: 'BABAK III • JANJI SUCI',
+            title: 'Menuju Pelaminan Senayan',
+            body: 'Dua keluarga bersatu dalam ikrar pernikahan sakral, memohon doa restu sahabat dan handai taulan tercinta.',
+            place: 'SENAYAN, JAKARTA',
+            year: 'FEBRUARI 2027'
+          }
+        ];
+
+        const btns = Array.from(document.querySelectorAll('.story-tab-btn'));
+        const kickerEl = document.getElementById('story-act-kicker');
+        const titleEl = document.getElementById('story-act-title');
+        const bodyEl = document.getElementById('story-act-body');
+        const placeEl = document.getElementById('story-act-place');
+        const yearEl = document.getElementById('story-act-year');
+
+        btns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.getAttribute('data-act') || 0);
+            const item = acts[idx];
+            if (!item) return;
+
+            btns.forEach((b) => {
+              b.setAttribute('aria-selected', 'false');
+              b.classList.remove('bg-slateink-900', 'text-dawn-50', 'border-slateink-900');
+              b.classList.add('bg-dawn-50', 'text-slateink-900', 'border-slateink-900/20');
+            });
+
+            btn.setAttribute('aria-selected', 'true');
+            btn.classList.remove('bg-dawn-50', 'text-slateink-900', 'border-slateink-900/20');
+            btn.classList.add('bg-slateink-900', 'text-dawn-50', 'border-slateink-900');
+
+            if (kickerEl) kickerEl.textContent = item.kicker;
+            if (titleEl) titleEl.textContent = item.title;
+            if (bodyEl) bodyEl.textContent = item.body;
+            if (placeEl) placeEl.textContent = item.place;
+            if (yearEl) yearEl.textContent = item.year;
+          });
+        });
+      }
+
+      /* -------------------------------------------------------------------
+         5. REALTIME COUNTDOWN, .ICS CALENDAR & ATTIRE SWATCHES
+      -------------------------------------------------------------------- */
+      function initCountdownAndAttire() {
+        const dEl = document.getElementById('cd-days');
+        const hEl = document.getElementById('cd-hours');
+        const mEl = document.getElementById('cd-minutes');
+        const sEl = document.getElementById('cd-seconds');
+        const statusLine = document.getElementById('cd-status-line');
+
+        const targetMs = new Date(WEDDING_TARGET_ISO).getTime();
+        const cache = { d: '', h: '', m: '', s: '' };
+
+        const setDigit = (el, key, val) => {
+          if (!el || cache[key] === val) return;
+          cache[key] = val;
+          el.textContent = val;
+          el.classList.remove('digit-animate-up');
+          void el.offsetWidth;
+          el.classList.add('digit-animate-up');
+        };
+
+        const pad2 = (n) => String(Math.max(0, n)).padStart(2, '0');
+
+        const updateClock = () => {
+          const diff = targetMs - Date.now();
+          if (diff <= 0) {
+            setDigit(dEl, 'd', '00');
+            setDigit(hEl, 'h', '00');
+            setDigit(mEl, 'm', '00');
+            setDigit(sEl, 's', '00');
+            if (statusLine) {
+              statusLine.textContent = 'HARI BAHAGIA TELAH TIBA • TERIMA KASIH ATAS DOA RESTU';
+            }
+            return;
+          }
+          setDigit(dEl, 'd', pad2(Math.floor(diff / 86400000)));
+          setDigit(hEl, 'h', pad2(Math.floor((diff / 3600000) % 24)));
+          setDigit(mEl, 'm', pad2(Math.floor((diff / 60000) % 60)));
+          setDigit(sEl, 's', pad2(Math.floor((diff / 1000) % 60)));
+        };
+
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // Save Calendar (.ics)
+        const icsBtn = document.getElementById('download-ics-btn');
+        icsBtn?.addEventListener('click', () => {
+          const ics = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Clarissa & Narendra Wedding//ID',
+            'BEGIN:VEVENT',
+            'DTSTART:20270214T010000Z',
+            'DTEND:20270214T073000Z',
+            'SUMMARY:Pernikahan Clarissa & Narendra',
+            'LOCATION:Hutan Kota by Plataran, Jl. Jenderal Sudirman Kav. 54-55, Jakarta',
+            'DESCRIPTION:Akad Nikah (08.00 WIB) & Resepsi Pernikahan (11.30 WIB) Clarissa Kinanti & Narendra Maheswara.',
+            'END:VEVENT',
+            'END:VCALENDAR'
+          ].join('\r\n');
+
+          const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'Pernikahan-Clarissa-Narendra.ics';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('Jadwal kalender (.ics) berhasil disimpan');
+        });
+
+        // Attire Palette Swatches
+        const paletteBtns = Array.from(document.querySelectorAll('.palette-btn'));
+        const titleEl = document.getElementById('attire-active-title');
+        const descEl = document.getElementById('attire-active-desc');
+
+        paletteBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            paletteBtns.forEach((b) => {
+              const box = b.querySelector('span:first-child');
+              if (box) {
+                box.classList.remove('border-2', 'border-saffron-500');
+                box.classList.add('border', 'border-slateink-900/25');
+              }
+            });
+            const activeBox = btn.querySelector('span:first-child');
+            if (activeBox) {
+              activeBox.classList.remove('border', 'border-slateink-900/25');
+              activeBox.classList.add('border-2', 'border-saffron-500');
+            }
+            if (titleEl) titleEl.textContent = btn.getAttribute('data-title') || '';
+            if (descEl) descEl.textContent = btn.getAttribute('data-desc') || '';
+          });
+        });
+      }
+
+      /* -------------------------------------------------------------------
+         6. TOAST NOTIFICATION (AUTO-DISMISS 2s) & CLIPBOARD COPY
+      -------------------------------------------------------------------- */
+      let toastTimer = null;
+      function showToast(msg) {
+        const box = document.getElementById('atelier-toast-box');
+        const text = document.getElementById('atelier-toast-text');
+        if (!box || !text) return;
+
+        text.textContent = msg;
+        box.classList.remove('opacity-0', 'translate-y-2');
+        box.classList.add('opacity-100', 'translate-y-0');
+
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          box.classList.remove('opacity-100', 'translate-y-0');
+          box.classList.add('opacity-0', 'translate-y-2');
+        }, 2000);
+      }
+
+      async function copyTextSafe(val) {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(val);
+            return true;
+          }
+        } catch (_) {}
+        const temp = document.createElement('textarea');
+        temp.value = val;
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        document.body.appendChild(temp);
+        temp.select();
+        let ok = false;
+        try {
+          ok = document.execCommand('copy');
+        } catch (_) {}
+        document.body.removeChild(temp);
+        return ok;
+      }
+
+      function initCopyButtons() {
+        document.querySelectorAll('.copy-rekening-btn').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const val = btn.getAttribute('data-copy-val') || '';
+            const label = btn.getAttribute('data-copy-name') || 'Nomor rekening';
+            await copyTextSafe(val);
+            showToast(`${label} (${val}) berhasil disalin`);
+          });
+        });
+      }
+
+      /* -------------------------------------------------------------------
+         7. REALTIME GUESTBOOK & RSVP HANDLER (XSS-SAFE)
+      -------------------------------------------------------------------- */
+      function initGuestbookRsvp() {
+        const form = document.getElementById('atelier-rsvp-form');
+        const nameInput = document.getElementById('field-guest-name');
+        const statusSelect = document.getElementById('field-attendance');
+        const qtySelect = document.getElementById('field-guest-qty');
+        const wishInput = document.getElementById('field-wish-text');
+        const errorNote = document.getElementById('form-error-note');
+        const feed = document.getElementById('guestbook-feed');
+        const countBadge = document.getElementById('wishes-count-badge');
+
+        const hadirEl = document.getElementById('rsvp-cnt-hadir');
+        const raguEl = document.getElementById('rsvp-cnt-ragu');
+        const tidakEl = document.getElementById('rsvp-cnt-tidak');
+
+        const counts = { 'Hadir': 2, 'Ragu': 1, 'Tidak Hadir': 0 };
+        let totalWishes = 3;
+
+        if (!form || !feed) return;
+
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const name = nameInput.value.replace(/[<>]/g, '').trim();
+          const status = statusSelect.value;
+          const qty = qtySelect.value;
+          const wish = wishInput.value.replace(/[<>]/g, '').trim();
+
+          if (!name || !wish) {
+            errorNote?.classList.remove('hidden');
+            return;
+          }
+          errorNote?.classList.add('hidden');
+
+          if (Object.prototype.hasOwnProperty.call(counts, status)) {
+            counts[status] += 1;
+          }
+          totalWishes += 1;
+
+          if (hadirEl) hadirEl.textContent = String(counts['Hadir']);
+          if (raguEl) raguEl.textContent = String(counts['Ragu']);
+          if (tidakEl) tidakEl.textContent = String(counts['Tidak Hadir']);
+          if (countBadge) countBadge.textContent = `${totalWishes} UCAPAN`;
+
+          const card = document.createElement('article');
+          card.className = 'wish-item-new bg-slateink-950/90 border-l-2 border-saffron-400 p-2.5';
+
+          const top = document.createElement('div');
+          top.className = 'flex items-center justify-between gap-2';
+
+          const h4 = document.createElement('h4');
+          h4.className = 'font-display text-lg text-dawn-50';
+          h4.textContent = name;
+
+          const badge = document.createElement('span');
+          badge.className = status === 'Hadir'
+            ? 'px-2 py-0.5 bg-saffron-500/25 text-saffron-200 text-[8.5px] font-bold tracking-wider uppercase'
+            : 'px-2 py-0.5 bg-dawn-100/15 text-dawn-100/85 text-[8.5px] font-bold tracking-wider uppercase';
+          badge.textContent = status === 'Tidak Hadir' ? 'Tidak Hadir' : `${status} • ${qty}`;
+
+          top.appendChild(h4);
+          top.appendChild(badge);
+
+          const p = document.createElement('p');
+          p.className = 'mt-0.5 text-[11px] leading-relaxed text-dawn-100/85 whitespace-pre-line';
+          p.textContent = wish;
+
+          card.appendChild(top);
+          card.appendChild(p);
+
+          feed.insertBefore(card, feed.firstChild);
+          feed.scrollTo({ top: 0, behavior: 'smooth' });
+
+          wishInput.value = '';
+          showToast('Terima kasih, ucapan & konfirmasi Anda telah tercatat');
+        });
+      }
+
+      /* -------------------------------------------------------------------
+         8. BOOTSTRAP APPLICATION
+      -------------------------------------------------------------------- */
+      document.addEventListener('DOMContentLoaded', () => {
+        initGuestResolver();
+
+        const scrollEngine = initScrollEngine();
+        const synth = new SilkAmbientSynth();
+
+        const audioBtn = document.getElementById('ambient-audio-btn');
+        const audioIcon = document.getElementById('audio-knot-icon');
+        const audioLabel = document.getElementById('audio-state-label');
+
+        const syncAudioUI = (playing) => {
+          if (!audioBtn) return;
+          audioBtn.setAttribute('aria-pressed', String(playing));
+          if (playing) {
+            audioIcon?.classList.remove('reel-paused');
+            if (audioLabel) audioLabel.textContent = 'PUTAR';
+          } else {
+            audioIcon?.classList.add('reel-paused');
+            if (audioLabel) audioLabel.textContent = 'JEDA';
+          }
+        };
+
+        audioBtn?.addEventListener('click', async () => {
+          const active = await synth.toggle();
+          syncAudioUI(active);
+        });
+
+        // Silk Knot Split-Leaf Cover Gate Opening
+        const gateCover = document.getElementById('silk-gate-cover');
+        const knotBtn = document.getElementById('silk-knot-trigger');
+        const scroller = document.getElementById('atelier-scroller');
+        let gateOpened = false;
+
+        knotBtn?.addEventListener('click', async () => {
+          if (gateOpened) return;
+          gateOpened = true;
+          gateCover?.classList.add('is-parting');
+          scroller?.classList.add('is-unlocked');
+          scrollEngine?.refresh();
+
+          const started = await synth.play();
+          syncAudioUI(started);
+
+          setTimeout(() => {
+            gateCover?.classList.add('is-dismissed');
+          }, 950);
+        });
+
+        initChronicleTabs();
+        initCountdownAndAttire();
+        initCopyButtons();
+        initGuestbookRsvp();
+      });
+    })();
+  </script>
+</body>
+</html>

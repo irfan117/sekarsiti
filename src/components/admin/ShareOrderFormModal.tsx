@@ -14,7 +14,10 @@ import {
 } from 'lucide-react';
 import { safeCopyToClipboard } from '../../utils/clipboardUtils';
 import { TEMPLATES } from '../../data/catalog';
+import { STANDARD_TEMPLATES } from '../../data/standardCatalog';
 import { ReferralStore } from '../../admin/referralStore';
+
+const ORDERABLE_TEMPLATES = [...STANDARD_TEMPLATES, ...TEMPLATES];
 
 interface ShareOrderFormModalProps {
   onClose: () => void;
@@ -40,7 +43,7 @@ export const ShareOrderFormModal: React.FC<ShareOrderFormModalProps> = ({ onClos
 
   // Draft chat WhatsApp
   const greetingName = customClientName.trim() ? `Kak ${customClientName.trim()}` : 'Kak';
-  const selectedTemplateObj = TEMPLATES.find((t) => t.id === selectedTemplateId);
+  const selectedTemplateObj = ORDERABLE_TEMPLATES.find((t) => t.id === selectedTemplateId);
   const templateNote = selectedTemplateObj
     ? ` (Pilihan Desain: *${selectedTemplateObj.title}*)`
     : '';
@@ -132,7 +135,7 @@ Jika ada hal yang ingin ditanyakan, jangan ragu untuk membalas pesan ini ya! ðŸ¤
                 className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:border-[#C5A880]"
               >
                 <option value="all">Bebas Pilih di Form (Semua Template)</option>
-                {TEMPLATES.map((t) => (
+                {ORDERABLE_TEMPLATES.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.title} ({t.styleLabel})
                   </option>

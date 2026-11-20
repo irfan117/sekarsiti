@@ -1,0 +1,1806 @@
+<!--
+DESIGN CONCEPT BRIEF — VOILIER DE SOIE (HAUTE COUTURE ATELIER EDITION)
+1. Konsep & Narasi: "Haute Couture French Origami, Botanical Gold Kintsugi & Theatrical Envelope Unfolding" — Perpaduan undangan fisik lipat tiga bersegel lilin emas dengan majalah editorial mode Prancis.
+2. Mood & Atmosfer: Teatrikal, intim, puitis, bertekstur kertas katun 600gsm, dengan kilau emas sampanye dan bayangan sinematik.
+3. Palet Warna HEX: Cotton Ivory (#FAF6F0), Smoked Silk (#EFE7DC), Obsidian Espresso (#1E1614), Velvet Rosewood (#6B3E3E), Liquid Gold (#C9A25D), Blush Peony (#E2C2B9).
+4. Proporsi Warna (60-30-10): 60% Cotton Ivory & Smoked Silk, 30% Obsidian Espresso, 10% Liquid Gold & Velvet Rosewood.
+5. Font Family Utama: 'Cormorant Garamond' (Haute Couture Display Serif) & 'Plus Jakarta Sans' (Precision Sans).
+6. Keluarga Ornamen: Multi-layered Botanical Peony & Magnolia Engraving dengan urat emas Kintsugi dan partikel debu cahaya interaktif.
+7. Signature Illustration: Living Botanical Crest & Scroll-Driven Blooming Peony yang mekar bertahap mengikuti kedalaman guliran.
+8. Signature Interaction: 3D Wax-Sealed Tri-Fold Envelope Unfolding pada Cover + Interactive 3D Holographic Gift Card + Floating Glass Dock Navigation.
+-->
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>The Royal Wedding of Nadia &amp; Arkan — Haute Couture Digital Invitation</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ivory: '#FAF6F0',
+                        silk: '#EFE7DC',
+                        obsidian: '#1E1614',
+                        rosewood: '#6B3E3E',
+                        mocha: '#5E4B43',
+                        gold: '#C9A25D',
+                        goldLight: '#E6CB92',
+                        goldDark: '#967132',
+                        peony: '#E2C2B9'
+                    },
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'couture': '0 25px 60px -15px rgba(30, 22, 20, 0.14)',
+                        'wax': '0 15px 35px rgba(30, 22, 20, 0.45), inset 0 2px 5px rgba(255, 255, 255, 0.35)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --scroll-progress: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #16100E;
+            color: #1E1614;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Fine Cotton Paper Grain Texture Overlay */
+        .paper-texture {
+            background-image: radial-gradient(rgba(201, 162, 93, 0.09) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        body.locked-scroll {
+            overflow: hidden !important;
+            height: 100svh !important;
+        }
+
+        /* =========================================================
+           THEATRICAL 3D ENVELOPE COVER SYSTEM
+           ========================================================= */
+        #couture-cover {
+            perspective: 1600px;
+            transition: opacity 0.9s cubic-bezier(0.7, 0, 0.2, 1), visibility 0.9s;
+        }
+
+        #couture-cover.cover-finished {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .envelope-flap-left {
+            transform-origin: left center;
+            transition: transform 1.25s cubic-bezier(0.65, 0, 0.15, 1);
+            will-change: transform;
+        }
+
+        .envelope-flap-right {
+            transform-origin: right center;
+            transition: transform 1.25s cubic-bezier(0.65, 0, 0.15, 1);
+            will-change: transform;
+        }
+
+        .wax-seal-btn {
+            transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.55s ease;
+        }
+
+        #couture-cover.unfolding .wax-seal-btn {
+            transform: scale(1.35) rotate(18deg);
+            opacity: 0;
+        }
+
+        #couture-cover.unfolding .envelope-flap-left {
+            transform: rotateY(-115deg);
+        }
+
+        #couture-cover.unfolding .envelope-flap-right {
+            transform: rotateY(115deg);
+        }
+
+        #couture-cover.unfolding .cover-inner-card {
+            transform: scale(1.06) translateY(-18px);
+            opacity: 0;
+            transition: transform 1.1s ease, opacity 0.9s ease 0.2s;
+        }
+
+        /* =========================================================
+           EDITORIAL REVEAL & PROGRESSIVE SVG DRAWING
+           ========================================================= */
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(36px);
+            transition: opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1), transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal-mask {
+            clip-path: inset(12% 8% 12% 8% round 24px);
+            opacity: 0;
+            transform: scale(0.95);
+            transition: clip-path 1.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.9s ease, transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .in-view .reveal-up,
+        .in-view.reveal-up {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .in-view .reveal-mask,
+        .in-view.reveal-mask {
+            clip-path: inset(0% 0% 0% 0% round 24px);
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Progressive Botanical Drawing */
+        .draw-path {
+            stroke-dasharray: 650;
+            stroke-dashoffset: 650;
+            transition: stroke-dashoffset 2.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .in-view .draw-path {
+            stroke-dashoffset: 0;
+        }
+
+        /* Organic Sway */
+        @keyframes coutureSway {
+            0%, 100% { transform: rotate(0deg) translateY(0px); }
+            50% { transform: rotate(2.5deg) translateY(-6px); }
+        }
+
+        .botanical-float {
+            animation: coutureSway 8s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
+        /* Infinite Marquee Strip */
+        @keyframes marqueeSlide {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: marqueeSlide 26s linear infinite;
+        }
+
+        /* Gold Shimmer Text */
+        .gold-foil-text {
+            background: linear-gradient(120deg, #967132 0%, #E6CB92 38%, #C9A25D 55%, #FFF3D1 72%, #967132 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: foilShine 6s linear infinite;
+        }
+
+        @keyframes foilShine {
+            to { background-position: 200% center; }
+        }
+
+        /* Equalizer Animation */
+        @keyframes soundWave {
+            0%, 100% { height: 4px; }
+            50% { height: 15px; }
+        }
+        .playing .wave-1 { animation: soundWave 0.7s ease-in-out infinite; }
+        .playing .wave-2 { animation: soundWave 0.5s ease-in-out infinite 0.15s; }
+        .playing .wave-3 { animation: soundWave 0.85s ease-in-out infinite 0.3s; }
+        .playing .wave-4 { animation: soundWave 0.6s ease-in-out infinite 0.45s; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #FAF6F0; }
+        ::-webkit-scrollbar-thumb { background: #C9A25D; border-radius: 9999px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="locked-scroll antialiased selection:bg-gold selection:text-obsidian">
+
+    <!-- =========================================================================
+         MASTER SVG ARTWORK & BOTANICAL ENGRAVING LIBRARY
+         ========================================================================= -->
+    <svg class="hidden" aria-hidden="true">
+        <defs>
+            <linearGradient id="goldFoilGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#967132"/>
+                <stop offset="45%" stop-color="#E6CB92"/>
+                <stop offset="70%" stop-color="#C9A25D"/>
+                <stop offset="100%" stop-color="#7D5A22"/>
+            </linearGradient>
+
+            <!-- High-Detail Peony & Magnolia Couture Botanical Branch -->
+            <g id="couture-peony-branch">
+                <!-- Main stem with organic curve -->
+                <path class="draw-path" d="M8,195 C42,155 78,118 145,58 C175,32 198,18 220,8" fill="none" stroke="url(#goldFoilGrad)" stroke-width="1.5" stroke-linecap="round"/>
+                <path class="draw-path" d="M62,135 C95,142 132,132 158,108" fill="none" stroke="url(#goldFoilGrad)" stroke-width="1" stroke-linecap="round"/>
+                <!-- Layered Peony Blossom -->
+                <g transform="translate(115, 68)">
+                    <path d="M0,0 C-18,-24 -8,-52 18,-56 C38,-59 54,-38 46,-14 C38,8 15,12 0,0 Z" fill="#E2C2B9" fill-opacity="0.28" stroke="url(#goldFoilGrad)" stroke-width="1.2"/>
+                    <path d="M8,-6 C-8,-22 4,-44 24,-44 C42,-44 48,-22 34,-8 C24,2 14,0 8,-6 Z" fill="#C9A25D" fill-opacity="0.16" stroke="url(#goldFoilGrad)" stroke-width="1"/>
+                    <path d="M16,-14 C10,-26 20,-36 30,-32 C38,-28 36,-14 24,-12 C19,-11 17,-12 16,-14 Z" fill="#FAF6F0" fill-opacity="0.4" stroke="url(#goldFoilGrad)" stroke-width="0.9"/>
+                    <!-- Stamen details -->
+                    <circle cx="25" cy="-22" r="2.2" fill="#C9A25D"/>
+                    <circle cx="30" cy="-19" r="1.6" fill="#C9A25D"/>
+                    <circle cx="21" cy="-18" r="1.5" fill="#C9A25D"/>
+                </g>
+                <!-- Secondary Bud & Leaves -->
+                <path d="M45,152 C24,132 28,102 52,94 C64,116 58,138 45,152 Z" fill="#C9A25D" fill-opacity="0.14" stroke="url(#goldFoilGrad)" stroke-width="1.1"/>
+                <path d="M82,112 C64,88 74,58 98,54 C106,78 96,98 82,112 Z" fill="#E2C2B9" fill-opacity="0.2" stroke="url(#goldFoilGrad)" stroke-width="1.1"/>
+                <path d="M122,124 C144,128 168,116 176,94 C152,90 134,104 122,124 Z" fill="#C9A25D" fill-opacity="0.15" stroke="url(#goldFoilGrad)" stroke-width="1"/>
+                <path d="M172,40 C168,20 185,6 204,10 C206,26 190,40 172,40 Z" fill="#E2C2B9" fill-opacity="0.25" stroke="url(#goldFoilGrad)" stroke-width="1.1"/>
+                <!-- Dewdrops -->
+                <circle cx="72" cy="128" r="2" fill="#C9A25D"/>
+                <circle cx="164" cy="48" r="2.2" fill="#C9A25D"/>
+                <circle cx="105" cy="140" r="1.5" fill="#C9A25D"/>
+            </g>
+
+            <!-- Editorial Kintsugi Divider -->
+            <g id="kintsugi-divider">
+                <path d="M0,14 Q65,14 95,6 T130,14 T165,22 T260,14" fill="none" stroke="url(#goldFoilGrad)" stroke-width="1.1"/>
+                <path d="M130,3 L137,14 L130,25 L123,14 Z" fill="#FAF6F0" stroke="url(#goldFoilGrad)" stroke-width="1.2"/>
+                <circle cx="130" cy="14" r="2.5" fill="#C9A25D"/>
+                <circle cx="96" cy="10" r="1.8" fill="#C9A25D"/>
+                <circle cx="164" cy="18" r="1.8" fill="#C9A25D"/>
+            </g>
+        </defs>
+    </svg>
+
+    <!-- =========================================================================
+         INTERACTIVE GOLDEN PETAL & DUST CANVAS (FIXED ATMOSPHERIC LAYER)
+         ========================================================================= -->
+    <canvas id="petal-canvas" class="fixed inset-0 pointer-events-none z-[45] w-full h-full"></canvas>
+
+    <!-- TOAST FEEDBACK -->
+    <div id="toast-notification"
+         role="status"
+         aria-live="polite"
+         class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] pointer-events-none opacity-0 -translate-y-4 transition-all duration-300 bg-obsidian/95 text-ivory px-6 py-3.5 rounded-full shadow-2xl border border-gold/50 flex items-center gap-3 backdrop-blur-md">
+        <span class="w-5 h-5 rounded-full bg-gold/20 border border-gold flex items-center justify-center text-goldLight text-xs">✦</span>
+        <span id="toast-message" class="text-xs font-medium tracking-wider">Disalin ke papan klip</span>
+    </div>
+
+    <!-- LIGHTBOX MODAL FOR COUTURE GALLERY -->
+    <div id="gallery-lightbox"
+         class="fixed inset-0 z-[95] bg-obsidian/95 backdrop-blur-xl hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300"
+         aria-modal="true"
+         role="dialog">
+        <button id="lightbox-close"
+                type="button"
+                aria-label="Tutup pratinjau"
+                class="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-gold/30 text-ivory flex items-center justify-center border border-gold/30 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+
+        <button id="lightbox-prev"
+                type="button"
+                aria-label="Sebelumnya"
+                class="absolute left-3 sm:left-8 w-12 h-12 rounded-full bg-white/10 hover:bg-gold/30 text-ivory flex items-center justify-center border border-gold/30 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+
+        <div class="max-w-lg w-full text-center">
+            <div class="overflow-hidden rounded-3xl border border-gold/40 shadow-2xl bg-obsidian p-1.5">
+                <img id="lightbox-img" src="" alt="Editorial Prewedding" class="w-full max-h-[74vh] object-cover rounded-2xl mx-auto">
+            </div>
+            <p id="lightbox-caption" class="font-serif italic text-xl text-goldLight mt-4"></p>
+            <p id="lightbox-counter" class="text-[10px] uppercase tracking-[0.3em] text-ivory/60 mt-1"></p>
+        </div>
+
+        <button id="lightbox-next"
+                type="button"
+                aria-label="Selanjutnya"
+                class="absolute right-3 sm:right-8 w-12 h-12 rounded-full bg-white/10 hover:bg-gold/30 text-ivory flex items-center justify-center border border-gold/30 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- =========================================================================
+         1. THEATRICAL 3D TRI-FOLD ENVELOPE COVER WITH GOLD WAX SEAL
+         ========================================================================= -->
+    <section id="couture-cover" class="fixed inset-0 z-[80] w-full h-[100svh] bg-obsidian flex items-center justify-center overflow-hidden select-none">
+        <!-- Ambient Background Portrait -->
+        <div class="absolute inset-0 opacity-30">
+            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1500&q=85"
+                 alt="Nadia & Arkan Couture Cover"
+                 onerror="this.src='https://placehold.co/1000x1500/1E1614/C9A25D?text=Nadia+%26+Arkan'"
+                 class="w-full h-full object-cover scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/80 to-obsidian/90"></div>
+        </div>
+
+        <!-- 3D Envelope Stage -->
+        <div class="relative z-10 w-full max-w-[440px] h-[92svh] max-h-[760px] mx-4 flex items-center justify-center">
+
+            <!-- Underlying Invitation Card (Revealed as Flaps Open) -->
+            <div class="cover-inner-card absolute inset-2 rounded-[32px] bg-ivory paper-texture border border-gold/40 shadow-2xl flex flex-col items-center justify-between p-8 text-center">
+                <span class="text-[10px] uppercase tracking-[0.35em] text-goldDark">Voilier de Soie • Atelier</span>
+                <div>
+                    <p class="font-serif italic text-lg text-mocha">The Wedding Celebration of</p>
+                    <h2 class="font-serif text-5xl text-obsidian mt-2">Nadia &amp; Arkan</h2>
+                </div>
+                <span class="text-[10px] uppercase tracking-[0.3em] text-goldDark">20 . 12 . 2026</span>
+            </div>
+
+            <!-- Left French-Fold Envelope Gate -->
+            <div class="envelope-flap-left absolute inset-y-0 left-0 w-[52%] bg-gradient-to-br from-[#281E1B] via-[#1E1614] to-[#150F0E] rounded-l-[32px] border-y border-l border-r border-gold/35 shadow-2xl overflow-hidden flex flex-col justify-between p-6">
+                <svg class="w-40 h-40 text-gold/30 -ml-6 -mt-6 pointer-events-none" viewBox="0 0 230 200">
+                    <use href="#couture-peony-branch"/>
+                </svg>
+                <div class="my-auto pr-6 text-left">
+                    <p class="text-[9px] uppercase tracking-[0.4em] text-goldLight/70">Edition N° 2012</p>
+                    <h1 class="font-serif text-4xl sm:text-5xl text-ivory font-light tracking-wide mt-2 leading-[1.05]">
+                        Nadia<br>
+                        <span class="italic text-goldLight text-3xl">&amp;</span><br>
+                        Arkan
+                    </h1>
+                    <p class="text-[10px] uppercase tracking-[0.28em] text-ivory/60 mt-4">Minggu, 20 Des 2026</p>
+                </div>
+                <div class="text-[9px] uppercase tracking-[0.3em] text-gold/50">Jakarta, Indonesia</div>
+            </div>
+
+            <!-- Right French-Fold Envelope Gate -->
+            <div class="envelope-flap-right absolute inset-y-0 right-0 w-[52%] bg-gradient-to-bl from-[#2B201D] via-[#1E1614] to-[#140E0D] rounded-r-[32px] border-y border-r border-l border-gold/40 shadow-[-18px_0_35px_rgba(0,0,0,0.55)] overflow-hidden flex flex-col justify-between p-6 text-right">
+                <div class="text-[9px] uppercase tracking-[0.35em] text-goldLight/70">Royal Invitation</div>
+
+                <!-- Guest Name Plate on Right Flap -->
+                <div class="my-auto pl-6">
+                    <div class="bg-white/[0.04] border border-gold/30 rounded-2xl p-4 backdrop-blur-sm">
+                        <p class="text-[9px] uppercase tracking-[0.28em] text-goldLight/80">Kepada Yth.</p>
+                        <p id="cover-guest-name" class="font-serif text-2xl sm:text-3xl text-ivory font-medium mt-1.5 break-words leading-tight">
+                            Tamu Kehormatan
+                        </p>
+                        <div class="h-[1px] w-12 bg-gold/40 ml-auto my-2.5"></div>
+                        <p class="text-[10px] italic font-serif text-ivory/65">Di Tempat</p>
+                    </div>
+                </div>
+
+                <svg class="w-40 h-40 text-gold/30 ml-auto -mr-6 -mb-6 rotate-180 pointer-events-none" viewBox="0 0 230 200">
+                    <use href="#couture-peony-branch"/>
+                </svg>
+            </div>
+
+            <!-- CENTER INTERACTIVE 3D WAX SEAL BUTTON -->
+            <div class="relative z-30 flex flex-col items-center">
+                <button id="btn-open-invitation"
+                        type="button"
+                        aria-label="Sentuh segel untuk membuka undangan"
+                        class="wax-seal-btn group relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-[#DFC082] via-[#B88B42] to-[#78531B] p-1.5 shadow-wax flex items-center justify-center cursor-pointer active:scale-95 focus:outline-none">
+                    <!-- Outer organic wax rim -->
+                    <span class="absolute inset-0 rounded-full border-2 border-goldLight/60 animate-ping opacity-25"></span>
+                    <div class="w-full h-full rounded-full border-2 border-[#5E3E10]/60 bg-gradient-to-tl from-[#8E6526] via-[#C9A25D] to-[#E6CB92] flex flex-col items-center justify-center text-obsidian shadow-inner">
+                        <span class="text-[8px] uppercase tracking-[0.3em] text-obsidian/75 font-semibold">ketuk segel</span>
+                        <span class="font-serif text-3xl sm:text-4xl font-semibold tracking-wider text-obsidian leading-none my-0.5">N&amp;A</span>
+                        <span class="text-[8px] uppercase tracking-[0.25em] text-obsidian/80 font-bold">Buka</span>
+                    </div>
+                </button>
+                <span class="mt-4 px-4 py-1.5 rounded-full bg-obsidian/85 border border-gold/30 text-[10px] uppercase tracking-[0.28em] text-goldLight backdrop-blur-md">
+                    Sentuh Segel Emas Untuk Membuka
+                </span>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- =========================================================================
+         MAIN COMMERCIAL SPLIT-SCREEN STAGE
+         LEFT: DESKTOP VOGUE EDITORIAL POSTER | RIGHT: COUTURE MOBILE EXPERIENCE
+         ========================================================================= -->
+    <div class="min-h-screen w-full flex flex-col lg:flex-row justify-center bg-[#140F0D]">
+
+        <!-- LEFT DESKTOP SHOWCASE (FIXED) -->
+        <aside class="hidden lg:flex lg:w-7/12 xl:w-8/12 h-screen sticky top-0 relative overflow-hidden items-end p-14 select-none border-r border-gold/20">
+            <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1600&q=85"
+                 alt="Nadia & Arkan Editorial Showcase"
+                 onerror="this.src='https://placehold.co/1200x1600/1E1614/C9A25D?text=Nadia+%26+Arkan'"
+                 class="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-transform duration-1000">
+            <div class="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/45 to-obsidian/20"></div>
+
+            <!-- Couture Arch Wireframe Overlay -->
+            <div class="absolute inset-10 border border-gold/30 rounded-t-[260px] rounded-b-3xl pointer-events-none"></div>
+
+            <!-- Top Left Magazine Masthead -->
+            <div class="absolute top-16 left-16 z-10 text-ivory/80">
+                <p class="text-[10px] uppercase tracking-[0.45em] text-goldLight">Atelier Mariage • N° 01</p>
+                <p class="font-serif italic text-lg mt-0.5">The Jakarta Couture Issue — Desember 2026</p>
+            </div>
+
+            <!-- Bottom Editorial Typography -->
+            <div class="relative z-10 w-full flex items-end justify-between gap-8 p-4 text-ivory">
+                <div class="max-w-xl">
+                    <span class="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-gold/20 border border-gold/45 text-goldLight text-[10px] uppercase tracking-[0.35em] mb-5 backdrop-blur-md">
+                        <span>✦</span> Voilier de Soie Collection
+                    </span>
+                    <h2 class="font-serif text-7xl xl:text-8xl font-light tracking-tight leading-[0.9]">
+                        Nadia <span class="italic font-normal text-goldLight">&amp;</span> Arkan
+                    </h2>
+                    <p class="font-serif italic text-xl text-ivory/85 mt-5 max-w-lg leading-relaxed">
+                        "Dua jiwa yang dipertemukan dalam keteduhan doa, merajut janji suci di bawah naungan kasih-Nya."
+                    </p>
+                </div>
+
+                <!-- Vertical Date Stamp -->
+                <div class="text-right border-l border-gold/40 pl-6 py-2">
+                    <p class="font-serif text-5xl text-goldLight leading-none">20</p>
+                    <p class="text-xs uppercase tracking-[0.35em] text-ivory/80 mt-1">Des 2026</p>
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-gold/80 mt-2">The Dharmawangsa</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- RIGHT INTERACTIVE MOBILE CONTAINER -->
+        <main id="invitation-viewport" class="w-full max-w-[480px] mx-auto lg:mx-0 bg-ivory paper-texture text-obsidian shadow-2xl relative overflow-hidden">
+
+            <!-- TOP SCROLL PROGRESS GOLDEN THREAD -->
+            <div class="fixed top-0 left-0 lg:left-auto w-full max-w-[480px] h-1 bg-obsidian/10 z-50">
+                <div id="scroll-progress-bar" class="h-full bg-gradient-to-r from-goldDark via-gold to-goldLight w-0 transition-all duration-150"></div>
+            </div>
+
+            <!-- FLOATING GLASS NAVIGATION DOCK + AUDIO CONTROLLER -->
+            <nav aria-label="Navigasi Cepat Undangan"
+                 class="fixed bottom-4 left-1/2 lg:left-auto lg:right-6 -translate-x-1/2 lg:translate-x-0 z-50 w-[92%] max-w-[410px] bg-obsidian/90 text-ivory backdrop-blur-xl border border-gold/35 rounded-full px-3 py-2 shadow-2xl flex items-center justify-between">
+                <a href="#sec-hero" class="flex flex-col items-center px-2.5 py-1 rounded-full hover:text-goldLight transition text-[9px] uppercase tracking-widest">
+                    <svg class="w-4 h-4 mb-0.5 text-goldLight" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span>Awal</span>
+                </a>
+                <a href="#sec-couple" class="flex flex-col items-center px-2.5 py-1 rounded-full hover:text-goldLight transition text-[9px] uppercase tracking-widest">
+                    <svg class="w-4 h-4 mb-0.5 text-goldLight" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                    <span>Mempelai</span>
+                </a>
+                <a href="#sec-events" class="flex flex-col items-center px-2.5 py-1 rounded-full hover:text-goldLight transition text-[9px] uppercase tracking-widest">
+                    <svg class="w-4 h-4 mb-0.5 text-goldLight" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Acara</span>
+                </a>
+                <a href="#sec-gallery" class="flex flex-col items-center px-2.5 py-1 rounded-full hover:text-goldLight transition text-[9px] uppercase tracking-widest">
+                    <svg class="w-4 h-4 mb-0.5 text-goldLight" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Galeri</span>
+                </a>
+                <a href="#sec-rsvp" class="flex flex-col items-center px-2.5 py-1 rounded-full hover:text-goldLight transition text-[9px] uppercase tracking-widest">
+                    <svg class="w-4 h-4 mb-0.5 text-goldLight" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span>RSVP</span>
+                </a>
+
+                <!-- Integrated Equalizer Audio Toggle -->
+                <button id="btn-audio-toggle"
+                        type="button"
+                        aria-label="Putar atau jeda musik latar"
+                        class="playing w-9 h-9 rounded-full bg-gold/20 border border-gold/60 flex items-center justify-center gap-[2px] ml-1 shrink-0 hover:bg-gold/30 transition">
+                    <span class="wave-1 w-[2px] h-2 bg-goldLight rounded-full"></span>
+                    <span class="wave-2 w-[2px] h-3.5 bg-goldLight rounded-full"></span>
+                    <span class="wave-3 w-[2px] h-2.5 bg-goldLight rounded-full"></span>
+                    <span class="wave-4 w-[2px] h-3 bg-goldLight rounded-full"></span>
+                </button>
+            </nav>
+
+            <!-- =================================================================
+                 2. HERO SECTION — ASYMMETRIC MAGAZINE COVER + LIVING BLOOM
+                 ================================================================= -->
+            <section id="sec-hero" class="observe-reveal relative min-h-[100svh] px-6 pt-10 pb-20 flex flex-col justify-between overflow-hidden">
+                <!-- Botanical Engraving Top Right -->
+                <svg class="w-52 h-48 absolute -top-4 -right-6 pointer-events-none botanical-float" viewBox="0 0 230 200">
+                    <use href="#couture-peony-branch"/>
+                </svg>
+
+                <!-- Editorial Top Header -->
+                <div class="reveal-up flex items-center justify-between border-b border-gold/30 pb-3 relative z-10">
+                    <span class="text-[9px] uppercase tracking-[0.35em] text-goldDark font-semibold">The Wedding Edition</span>
+                    <span class="font-serif italic text-xs text-mocha">Jakarta • 20.12.2026</span>
+                </div>
+
+                <!-- Overlapping Asymmetric Hero Composition -->
+                <div class="relative my-6 z-10">
+                    <!-- Background Giant Watermark Initials -->
+                    <div class="absolute -top-10 -left-4 font-serif text-[130px] leading-none text-gold/10 select-none pointer-events-none">
+                        N&amp;A
+                    </div>
+
+                    <!-- Asymmetric Layered Portrait Frame -->
+                    <div class="reveal-mask relative w-[86%] ml-auto rounded-t-[180px] rounded-b-3xl overflow-hidden shadow-couture border-2 border-gold/40 bg-silk aspect-[3/4]">
+                        <img id="hero-parallax-img"
+                             src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=85"
+                             alt="Nadia & Arkan Hero Portrait"
+                             onerror="this.src='https://placehold.co/700x950/EFE7DC/1E1614?text=Nadia+%26+Arkan'"
+                             class="w-full h-full object-cover object-center transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-obsidian/65 via-transparent to-transparent"></div>
+                    </div>
+
+                    <!-- Floating Editorial Title Card Overlapping Left -->
+                    <div class="reveal-up relative -mt-28 mr-8 bg-obsidian text-ivory p-6 rounded-3xl shadow-2xl border border-gold/40">
+                        <p class="text-[9px] uppercase tracking-[0.38em] text-goldLight mb-1">We Invite You To Celebrate</p>
+                        <h2 class="font-serif text-4xl sm:text-5xl font-light tracking-wide leading-none">
+                            Nadia <span class="italic font-normal text-gold">&amp;</span> Arkan
+                        </h2>
+                        <div class="flex items-center gap-3 mt-4 pt-3 border-t border-white/10 text-[10px] uppercase tracking-[0.25em] text-ivory/80">
+                            <span>Minggu</span>
+                            <span class="text-gold">✦</span>
+                            <span>20 Desember 2026</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scroll-Driven Interactive Living Bloom Indicator -->
+                <div class="reveal-up flex items-center justify-between pt-2 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full border border-gold/50 bg-silk flex items-center justify-center">
+                            <span class="w-2 h-2 rounded-full bg-gold animate-ping"></span>
+                        </div>
+                        <p class="text-[10px] uppercase tracking-[0.25em] text-mocha">
+                            Gulir perlahan untuk membuka kisah
+                        </p>
+                    </div>
+                    <span class="font-serif italic text-sm text-goldDark">01 / 12</span>
+                </div>
+            </section>
+
+            <!-- LUXURY RIBBON MARQUEE STRIP -->
+            <div class="bg-obsidian text-goldLight py-3 border-y border-gold/30 overflow-hidden select-none">
+                <div class="marquee-track flex items-center gap-8 text-[10px] uppercase tracking-[0.38em]">
+                    <span>THE WEDDING OF NADIA &amp; ARKAN</span><span>✦</span>
+                    <span>MINGGU, 20 DESEMBER 2026</span><span>✦</span>
+                    <span>THE DHARMAWANGSA JAKARTA</span><span>✦</span>
+                    <span>VOILIER DE SOIE COUTURE</span><span>✦</span>
+                    <span>THE WEDDING OF NADIA &amp; ARKAN</span><span>✦</span>
+                    <span>MINGGU, 20 DESEMBER 2026</span><span>✦</span>
+                    <span>THE DHARMAWANGSA JAKARTA</span><span>✦</span>
+                    <span>VOILIER DE SOIE COUTURE</span><span>✦</span>
+                </div>
+            </div>
+
+            <!-- =================================================================
+                 3. PEMBUKAAN — SACRED VERSE & LIVING BOTANICAL CREST
+                 ================================================================= -->
+            <section id="sec-opening" class="observe-reveal px-6 py-20 bg-silk/65 relative overflow-hidden">
+                <div class="reveal-up max-w-sm mx-auto text-center">
+                    <!-- Scroll-reactive Rotating Astrolabe/Botanical Crest -->
+                    <div class="relative w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                        <svg id="scroll-bloom-crest" class="w-full h-full text-gold transition-transform duration-300" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="0.7" stroke-dasharray="3 3"/>
+                            <circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" stroke-width="1"/>
+                            <path d="M50,6 L56,44 L94,50 L56,56 L50,94 L44,56 L6,50 L44,44 Z" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="0.9"/>
+                            <circle cx="50" cy="50" r="4" fill="currentColor"/>
+                        </svg>
+                        <span class="absolute font-serif italic text-sm text-obsidian font-semibold">N&amp;A</span>
+                    </div>
+
+                    <p class="text-[10px] uppercase tracking-[0.35em] text-goldDark font-semibold mb-3">Ayat Suci Pernikahan</p>
+                    <blockquote class="font-serif italic text-xl sm:text-2xl text-obsidian leading-relaxed">
+                        "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang."
+                    </blockquote>
+                    <p class="text-[11px] uppercase tracking-[0.3em] text-rosewood font-bold mt-4">
+                        — QS. Ar-Rum : 21 —
+                    </p>
+
+                    <svg class="w-48 h-7 mx-auto my-7" viewBox="0 0 260 28">
+                        <use href="#kintsugi-divider"/>
+                    </svg>
+
+                    <p class="text-xs sm:text-sm text-mocha leading-relaxed">
+                        Assalamu’alaikum Warahmatullahi Wabarakatuh.<br>
+                        Dengan segala kerendahan hati dan syukur atas karunia Tuhan Yang Maha Esa, kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri pernikahan putra-putri kami.
+                    </p>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 4. PROFIL MEMPELAI — ASYMMETRIC EDITORIAL DUO
+                 ================================================================= -->
+            <section id="sec-couple" class="observe-reveal px-6 py-24 bg-ivory relative overflow-hidden">
+                <div class="reveal-up flex items-end justify-between mb-12 border-b border-gold/25 pb-4">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-[0.35em] text-goldDark font-semibold">Dramatis Personae</span>
+                        <h2 class="font-serif text-4xl text-obsidian mt-1">Kedua Mempelai</h2>
+                    </div>
+                    <span class="font-serif italic text-sm text-goldDark">04 / 12</span>
+                </div>
+
+                <!-- THE BRIDE (Left-Aligned Editorial Composition) -->
+                <div class="reveal-up relative mb-16">
+                    <div class="flex items-start gap-4">
+                        <div class="w-7/12 reveal-mask rounded-t-[140px] rounded-b-2xl overflow-hidden shadow-couture border border-gold/40 aspect-[3/4] bg-silk">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=700&q=85"
+                                 alt="Nadia Puspita Salsabila"
+                                 onerror="this.src='https://placehold.co/500x650/EFE7DC/1E1614?text=Nadia'"
+                                 class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-5/12 pt-6">
+                            <span class="inline-block px-3 py-1 rounded-full bg-obsidian text-goldLight text-[9px] uppercase tracking-[0.25em] mb-3">
+                                The Bride
+                            </span>
+                            <p class="font-serif italic text-xs text-mocha">Putri Kedua dari</p>
+                            <p class="text-xs text-obsidian font-medium mt-1 leading-relaxed">
+                                Bpk. H. Bambang Puspito, S.E. &amp; Ibu Hj. Siti Aminah
+                            </p>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                               class="inline-flex items-center gap-1.5 mt-4 px-3.5 py-1.5 rounded-full border border-gold/50 text-[10px] uppercase tracking-wider text-obsidian hover:bg-obsidian hover:text-goldLight transition">
+                                <span>@nadiapuspita</span>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Overlapping Name Banner -->
+                    <div class="relative -mt-6 ml-4 bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-lg border border-gold/30">
+                        <h3 class="font-serif text-3xl sm:text-4xl text-obsidian font-medium leading-none">
+                            Nadia Puspita Salsabila, S.Ars.
+                        </h3>
+                        <p class="text-[11px] text-goldDark uppercase tracking-[0.2em] mt-1.5">Principal Interior Architect • Jakarta</p>
+                    </div>
+                </div>
+
+                <!-- INTERLOCKING MONOGRAM MEDALLION -->
+                <div class="reveal-up my-10 flex items-center justify-center gap-4">
+                    <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent to-gold/50"></div>
+                    <div class="w-14 h-14 rounded-full bg-obsidian border border-gold flex items-center justify-center text-goldLight font-serif italic text-2xl shadow-lg">
+                        &amp;
+                    </div>
+                    <div class="h-[1px] flex-1 bg-gradient-to-l from-transparent to-gold/50"></div>
+                </div>
+
+                <!-- THE GROOM (Right-Aligned Mirror Editorial Composition) -->
+                <div class="reveal-up relative">
+                    <div class="flex items-start gap-4">
+                        <div class="w-5/12 pt-6 text-right">
+                            <span class="inline-block px-3 py-1 rounded-full bg-obsidian text-goldLight text-[9px] uppercase tracking-[0.25em] mb-3">
+                                The Groom
+                            </span>
+                            <p class="font-serif italic text-xs text-mocha">Putra Pertama dari</p>
+                            <p class="text-xs text-obsidian font-medium mt-1 leading-relaxed">
+                                Bpk. Dr. Ir. H. M. Mahendra &amp; Ibu Dra. Rr. Retno Wulan
+                            </p>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                               class="inline-flex items-center gap-1.5 mt-4 px-3.5 py-1.5 rounded-full border border-gold/50 text-[10px] uppercase tracking-wider text-obsidian hover:bg-obsidian hover:text-goldLight transition">
+                                <span>@arkanmahendra</span>
+                            </a>
+                        </div>
+                        <div class="w-7/12 reveal-mask rounded-t-[140px] rounded-b-2xl overflow-hidden shadow-couture border border-gold/40 aspect-[3/4] bg-silk">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=700&q=85"
+                                 alt="Arkananta Mahendra"
+                                 onerror="this.src='https://placehold.co/500x650/EFE7DC/1E1614?text=Arkan'"
+                                 class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <!-- Overlapping Name Banner -->
+                    <div class="relative -mt-6 mr-4 bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-lg border border-gold/30 text-right">
+                        <h3 class="font-serif text-3xl sm:text-4xl text-obsidian font-medium leading-none">
+                            Arkananta Mahendra, M.B.A.
+                        </h3>
+                        <p class="text-[11px] text-goldDark uppercase tracking-[0.2em] mt-1.5">Investment Director • Singapore &amp; Jakarta</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 5. COUNTDOWN — HOROLOGY DIAL EDITORIAL DATE COMPOSITION
+                 ================================================================= -->
+            <section id="sec-countdown" class="observe-reveal px-6 py-20 bg-obsidian text-ivory relative overflow-hidden">
+                <!-- Background Rotating Dial Rings -->
+                <div class="absolute -right-24 -top-24 w-72 h-72 rounded-full border border-gold/15 pointer-events-none"></div>
+                <div class="absolute -left-24 -bottom-24 w-80 h-80 rounded-full border border-gold/10 pointer-events-none"></div>
+
+                <div class="reveal-up relative z-10 text-center">
+                    <span class="text-[10px] uppercase tracking-[0.4em] text-goldLight">Le Compte à Rebours</span>
+                    <h2 class="font-serif text-4xl sm:text-5xl text-ivory font-light mt-1">Menghitung Detik Bahagia</h2>
+                    <p class="text-xs text-ivory/65 mt-2">Minggu, 20 Desember 2026 • Pukul 08.00 WIB</p>
+
+                    <!-- Editorial Horology Grid -->
+                    <div class="grid grid-cols-4 gap-2.5 my-9">
+                        <div class="bg-white/[0.04] border border-gold/35 rounded-2xl py-5 px-2 relative overflow-hidden">
+                            <span class="absolute top-1.5 right-2 text-[8px] text-gold/40">01</span>
+                            <span id="cd-days" class="font-serif text-4xl font-light text-goldLight block leading-none">00</span>
+                            <span class="text-[9px] uppercase tracking-[0.25em] text-ivory/65 mt-2.5 block">Hari</span>
+                        </div>
+                        <div class="bg-white/[0.04] border border-gold/35 rounded-2xl py-5 px-2 relative overflow-hidden">
+                            <span class="absolute top-1.5 right-2 text-[8px] text-gold/40">02</span>
+                            <span id="cd-hours" class="font-serif text-4xl font-light text-ivory block leading-none">00</span>
+                            <span class="text-[9px] uppercase tracking-[0.25em] text-ivory/65 mt-2.5 block">Jam</span>
+                        </div>
+                        <div class="bg-white/[0.04] border border-gold/35 rounded-2xl py-5 px-2 relative overflow-hidden">
+                            <span class="absolute top-1.5 right-2 text-[8px] text-gold/40">03</span>
+                            <span id="cd-minutes" class="font-serif text-4xl font-light text-goldLight block leading-none">00</span>
+                            <span class="text-[9px] uppercase tracking-[0.25em] text-ivory/65 mt-2.5 block">Menit</span>
+                        </div>
+                        <div class="bg-white/[0.04] border border-gold/35 rounded-2xl py-5 px-2 relative overflow-hidden">
+                            <span class="absolute top-1.5 right-2 text-[8px] text-gold/40">04</span>
+                            <span id="cd-seconds" class="font-serif text-4xl font-light text-ivory block leading-none">00</span>
+                            <span class="text-[9px] uppercase tracking-[0.25em] text-ivory/65 mt-2.5 block">Detik</span>
+                        </div>
+                    </div>
+
+                    <p id="countdown-status-note" class="text-xs italic text-goldLight mb-5 hidden"></p>
+
+                    <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=The+Wedding+of+Nadia+%26+Arkan&dates=20261220T010000Z/20261220T140000Z&details=Acara+Pernikahan+Nadia+Puspita+%26+Arkananta+Mahendra+di+The+Dharmawangsa+Jakarta&location=The+Dharmawangsa+Jakarta"
+                       target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-gradient-to-r from-goldDark via-gold to-goldLight text-obsidian font-semibold text-[11px] uppercase tracking-[0.22em] hover:brightness-110 transition shadow-xl">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span>Simpan ke Google Calendar</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 6. INFORMASI ACARA — ARCHITECTURAL BOARDING PASS TICKETS
+                 ================================================================= -->
+            <section id="sec-events" class="observe-reveal px-6 py-24 bg-silk/70 relative">
+                <div class="reveal-up flex items-end justify-between mb-12 border-b border-gold/25 pb-4">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-[0.35em] text-goldDark font-semibold">Itinéraire Cérémonial</span>
+                        <h2 class="font-serif text-4xl text-obsidian mt-1">Rangkaian Acara</h2>
+                    </div>
+                    <span class="font-serif italic text-sm text-goldDark">06 / 12</span>
+                </div>
+
+                <!-- Event Ticket 01: AKAD NIKAH (Light Ivory Couture Ticket) -->
+                <div class="reveal-up bg-ivory rounded-3xl shadow-couture border border-gold/35 overflow-hidden mb-8">
+                    <div class="bg-obsidian text-ivory px-6 py-4 flex items-center justify-between">
+                        <span class="text-[10px] uppercase tracking-[0.35em] text-goldLight">Chapter I • Sacred Vows</span>
+                        <span class="font-serif italic text-sm text-goldLight">08.00 — 10.00 WIB</span>
+                    </div>
+                    <div class="p-6 sm:p-7">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h3 class="font-serif text-4xl text-obsidian font-medium">Akad Nikah</h3>
+                                <p class="text-xs uppercase tracking-[0.2em] text-goldDark font-semibold mt-1">Minggu, 20 Desember 2026</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-full border border-gold/40 bg-silk flex items-center justify-center font-serif text-xl text-goldDark shrink-0">
+                                I
+                            </div>
+                        </div>
+
+                        <!-- Perforated Ticket Divider -->
+                        <div class="my-5 border-t border-dashed border-gold/50 relative"></div>
+
+                        <div class="space-y-2 text-xs text-mocha">
+                            <p class="font-semibold text-obsidian text-sm">Majapahit Lounge — The Dharmawangsa Jakarta</p>
+                            <p class="leading-relaxed">Jl. Brawijaya Raya No. 26, Kebayoran Baru, Jakarta Selatan 12160</p>
+                        </div>
+
+                        <a href="https://maps.google.com/?q=The+Dharmawangsa+Jakarta" target="_blank" rel="noopener noreferrer"
+                           class="mt-6 w-full inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-2xl bg-obsidian text-goldLight text-[11px] font-semibold uppercase tracking-[0.22em] hover:bg-rosewood transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span>Buka Petunjuk Google Maps</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Event Ticket 02: RESEPSI MALAM (Dark Velvet Evening Gala Ticket) -->
+                <div class="reveal-up bg-obsidian text-ivory rounded-3xl shadow-2xl border border-gold/45 overflow-hidden">
+                    <div class="bg-gradient-to-r from-goldDark via-gold to-goldLight text-obsidian px-6 py-3.5 flex items-center justify-between font-semibold">
+                        <span class="text-[10px] uppercase tracking-[0.35em]">Chapter II • Evening Soirée</span>
+                        <span class="font-serif italic text-sm">18.30 — 21.30 WIB</span>
+                    </div>
+                    <div class="p-6 sm:p-7">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h3 class="font-serif text-4xl text-goldLight font-normal">Resepsi Malam</h3>
+                                <p class="text-xs uppercase tracking-[0.2em] text-ivory/75 mt-1">Minggu, 20 Desember 2026</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-full border border-gold/40 bg-white/5 flex items-center justify-center font-serif text-xl text-goldLight shrink-0">
+                                II
+                            </div>
+                        </div>
+
+                        <div class="my-5 border-t border-dashed border-gold/35"></div>
+
+                        <div class="space-y-2 text-xs text-ivory/75">
+                            <p class="font-semibold text-ivory text-sm">The Grand Ballroom — The Dharmawangsa Jakarta</p>
+                            <p class="leading-relaxed">Jl. Brawijaya Raya No. 26, Kebayoran Baru, Jakarta Selatan 12160</p>
+                            <p class="text-[11px] text-goldLight pt-1">✦ Dresscode: Black Tie / Formal Nusantara Attire</p>
+                        </div>
+
+                        <a href="https://maps.google.com/?q=The+Dharmawangsa+Jakarta" target="_blank" rel="noopener noreferrer"
+                           class="mt-6 w-full inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-2xl bg-gold text-obsidian text-[11px] font-semibold uppercase tracking-[0.22em] hover:bg-goldLight transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span>Navigasi ke Ballroom</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 7. GALERI PREWEDDING — CURATED EXHIBITION & FILMSTRIP
+                 ================================================================= -->
+            <section id="sec-gallery" class="observe-reveal px-6 py-24 bg-ivory">
+                <div class="reveal-up flex items-end justify-between mb-10 border-b border-gold/25 pb-4">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-[0.35em] text-goldDark font-semibold">Galerie d’Art</span>
+                        <h2 class="font-serif text-4xl text-obsidian mt-1">Potret Kebersamaan</h2>
+                    </div>
+                    <span class="font-serif italic text-sm text-goldDark">07 / 12</span>
+                </div>
+
+                <!-- Asymmetric Editorial Collage -->
+                <div class="space-y-4 reveal-up">
+                    <!-- Hero Exhibition Frame -->
+                    <div class="relative overflow-hidden rounded-3xl border border-gold/35 shadow-couture group cursor-pointer gallery-trigger" data-index="0">
+                        <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=85"
+                             alt="Portrait I"
+                             onerror="this.src='https://placehold.co/800x520/EFE7DC/1E1614?text=Portrait+I'"
+                             class="w-full h-64 object-cover group-hover:scale-105 transition duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent flex items-end p-5">
+                            <div>
+                                <span class="text-[9px] uppercase tracking-[0.3em] text-goldLight">Plate N° 01</span>
+                                <p class="font-serif italic text-lg text-ivory">Senja di Balik Langkah Bersama</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Staggered 2-Column Editorial Spread -->
+                    <div class="grid grid-cols-12 gap-3.5 items-stretch">
+                        <div class="col-span-7 overflow-hidden rounded-3xl border border-gold/35 shadow-md group cursor-pointer gallery-trigger" data-index="1">
+                            <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80"
+                                 alt="Portrait II"
+                                 onerror="this.src='https://placehold.co/500x650/EFE7DC/1E1614?text=Portrait+II'"
+                                 class="w-full h-56 object-cover group-hover:scale-105 transition duration-700">
+                        </div>
+                        <div class="col-span-5 overflow-hidden rounded-3xl border border-gold/35 shadow-md group cursor-pointer gallery-trigger" data-index="2">
+                            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=700&q=80"
+                                 alt="Portrait III"
+                                 onerror="this.src='https://placehold.co/450x650/EFE7DC/1E1614?text=Portrait+III'"
+                                 class="w-full h-56 object-cover group-hover:scale-105 transition duration-700">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-3.5 items-stretch">
+                        <div class="col-span-5 overflow-hidden rounded-3xl border border-gold/35 shadow-md group cursor-pointer gallery-trigger" data-index="3">
+                            <img src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=700&q=80"
+                                 alt="Portrait IV"
+                                 onerror="this.src='https://placehold.co/450x650/EFE7DC/1E1614?text=Portrait+IV'"
+                                 class="w-full h-52 object-cover group-hover:scale-105 transition duration-700">
+                        </div>
+                        <div class="col-span-7 overflow-hidden rounded-3xl border border-gold/35 shadow-md group cursor-pointer gallery-trigger" data-index="4">
+                            <img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=800&q=80"
+                                 alt="Portrait V"
+                                 onerror="this.src='https://placehold.co/500x650/EFE7DC/1E1614?text=Portrait+V'"
+                                 class="w-full h-52 object-cover group-hover:scale-105 transition duration-700">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 8. LOVE STORY — EDITORIAL CHAPTER CHRONICLE
+                 ================================================================= -->
+            <section id="sec-story" class="observe-reveal px-6 py-24 bg-silk/70 border-y border-gold/20 relative overflow-hidden">
+                <div class="reveal-up flex items-end justify-between mb-12 border-b border-gold/25 pb-4">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-[0.35em] text-goldDark font-semibold">Notre Histoire</span>
+                        <h2 class="font-serif text-4xl text-obsidian mt-1">Untaian Kisah</h2>
+                    </div>
+                    <span class="font-serif italic text-sm text-goldDark">08 / 12</span>
+                </div>
+
+                <div class="space-y-8 relative before:absolute before:top-4 before:bottom-4 before:left-5 before:w-[1px] before:bg-gold/50">
+                    <!-- Chapter I -->
+                    <div class="reveal-up relative pl-14">
+                        <div class="absolute left-0 top-1 w-10 h-10 rounded-full bg-obsidian text-goldLight border border-gold flex items-center justify-center font-serif italic text-base shadow-md">
+                            I
+                        </div>
+                        <div class="bg-ivory p-6 rounded-3xl border border-gold/30 shadow-sm">
+                            <span class="text-[10px] uppercase tracking-[0.28em] text-goldDark font-bold">September 2022 • Jakarta</span>
+                            <h3 class="font-serif text-2xl text-obsidian font-semibold mt-1">Sapaan di Galeri Seni</h3>
+                            <p class="text-xs text-mocha leading-relaxed mt-2">
+                                Takdir mempertemukan kami di sebuah pameran arsitektur kontemporer. Percakapan tidak sengaja mengenai estetika ruang dan cahaya berubah menjadi diskusi panjang yang hangat.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Chapter II -->
+                    <div class="reveal-up relative pl-14">
+                        <div class="absolute left-0 top-1 w-10 h-10 rounded-full bg-obsidian text-goldLight border border-gold flex items-center justify-center font-serif italic text-base shadow-md">
+                            II
+                        </div>
+                        <div class="bg-ivory p-6 rounded-3xl border border-gold/30 shadow-sm">
+                            <span class="text-[10px] uppercase tracking-[0.28em] text-goldDark font-bold">Mei 2024 • Kyoto &amp; Jakarta</span>
+                            <h3 class="font-serif text-2xl text-obsidian font-semibold mt-1">Bertumbuh dalam Doa</h3>
+                            <p class="text-xs text-mocha leading-relaxed mt-2">
+                                Melewati jarak dan kesibukan karier masing-masing, kami belajar bahwa cinta terbaik adalah saling menguatkan dan menjadi rumah paling teduh untuk pulang.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Chapter III -->
+                    <div class="reveal-up relative pl-14">
+                        <div class="absolute left-0 top-1 w-10 h-10 rounded-full bg-gold text-obsidian border border-obsidian flex items-center justify-center font-serif italic text-base font-bold shadow-md">
+                            III
+                        </div>
+                        <div class="bg-obsidian text-ivory p-6 rounded-3xl border border-gold/45 shadow-xl">
+                            <span class="text-[10px] uppercase tracking-[0.28em] text-goldLight font-bold">Desember 2026 • Ikatan Abadi</span>
+                            <h3 class="font-serif text-2xl text-goldLight font-normal mt-1">Menuju Pelabuhan Suci</h3>
+                            <p class="text-xs text-ivory/80 leading-relaxed mt-2">
+                                Dengan restu kedua orang tua, kami mantap melangkah ke pelaminan pada 20 Desember 2026 untuk mengikrarkan janji sehidup semati.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 9. WEDDING GIFT — INTERACTIVE HOLOGRAPHIC 3D TILT CARDS
+                 ================================================================= -->
+            <section id="sec-gift" class="observe-reveal px-6 py-24 bg-ivory">
+                <div class="reveal-up flex items-end justify-between mb-8 border-b border-gold/25 pb-4">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-[0.35em] text-goldDark font-semibold">Token of Love</span>
+                        <h2 class="font-serif text-4xl text-obsidian mt-1">Tanda Kasih</h2>
+                    </div>
+                    <span class="font-serif italic text-sm text-goldDark">09 / 12</span>
+                </div>
+
+                <p class="reveal-up text-xs text-mocha leading-relaxed mb-8">
+                    Kehadiran dan untaian doa Bapak/Ibu/Saudara/i adalah anugerah terindah. Namun apabila ingin mengirimkan tanda kasih secara digital maupun fisik, dapat melalui:
+                </p>
+
+                <div class="space-y-5 reveal-up">
+                    <!-- Luxury Metallic Card 1: BCA Prioritas -->
+                    <div class="tilt-card bg-gradient-to-br from-[#231A17] via-[#150F0E] to-[#2E211D] text-ivory rounded-3xl p-6 shadow-2xl border border-gold/45 relative overflow-hidden transition-transform duration-300">
+                        <div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-gold/10 blur-xl pointer-events-none"></div>
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <span class="text-[9px] uppercase tracking-[0.3em] text-goldLight/70 block">Private Banking</span>
+                                <span class="font-serif text-2xl tracking-wider text-goldLight font-semibold">BANK BCA</span>
+                            </div>
+                            <!-- EMV Metallic Chip SVG -->
+                            <div class="w-11 h-8 rounded-md bg-gradient-to-br from-goldLight via-gold to-goldDark border border-white/30 flex items-center justify-center">
+                                <div class="w-7 h-5 border border-obsidian/30 rounded-sm"></div>
+                            </div>
+                        </div>
+
+                        <p class="text-[9px] uppercase tracking-[0.28em] text-ivory/50">Nomor Rekening</p>
+                        <p class="font-serif text-3xl tracking-[0.18em] text-ivory font-light mt-1 select-all">
+                            8830 1928 34
+                        </p>
+
+                        <div class="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
+                            <div>
+                                <p class="text-[9px] uppercase tracking-widest text-ivory/50">Atas Nama</p>
+                                <p class="text-xs font-medium text-goldLight">Nadia Puspita Salsabila</p>
+                            </div>
+                            <button type="button"
+                                    data-copy="8830192834"
+                                    class="btn-copy-rek inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-gold to-goldLight text-obsidian font-semibold text-[10px] uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition shadow-lg">
+                                <span>Salin Rekening</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Luxury Pearl Card 2: Mandiri -->
+                    <div class="tilt-card bg-gradient-to-br from-silk via-ivory to-[#E5D9C8] text-obsidian rounded-3xl p-6 shadow-couture border border-gold/45 relative overflow-hidden transition-transform duration-300">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <span class="text-[9px] uppercase tracking-[0.3em] text-mocha block">Wealth Transfer</span>
+                                <span class="font-serif text-2xl tracking-wider text-obsidian font-semibold">BANK MANDIRI</span>
+                            </div>
+                            <div class="w-11 h-8 rounded-md bg-gradient-to-br from-goldLight via-gold to-goldDark border border-obsidian/20"></div>
+                        </div>
+
+                        <p class="text-[9px] uppercase tracking-[0.28em] text-mocha">Nomor Rekening</p>
+                        <p class="font-serif text-3xl tracking-[0.16em] text-obsidian font-semibold mt-1 select-all">
+                            1240 0098 7654 3
+                        </p>
+
+                        <div class="flex items-center justify-between mt-6 pt-4 border-t border-gold/30">
+                            <div>
+                                <p class="text-[9px] uppercase tracking-widest text-mocha">Atas Nama</p>
+                                <p class="text-xs font-bold text-obsidian">Arkananta Mahendra</p>
+                            </div>
+                            <button type="button"
+                                    data-copy="1240009876543"
+                                    class="btn-copy-rek inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-obsidian text-goldLight font-semibold text-[10px] uppercase tracking-[0.2em] hover:bg-rosewood active:scale-95 transition shadow-md">
+                                <span>Salin Rekening</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Physical Gift Registry Box -->
+                    <div class="bg-silk/80 rounded-3xl p-6 border border-gold/30 text-center">
+                        <span class="text-[10px] uppercase tracking-[0.28em] text-goldDark font-bold">Alamat Pengiriman Hadiah Fisik</span>
+                        <p class="font-serif text-xl text-obsidian font-semibold mt-1">Kediaman Nadia &amp; Arkan</p>
+                        <p class="text-xs text-mocha mt-1 leading-relaxed">
+                            Jl. Kemang Timur Raya No. 48, Bangka, Mampang Prapatan, Jakarta Selatan 12730
+                        </p>
+                        <button type="button"
+                                data-copy="Jl. Kemang Timur Raya No. 48, Bangka, Mampang Prapatan, Jakarta Selatan 12730"
+                                class="btn-copy-rek mt-4 inline-flex items-center gap-2 px-5 py-2 rounded-full border border-obsidian text-[10px] uppercase tracking-[0.2em] font-semibold text-obsidian hover:bg-obsidian hover:text-goldLight transition">
+                            <span>Salin Alamat Lengkap</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 10. RSVP — INTERACTIVE VIP PASS GENERATOR
+                 ================================================================= -->
+            <section id="sec-rsvp" class="observe-reveal px-6 py-24 bg-obsidian text-ivory relative">
+                <div class="reveal-up flex items-end justify-between mb-8 border-b border-gold/25 pb-4">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-[0.35em] text-goldLight">Répondez S'il Vous Plaît</span>
+                        <h2 class="font-serif text-4xl text-ivory mt-1">Konfirmasi Kehadiran</h2>
+                    </div>
+                    <span class="font-serif italic text-sm text-goldLight">10 / 12</span>
+                </div>
+
+                <!-- Live Attendance Metrics -->
+                <div class="grid grid-cols-2 gap-3.5 mb-7 reveal-up">
+                    <div class="bg-white/[0.04] rounded-2xl p-4 border border-gold/30 text-center">
+                        <span id="stat-attending" class="font-serif text-3xl text-goldLight block">18</span>
+                        <span class="text-[9px] uppercase tracking-[0.25em] text-ivory/65">Keluarga Konfirmasi Hadir</span>
+                    </div>
+                    <div class="bg-white/[0.04] rounded-2xl p-4 border border-gold/30 text-center">
+                        <span id="stat-guests" class="font-serif text-3xl text-ivory block">34</span>
+                        <span class="text-[9px] uppercase tracking-[0.25em] text-ivory/65">Total Kursi Terpesan</span>
+                    </div>
+                </div>
+
+                <form id="form-rsvp" class="reveal-up bg-white/[0.05] backdrop-blur-md rounded-3xl p-6 sm:p-7 border border-gold/35 space-y-4" novalidate>
+                    <div>
+                        <label for="rsvp-input-name" class="block text-[10px] uppercase tracking-[0.25em] text-goldLight mb-1.5">Nama Lengkap Tamu *</label>
+                        <input id="rsvp-input-name"
+                               type="text"
+                               required
+                               placeholder="Ketik nama lengkap Anda..."
+                               class="w-full rounded-xl bg-obsidian/90 border border-gold/35 px-4 py-3.5 text-xs sm:text-sm text-ivory placeholder-ivory/35 focus:outline-none focus:border-goldLight transition">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="rsvp-input-status" class="block text-[10px] uppercase tracking-[0.25em] text-goldLight mb-1.5">Konfirmasi *</label>
+                            <select id="rsvp-input-status"
+                                    class="w-full rounded-xl bg-obsidian/90 border border-gold/35 px-4 py-3.5 text-xs sm:text-sm text-ivory focus:outline-none focus:border-goldLight transition">
+                                <option value="Hadir">Ya, Berkenan Hadir</option>
+                                <option value="Berhalangan">Maaf, Berhalangan</option>
+                            </select>
+                        </div>
+
+                        <div id="rsvp-pax-wrapper">
+                            <label for="rsvp-input-pax" class="block text-[10px] uppercase tracking-[0.25em] text-goldLight mb-1.5">Jumlah Kursi *</label>
+                            <select id="rsvp-input-pax"
+                                    class="w-full rounded-xl bg-obsidian/90 border border-gold/35 px-4 py-3.5 text-xs sm:text-sm text-ivory focus:outline-none focus:border-goldLight transition">
+                                <option value="1">1 Orang (Personal)</option>
+                                <option value="2" selected>2 Orang (Berpasangan)</option>
+                                <option value="3">3 Orang (Keluarga)</option>
+                                <option value="4">4 Orang (Keluarga)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="rsvp-input-session" class="block text-[10px] uppercase tracking-[0.25em] text-goldLight mb-1.5">Pilihan Sesi Kehadiran</label>
+                        <select id="rsvp-input-session"
+                                class="w-full rounded-xl bg-obsidian/90 border border-gold/35 px-4 py-3.5 text-xs sm:text-sm text-ivory focus:outline-none focus:border-goldLight transition">
+                            <option value="Resepsi Malam">Evening Soirée / Resepsi (18.30 WIB)</option>
+                            <option value="Akad Nikah">Akad Nikah (08.00 WIB)</option>
+                            <option value="Akad & Resepsi">Hadir di Kedua Sesi</option>
+                        </select>
+                    </div>
+
+                    <p id="rsvp-error-text" class="text-xs text-peony hidden"></p>
+
+                    <button type="submit"
+                            class="w-full py-4 rounded-xl bg-gradient-to-r from-goldDark via-gold to-goldLight text-obsidian font-bold text-xs uppercase tracking-[0.22em] hover:brightness-110 active:scale-[0.99] transition shadow-xl">
+                        Konfirmasi &amp; Terbitkan Kartu Akses
+                    </button>
+                </form>
+
+                <!-- Dynamic VIP Access Card Preview (Appears After Submit) -->
+                <div id="rsvp-vip-pass" class="hidden mt-6 bg-gradient-to-r from-gold/20 via-obsidian to-gold/20 border border-gold rounded-2xl p-5 text-center">
+                    <p class="text-[9px] uppercase tracking-[0.35em] text-goldLight">VIP Guest Access Confirmed</p>
+                    <p id="vip-pass-guest" class="font-serif text-2xl text-ivory mt-1"></p>
+                    <p id="vip-pass-detail" class="text-xs text-goldLight mt-1"></p>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 11. UCAPAN & DOA — CURATED EDITORIAL LETTERS
+                 ================================================================= -->
+            <section id="sec-wishes" class="observe-reveal px-6 py-24 bg-ivory">
+                <div class="reveal-up flex items-end justify-between mb-8 border-b border-gold/25 pb-4">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-[0.35em] text-goldDark font-semibold">Livre d'Or</span>
+                        <h2 class="font-serif text-4xl text-obsidian mt-1">Untaian Doa &amp; Restu</h2>
+                    </div>
+                    <span class="font-serif italic text-sm text-goldDark">11 / 12</span>
+                </div>
+
+                <!-- Form Kirim Doa -->
+                <form id="form-wishes" class="reveal-up bg-white rounded-3xl p-6 shadow-couture border border-gold/30 space-y-4 mb-10" novalidate>
+                    <div>
+                        <label for="wish-input-name" class="block text-[10px] uppercase tracking-[0.22em] text-obsidian font-semibold mb-1.5">Nama Pengirim *</label>
+                        <input id="wish-input-name"
+                               type="text"
+                               required
+                               placeholder="Tulis nama Anda..."
+                               class="w-full rounded-xl bg-ivory border border-gold/35 px-4 py-3 text-xs sm:text-sm text-obsidian focus:outline-none focus:border-obsidian transition">
+                    </div>
+
+                    <div>
+                        <label for="wish-input-presence" class="block text-[10px] uppercase tracking-[0.22em] text-obsidian font-semibold mb-1.5">Keterangan Kehadiran</label>
+                        <select id="wish-input-presence"
+                                class="w-full rounded-xl bg-ivory border border-gold/35 px-4 py-3 text-xs sm:text-sm text-obsidian focus:outline-none focus:border-obsidian transition">
+                            <option value="Hadir">InsyaAllah Hadir</option>
+                            <option value="Berhalangan">Doa dari Jauh</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="wish-input-message" class="block text-[10px] uppercase tracking-[0.22em] text-obsidian font-semibold mb-1.5">Pesan &amp; Doa Terbaik *</label>
+                        <textarea id="wish-input-message"
+                                  rows="3"
+                                  required
+                                  placeholder="Tuliskan doa tulus untuk Nadia & Arkan..."
+                                  class="w-full rounded-xl bg-ivory border border-gold/35 px-4 py-3 text-xs sm:text-sm text-obsidian focus:outline-none focus:border-obsidian transition resize-none"></textarea>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full py-3.5 rounded-xl bg-obsidian text-goldLight font-semibold text-xs uppercase tracking-[0.22em] hover:bg-rosewood transition shadow-md">
+                        Kirimkan Untaian Doa
+                    </button>
+                </form>
+
+                <div class="flex items-center justify-between mb-4 px-1">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-obsidian">Arsip Doa Kerabat</span>
+                    <span id="wishes-total-badge" class="text-[10px] uppercase tracking-widest px-3 py-1 rounded-full bg-obsidian text-goldLight">4 Pesan</span>
+                </div>
+
+                <!-- Wishes Feed -->
+                <div id="wishes-feed" class="space-y-3.5 max-h-[440px] overflow-y-auto pr-1">
+                    <!-- Populated via JS -->
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 12. PENUTUP — GRAND FINALE & MONOGRAM CREST
+                 ================================================================= -->
+            <section id="sec-closing" class="observe-reveal px-6 pt-24 pb-32 bg-obsidian text-ivory text-center relative overflow-hidden">
+                <svg class="w-56 h-48 absolute -top-6 -left-6 opacity-35 pointer-events-none" viewBox="0 0 230 200">
+                    <use href="#couture-peony-branch"/>
+                </svg>
+
+                <div class="reveal-up relative z-10 max-w-sm mx-auto">
+                    <div class="w-36 h-48 mx-auto rounded-t-[100px] rounded-b-2xl overflow-hidden border-2 border-gold/55 shadow-2xl mb-7">
+                        <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80"
+                             alt="Nadia & Arkan Finale"
+                             onerror="this.src='https://placehold.co/400x520/1E1614/C9A25D?text=Merci'"
+                             class="w-full h-full object-cover">
+                    </div>
+
+                    <p class="text-xs text-ivory/80 leading-relaxed">
+                        Merupakan suatu kehormatan dan kebahagiaan yang tiada terkira apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kedua mempelai.
+                    </p>
+
+                    <svg class="w-48 h-7 mx-auto my-6" viewBox="0 0 260 28">
+                        <use href="#kintsugi-divider"/>
+                    </svg>
+
+                    <p class="text-[10px] uppercase tracking-[0.35em] text-ivory/60">Kami yang berbahagia,</p>
+                    <h2 class="font-serif text-5xl sm:text-6xl gold-foil-text font-normal mt-2 py-1">
+                        Nadia &amp; Arkan
+                    </h2>
+                    <p class="text-[11px] text-ivory/60 mt-2">Beserta Keluarga Besar Kedua Mempelai</p>
+
+                    <div class="mt-12 pt-6 border-t border-white/10 text-[9px] uppercase tracking-[0.35em] text-ivory/40">
+                        Voilier de Soie • Haute Couture Digital Atelier
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- =========================================================================
+         COUTURE INTERACTION ENGINE (CANVAS PETALS, 3D ENVELOPE, AUDIO, ETC.)
+         ========================================================================= -->
+    <script>
+        (function () {
+            "use strict";
+
+            // 1. URL GUEST RESOLVER (?to= or ?u=)
+            function initGuestResolver() {
+                const params = new URLSearchParams(window.location.search);
+                const rawGuest = params.get("to") || params.get("u") || "";
+                const cleanGuest = rawGuest.trim();
+
+                if (cleanGuest) {
+                    const coverGuestEl = document.getElementById("cover-guest-name");
+                    const rsvpNameInput = document.getElementById("rsvp-input-name");
+                    const wishNameInput = document.getElementById("wish-input-name");
+
+                    if (coverGuestEl) coverGuestEl.textContent = cleanGuest;
+                    if (rsvpNameInput) rsvpNameInput.value = cleanGuest;
+                    if (wishNameInput) wishNameInput.value = cleanGuest;
+                }
+            }
+
+            // 2. GENERATIVE GOLDEN PETAL & LIGHT DUST CANVAS 2D
+            function initAtmosphericCanvas() {
+                const canvas = document.getElementById("petal-canvas");
+                if (!canvas) return;
+                const ctx = canvas.getContext("2d");
+                let width = 0;
+                let height = 0;
+                let particles = [];
+                const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                if (prefersReduced) return;
+
+                function resize() {
+                    width = window.innerWidth;
+                    height = window.innerHeight;
+                    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                    canvas.width = width * dpr;
+                    canvas.height = height * dpr;
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                }
+
+                resize();
+                window.addEventListener("resize", resize);
+
+                const count = width < 768 ? 16 : 26;
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        r: Math.random() * 3.2 + 1.2,
+                        vy: Math.random() * 0.45 + 0.18,
+                        vx: (Math.random() - 0.5) * 0.35,
+                        angle: Math.random() * Math.PI * 2,
+                        spin: (Math.random() - 0.5) * 0.015,
+                        alpha: Math.random() * 0.45 + 0.15,
+                        isPetal: i % 3 === 0
+                    });
+                }
+
+                function drawFrame() {
+                    ctx.clearRect(0, 0, width, height);
+                    for (let i = 0; i < particles.length; i++) {
+                        const p = particles[i];
+                        p.y += p.vy;
+                        p.x += p.vx + Math.sin(p.angle) * 0.22;
+                        p.angle += p.spin;
+
+                        if (p.y > height + 20) {
+                            p.y = -15;
+                            p.x = Math.random() * width;
+                        }
+                        if (p.x > width + 20) p.x = -15;
+                        if (p.x < -20) p.x = width + 15;
+
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.angle);
+                        ctx.globalAlpha = p.alpha;
+
+                        if (p.isPetal) {
+                            ctx.fillStyle = "#E2C2B9";
+                            ctx.beginPath();
+                            ctx.ellipse(0, 0, p.r * 1.9, p.r, 0, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else {
+                            ctx.fillStyle = "#C9A25D";
+                            ctx.beginPath();
+                            ctx.arc(0, 0, p.r * 0.65, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        ctx.restore();
+                    }
+                    requestAnimationFrame(drawFrame);
+                }
+
+                requestAnimationFrame(drawFrame);
+            }
+
+            // 3. WARM HARP & PIANO AMBIENT SYNTHESIZER (Web Audio API)
+            const CoutureAudio = {
+                ctx: null,
+                isPlaying: false,
+                masterGain: null,
+
+                start: function () {
+                    if (this.ctx) {
+                        if (this.ctx.state === "suspended") this.ctx.resume();
+                        this.setPlaying(true);
+                        return;
+                    }
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) return;
+
+                    this.ctx = new AudioCtx();
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                    this.masterGain.connect(this.ctx.destination);
+                    this.isPlaying = true;
+                    this.syncUI();
+
+                    const notes = [261.63, 329.63, 392.00, 493.88, 587.33, 493.88, 392.00, 329.63];
+                    let idx = 0;
+
+                    const playNote = () => {
+                        if (!this.isPlaying || !this.ctx) return;
+                        const now = this.ctx.currentTime;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+
+                        osc.type = "sine";
+                        osc.frequency.setValueAtTime(notes[idx % notes.length], now);
+                        idx++;
+
+                        gain.gain.setValueAtTime(0.0001, now);
+                        gain.gain.linearRampToValueAtTime(0.055, now + 0.6);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.4);
+
+                        osc.connect(gain);
+                        gain.connect(this.masterGain);
+                        osc.start(now);
+                        osc.stop(now + 3.5);
+                    };
+
+                    playNote();
+                    setInterval(playNote, 2200);
+                },
+
+                setPlaying: function (state) {
+                    if (!this.ctx || !this.masterGain) return;
+                    if (state) {
+                        if (this.ctx.state === "suspended") this.ctx.resume();
+                        this.masterGain.gain.setTargetAtTime(0.15, this.ctx.currentTime, 0.2);
+                        this.isPlaying = true;
+                    } else {
+                        this.masterGain.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.2);
+                        this.isPlaying = false;
+                    }
+                    this.syncUI();
+                },
+
+                toggle: function () {
+                    if (!this.ctx) this.start();
+                    else this.setPlaying(!this.isPlaying);
+                },
+
+                syncUI: function () {
+                    const btn = document.getElementById("btn-audio-toggle");
+                    if (!btn) return;
+                    btn.classList.toggle("playing", this.isPlaying);
+                    btn.style.opacity = this.isPlaying ? "1" : "0.5";
+                }
+            };
+
+            // 4. 3D WAX SEAL & ENVELOPE UNFOLDING SEQUENCE
+            function initEnvelopeUnfold() {
+                const sealBtn = document.getElementById("btn-open-invitation");
+                const coverEl = document.getElementById("couture-cover");
+                const audioBtn = document.getElementById("btn-audio-toggle");
+
+                if (sealBtn && coverEl) {
+                    sealBtn.addEventListener("click", () => {
+                        CoutureAudio.start();
+                        coverEl.classList.add("unfolding");
+                        document.body.classList.remove("locked-scroll");
+
+                        setTimeout(() => {
+                            coverEl.classList.add("cover-finished");
+                        }, 1150);
+                    });
+                }
+
+                if (audioBtn) {
+                    audioBtn.addEventListener("click", () => CoutureAudio.toggle());
+                }
+            }
+
+            // 5. TOAST NOTIFICATION
+            let toastTimer = null;
+            function showToast(msg) {
+                const toast = document.getElementById("toast-notification");
+                const label = document.getElementById("toast-message");
+                if (!toast || !label) return;
+
+                label.textContent = msg;
+                toast.classList.remove("opacity-0", "-translate-y-4");
+                toast.classList.add("opacity-100", "translate-y-0");
+
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove("opacity-100", "translate-y-0");
+                    toast.classList.add("opacity-0", "-translate-y-4");
+                }, 2200);
+            }
+
+            // 6. COPY TO CLIPBOARD + 3D TILT HOVER ON GIFT CARDS
+            function initGiftInteractions() {
+                document.querySelectorAll(".btn-copy-rek").forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const raw = btn.getAttribute("data-copy") || "";
+                        if (!raw) return;
+
+                        const fallback = (txt) => {
+                            const ta = document.createElement("textarea");
+                            ta.value = txt;
+                            ta.style.position = "fixed";
+                            ta.style.opacity = "0";
+                            document.body.appendChild(ta);
+                            ta.select();
+                            try {
+                                document.execCommand("copy");
+                                showToast("Berhasil disalin: " + txt);
+                            } catch (e) {
+                                showToast("Disalin: " + txt);
+                            }
+                            document.body.removeChild(ta);
+                        };
+
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(raw)
+                                .then(() => showToast("Berhasil disalin: " + raw))
+                                .catch(() => fallback(raw));
+                        } else {
+                            fallback(raw);
+                        }
+                    });
+                });
+
+                // Subtle 3D tilt on gift cards
+                document.querySelectorAll(".tilt-card").forEach((card) => {
+                    card.addEventListener("mousemove", (e) => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left - rect.width / 2;
+                        const y = e.clientY - rect.top - rect.height / 2;
+                        card.style.transform = `perspective(800px) rotateY(${x * 0.02}deg) rotateX(${-y * 0.03}deg)`;
+                    });
+                    card.addEventListener("mouseleave", () => {
+                        card.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg)";
+                    });
+                });
+            }
+
+            // 7. REAL-TIME COUNTDOWN
+            function initCountdown() {
+                const target = new Date("2026-12-20T08:00:00+07:00").getTime();
+                const dEl = document.getElementById("cd-days");
+                const hEl = document.getElementById("cd-hours");
+                const mEl = document.getElementById("cd-minutes");
+                const sEl = document.getElementById("cd-seconds");
+                const noteEl = document.getElementById("countdown-status-note");
+
+                function tick() {
+                    const diff = target - Date.now();
+                    if (diff <= 0) {
+                        if (dEl) dEl.textContent = "00";
+                        if (hEl) hEl.textContent = "00";
+                        if (mEl) mEl.textContent = "00";
+                        if (sEl) sEl.textContent = "00";
+                        if (noteEl) {
+                            noteEl.textContent = "Hari bahagia pernikahan Nadia & Arkan telah tiba.";
+                            noteEl.classList.remove("hidden");
+                        }
+                        return;
+                    }
+                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                    const m = Math.floor((diff / 1000 / 60) % 60);
+                    const s = Math.floor((diff / 1000) % 60);
+
+                    if (dEl) dEl.textContent = String(d).padStart(2, "0");
+                    if (hEl) hEl.textContent = String(h).padStart(2, "0");
+                    if (mEl) mEl.textContent = String(m).padStart(2, "0");
+                    if (sEl) sEl.textContent = String(s).padStart(2, "0");
+                }
+                tick();
+                setInterval(tick, 1000);
+            }
+
+            // 8. GALLERY LIGHTBOX
+            function initGalleryLightbox() {
+                const photos = [
+                    {
+                        src: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85",
+                        caption: "Plate N° 01 — Senja di Balik Langkah Bersama"
+                    },
+                    {
+                        src: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=85",
+                        caption: "Plate N° 02 — Harmoni Dua Jiwa"
+                    },
+                    {
+                        src: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=85",
+                        caption: "Plate N° 03 — Ketulusan Janji Suci"
+                    },
+                    {
+                        src: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=85",
+                        caption: "Plate N° 04 — Genggaman Menuju Keabadian"
+                    },
+                    {
+                        src: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1200&q=85",
+                        caption: "Plate N° 05 — Tawa & Doa yang Bertaut"
+                    }
+                ];
+
+                let cur = 0;
+                const modal = document.getElementById("gallery-lightbox");
+                const img = document.getElementById("lightbox-img");
+                const cap = document.getElementById("lightbox-caption");
+                const count = document.getElementById("lightbox-counter");
+
+                function showPhoto(i) {
+                    cur = (i + photos.length) % photos.length;
+                    if (img) img.src = photos[cur].src;
+                    if (cap) cap.textContent = photos[cur].caption;
+                    if (count) count.textContent = `EXHIBITION ${cur + 1} / ${photos.length}`;
+                }
+
+                function open(i) {
+                    showPhoto(i);
+                    modal.classList.remove("hidden");
+                    modal.classList.add("flex");
+                    requestAnimationFrame(() => {
+                        modal.classList.remove("opacity-0");
+                        modal.classList.add("opacity-100");
+                    });
+                }
+
+                function close() {
+                    modal.classList.remove("opacity-100");
+                    modal.classList.add("opacity-0");
+                    setTimeout(() => {
+                        modal.classList.remove("flex");
+                        modal.classList.add("hidden");
+                    }, 280);
+                }
+
+                document.querySelectorAll(".gallery-trigger").forEach((el) => {
+                    el.addEventListener("click", () => open(parseInt(el.getAttribute("data-index") || "0", 10)));
+                });
+
+                document.getElementById("lightbox-close")?.addEventListener("click", close);
+                document.getElementById("lightbox-prev")?.addEventListener("click", () => showPhoto(cur - 1));
+                document.getElementById("lightbox-next")?.addEventListener("click", () => showPhoto(cur + 1));
+                modal?.addEventListener("click", (e) => { if (e.target === modal) close(); });
+            }
+
+            // 9. RSVP + VIP ACCESS CARD + WISHES ARCHIVE
+            function initRsvpAndWishes() {
+                let attending = 18;
+                let guests = 34;
+
+                const statAttending = document.getElementById("stat-attending");
+                const statGuests = document.getElementById("stat-guests");
+                const rsvpForm = document.getElementById("form-rsvp");
+                const statusSelect = document.getElementById("rsvp-input-status");
+                const paxWrap = document.getElementById("rsvp-pax-wrapper");
+                const errEl = document.getElementById("rsvp-error-text");
+                const vipPass = document.getElementById("rsvp-vip-pass");
+                const vipGuest = document.getElementById("vip-pass-guest");
+                const vipDetail = document.getElementById("vip-pass-detail");
+
+                statusSelect?.addEventListener("change", () => {
+                    if (paxWrap) paxWrap.style.opacity = statusSelect.value === "Hadir" ? "1" : "0.35";
+                });
+
+                rsvpForm?.addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById("rsvp-input-name").value.trim();
+                    const status = statusSelect.value;
+                    const pax = parseInt(document.getElementById("rsvp-input-pax").value || "1", 10);
+                    const session = document.getElementById("rsvp-input-session").value;
+
+                    if (!name) {
+                        if (errEl) {
+                            errEl.textContent = "Mohon tuliskan nama lengkap Anda terlebih dahulu.";
+                            errEl.classList.remove("hidden");
+                        }
+                        return;
+                    }
+                    if (errEl) errEl.classList.add("hidden");
+
+                    if (status === "Hadir") {
+                        attending += 1;
+                        guests += pax;
+                        if (statAttending) statAttending.textContent = String(attending);
+                        if (statGuests) statGuests.textContent = String(guests);
+                    }
+
+                    if (vipPass && vipGuest && vipDetail) {
+                        vipGuest.textContent = name;
+                        vipDetail.textContent = status === "Hadir"
+                            ? `${pax} Kursi Terpesan • ${session}`
+                            : "Terima kasih atas konfirmasi & doa tulus Anda";
+                        vipPass.classList.remove("hidden");
+                    }
+
+                    showToast(`Kartu akses RSVP untuk ${name} berhasil diterbitkan!`);
+                });
+
+                const wishes = [
+                    {
+                        name: "Prof. Dr. Hendrawan & Ibu",
+                        presence: "Hadir",
+                        time: "Baru saja",
+                        message: "Selamat menempuh hidup baru untuk ananda Nadia & Arkan. Semoga menjadi keluarga sakinah, mawaddah, warahmah yang senantiasa diberkahi."
+                    },
+                    {
+                        name: "Clarissa Putri, S.Ars.",
+                        presence: "Hadir",
+                        time: "18 menit lalu",
+                        message: "Undangannya luar biasa indah! Selamat berbahagia Nadia sayang dan Arkan, lancar sampai hari H."
+                    },
+                    {
+                        name: "Rizky Pratama & Partner",
+                        presence: "Hadir",
+                        time: "1 jam lalu",
+                        message: "Warmest congratulations bro Arkan & Nadia! Wishing you a lifetime of love, laughter, and endless blessings."
+                    },
+                    {
+                        name: "Keluarga Besar H. Sudirman",
+                        presence: "Berhalangan",
+                        time: "3 jam lalu",
+                        message: "Turut bersuka cita atas pernikahan Nadia & Arkan. Doa terbaik kami kirimkan dari jauh."
+                    }
+                ];
+
+                const feed = document.getElementById("wishes-feed");
+                const badge = document.getElementById("wishes-total-badge");
+                const wishForm = document.getElementById("form-wishes");
+
+                function renderWishes() {
+                    if (!feed) return;
+                    feed.innerHTML = "";
+                    if (badge) badge.textContent = `${wishes.length} Pesan`;
+
+                    wishes.forEach((w) => {
+                        const card = document.createElement("div");
+                        card.className = "bg-white rounded-2xl p-5 shadow-sm border border-gold/25";
+
+                        const top = document.createElement("div");
+                        top.className = "flex items-center justify-between gap-2 mb-2";
+
+                        const nameEl = document.createElement("span");
+                        nameEl.className = "font-serif text-xl font-semibold text-obsidian";
+                        nameEl.textContent = w.name;
+
+                        const tag = document.createElement("span");
+                        tag.className = w.presence === "Hadir"
+                            ? "text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-obsidian text-goldLight"
+                            : "text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-silk text-mocha";
+                        tag.textContent = w.presence;
+
+                        top.appendChild(nameEl);
+                        top.appendChild(tag);
+
+                        const body = document.createElement("p");
+                        body.className = "text-xs text-mocha leading-relaxed italic font-serif text-sm";
+                        body.textContent = `"${w.message}"`;
+
+                        const meta = document.createElement("p");
+                        meta.className = "text-[10px] text-mocha/55 mt-2 uppercase tracking-wider";
+                        meta.textContent = w.time;
+
+                        card.appendChild(top);
+                        card.appendChild(body);
+                        card.appendChild(meta);
+                        feed.appendChild(card);
+                    });
+                }
+
+                renderWishes();
+
+                wishForm?.addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    const nIn = document.getElementById("wish-input-name");
+                    const pIn = document.getElementById("wish-input-presence");
+                    const mIn = document.getElementById("wish-input-message");
+
+                    const name = nIn.value.trim();
+                    const presence = pIn.value;
+                    const message = mIn.value.trim();
+
+                    if (!name || !message) {
+                        showToast("Mohon isi nama dan untaian doa Anda.");
+                        return;
+                    }
+
+                    wishes.unshift({ name, presence, time: "Baru saja", message });
+                    renderWishes();
+                    mIn.value = "";
+                    showToast("Untaian doa Anda telah ditambahkan!");
+                });
+            }
+
+            // 10. SCROLL-DRIVEN LIVING ILLUSTRATION, PROGRESS BAR & REVEALS
+            function initScrollChoreography() {
+                const sections = document.querySelectorAll(".observe-reveal");
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("in-view");
+                        }
+                    });
+                }, { threshold: 0.12 });
+
+                sections.forEach((s) => io.observe(s));
+
+                const progressBar = document.getElementById("scroll-progress-bar");
+                const heroImg = document.getElementById("hero-parallax-img");
+                const bloomCrest = document.getElementById("scroll-bloom-crest");
+
+                window.addEventListener("scroll", () => {
+                    const scrollTop = window.scrollY;
+                    const docHeight = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+                    const pct = Math.min(Math.max((scrollTop / docHeight) * 100, 0), 100);
+
+                    if (progressBar) progressBar.style.width = `${pct}%`;
+                    if (heroImg && scrollTop < 800) {
+                        heroImg.style.transform = `translateY(${scrollTop * 0.09}px) scale(1.04)`;
+                    }
+                    if (bloomCrest) {
+                        bloomCrest.style.transform = `rotate(${scrollTop * 0.12}deg) scale(${1 + Math.sin(scrollTop * 0.005) * 0.08})`;
+                    }
+                }, { passive: true });
+            }
+
+            // BOOTSTRAP ON DOM READY
+            window.addEventListener("DOMContentLoaded", () => {
+                initGuestResolver();
+                initAtmosphericCanvas();
+                initEnvelopeUnfold();
+                initGiftInteractions();
+                initCountdown();
+                initGalleryLightbox();
+                initRsvpAndWishes();
+                initScrollChoreography();
+            });
+        })();
+    </script>
+</body>
+</html>

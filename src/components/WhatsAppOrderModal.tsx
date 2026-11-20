@@ -2,8 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { X, MessageCircle, Heart, Calendar, MapPin, User } from 'lucide-react';
 import { InvitationItem } from '../types';
 import { TEMPLATES } from '../data/catalog';
+import { STANDARD_TEMPLATES } from '../data/standardCatalog';
 import { AdminStore } from '../admin/adminStore';
 import { TemplateId } from '../types/clientInvitation';
+
+const ORDERABLE_TEMPLATES = [...STANDARD_TEMPLATES, ...TEMPLATES];
 
 interface WhatsAppOrderModalProps {
   isOpen: boolean;
@@ -19,7 +22,7 @@ export const WhatsAppOrderModal: React.FC<WhatsAppOrderModalProps> = ({
   // Nomor WhatsApp Resmi Pemesanan Sekarsiti Studio
   const adminPhone = '6283850714456';
 
-  const [selectedTemplateId, setSelectedTemplateId] = useState(TEMPLATES[0].id);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(ORDERABLE_TEMPLATES[0].id);
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [brideName, setBrideName] = useState('');
@@ -33,12 +36,12 @@ export const WhatsAppOrderModal: React.FC<WhatsAppOrderModalProps> = ({
     if (preselectedItem) {
       setSelectedTemplateId(preselectedItem.id);
     } else {
-      setSelectedTemplateId(TEMPLATES[0].id);
+      setSelectedTemplateId(ORDERABLE_TEMPLATES[0].id);
     }
   }, [preselectedItem, isOpen]);
 
   const selectedTemplate = useMemo(() => {
-    return TEMPLATES.find((t) => t.id === selectedTemplateId) || preselectedItem || TEMPLATES[0];
+    return ORDERABLE_TEMPLATES.find((t) => t.id === selectedTemplateId) || preselectedItem || ORDERABLE_TEMPLATES[0];
   }, [selectedTemplateId, preselectedItem]);
 
   if (!isOpen) return null;
@@ -165,7 +168,7 @@ Mohon informasi nomor rekening untuk DP dan aktivasi Portal Mempelai. Terima kas
               onChange={(e) => setSelectedTemplateId(e.target.value)}
               className="w-full text-xs sm:text-sm p-2.5 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
             >
-              {TEMPLATES.map((item) => (
+              {ORDERABLE_TEMPLATES.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.title} — {item.styleLabel} ({new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)})
                 </option>

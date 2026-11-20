@@ -1,4 +1,5 @@
-import { TemplateId, ClientInvitationData } from '../types/clientInvitation';
+import { StandardTemplateId, TemplateId, ClientInvitationData } from '../types/clientInvitation';
+import { STANDARD_TEMPLATES } from '../data/standardCatalog';
 
 export interface MediaSlotDefinition {
   key: string;
@@ -25,6 +26,63 @@ export interface TemplateDefinition {
   hasWaxSeal: boolean;
   defaultData: Partial<ClientInvitationData>;
 }
+
+const standardTemplateRegistry = Object.fromEntries(
+  STANDARD_TEMPLATES.map((template) => {
+    const id = template.id as StandardTemplateId;
+    const imageSlot = (key: string, label: string, description: string, aspectRatio: string, isMultiple = false) => ({
+      key,
+      label,
+      description,
+      aspectRatio,
+      ...(isMultiple ? { isMultiple: true } : {}),
+    });
+
+    return [id, {
+      id,
+      name: template.title,
+      styleLabel: template.styleLabel,
+      demoComponentKey: id,
+      coverThumbnail: template.image,
+      description: template.description,
+      hasDresscode: false,
+      hasFilmstrip: false,
+      hasStoryChapters: false,
+      hasWaxSeal: false,
+      mediaSlots: [
+        ...(id === 'standar-sahaja' || id === 'standar-botanika' || id === 'standar-kalatidha' || id === 'standar-grand-pelaminan' || id === 'standar-serenade-camelia' || id === 'standar-timeless-botanical' || id === 'standar-voilier-de-soie' ? [
+        imageSlot('heroImage', 'Foto sampul dan pembuka', 'Foto utama untuk sampul atau bagian pembuka template.', '16:9 atau 4:5'),
+        imageSlot('bridePortrait', 'Potret utama pasangan', 'Foto potret pasangan yang ditampilkan pada bagian profil kedua mempelai.', '3:4'),
+        imageSlot('galleryImages', 'Galeri momen', 'Koleksi foto untuk bagian galeri template.', 'Bebas', true),
+        ] : []),
+      ],
+      defaultData: {
+        brideName: template.demoData.brideName,
+        brideFullName: template.demoData.brideName,
+        brideParents: '',
+        groomName: template.demoData.groomName,
+        groomFullName: template.demoData.groomName,
+        groomParents: '',
+        eventDateFormatted: template.demoData.eventDate,
+        countdownIsoDate: template.demoData.countdownDate,
+        akadTime: '08.00 – 10.00 WIB',
+        akadVenue: template.demoData.location,
+        resepsiTime: '11.00 – 14.00 WIB',
+        resepsiVenue: template.demoData.location,
+        city: template.demoData.city,
+        mapsUrl: 'https://maps.google.com',
+        quoteText: template.demoData.loveQuote,
+        quoteSource: '',
+        bankName: template.demoData.bankName,
+        accountNumber: template.demoData.accountNumber,
+        accountHolder: template.demoData.accountHolder,
+        songTitle: template.demoData.songTitle,
+        audioUrl: template.demoData.audioUrl || '',
+        mediaSlots: { galleryImages: [] },
+      },
+    } satisfies TemplateDefinition];
+  })
+) as unknown as Record<StandardTemplateId, TemplateDefinition>;
 
 export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
   'ruang-rasa': {
@@ -1104,5 +1162,6 @@ export const TEMPLATE_REGISTRY: Record<TemplateId, TemplateDefinition> = {
         ]
       }
     }
-  }
+  },
+  ...standardTemplateRegistry,
 };

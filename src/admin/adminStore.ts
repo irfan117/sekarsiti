@@ -368,6 +368,9 @@ export class AdminStore {
       },
       accessCode: payload.accessCode || slug || id,
       pinCode: payload.pinCode || String(Math.floor(1000 + Math.random() * 9000)),
+      packageTier: payload.packageTier || 'essential',
+      designMode: payload.designMode || 'with_photos',
+      paymentStatus: payload.paymentStatus || 'unpaid',
       referralCode: payload.referralCode || '',
       referralCommission: payload.referralCommission,
       referralPaidAt: payload.referralPaidAt,
@@ -699,6 +702,37 @@ export class AdminStore {
         clientName: updated.clientName,
         templateId: updated.templateId,
         isPublished: updated.status === 'published',
+        referralCode: updated.referralCode
+      });
+    }
+
+    return updated;
+  }
+
+  static markAsPaidAndPublished(id: string): ClientInvitationData {
+    const orders = this.getStore();
+    const index = orders.findIndex(item => item.id === id || item.slug === id);
+    if (index === -1) {
+      throw new Error(`Order with id ${id} not found`);
+    }
+
+    const updated: ClientInvitationData = {
+      ...orders[index],
+      status: 'published',
+      paymentStatus: 'settlement',
+      updatedAt: new Date().toISOString()
+    };
+
+    orders[index] = updated;
+    this.saveStore(orders);
+    this.syncToSupabase(updated);
+
+    if (updated.referralCode) {
+      ReferralStore.syncInvitationReferral({
+        invitationId: updated.id,
+        clientName: updated.clientName,
+        templateId: updated.templateId,
+        isPublished: true,
         referralCode: updated.referralCode
       });
     }

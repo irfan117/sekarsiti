@@ -32,8 +32,10 @@ interface PortalShareTabProps {
 import { safeCopyToClipboard } from '../../utils/clipboardUtils';
 
 export const PortalShareTab: React.FC<PortalShareTabProps> = ({ client }) => {
+  const isEssential = client.packageTier === 'essential';
+
   // Mode pilihan: 'universal' (Satu Undangan untuk Semua Tanpa Nama) | 'personal' (Tamu Khusus & Impor Excel)
-  const [shareType, setShareType] = useState<'universal' | 'personal'>('personal');
+  const [shareType, setShareType] = useState<'universal' | 'personal'>(isEssential ? 'universal' : 'personal');
 
   // State Mode Universal (Satu Undangan untuk Semua)
   const [universalStyle, setUniversalStyle] = useState<'hide_name' | 'general_greeting'>('hide_name');
@@ -371,61 +373,73 @@ Terima kasih,
           {/* Kolom Kiri: Impor Excel & Form Buat Link Tamu */}
           <div className="lg:col-span-5 space-y-5">
             {/* Kotak Impor Excel & Unduh Template */}
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-3.5">
-              <div>
-                <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-                  <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
-                  <span>Impor Daftar Tamu dari Excel</span>
-                </h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-                  Punya banyak daftar tamu? Unduh template Excel resmi kami, isi nama tamu &amp; nomor WA, lalu unggah untuk membuat ratusan link sekaligus.
+            {!isEssential ? (
+              <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-3.5">
+                <div>
+                  <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
+                    <span>Impor Daftar Tamu dari Excel</span>
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                    Punya banyak daftar tamu? Unduh template Excel resmi kami, isi nama tamu &amp; nomor WA, lalu unggah untuk membuat ratusan link sekaligus.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => downloadGuestExcelTemplate(client.slug || client.id)}
+                    className="py-2 px-3 rounded-xl border border-stone-200 hover:bg-stone-50 text-stone-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5 text-[#C5A880]" />
+                    <span>Template Excel (.xlsx)</span>
+                  </button>
+
+                  <input
+                    ref={excelInputRef}
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    onChange={handleImportExcel}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => excelInputRef.current?.click()}
+                    className="py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Impor File Excel</span>
+                  </button>
+                </div>
+
+                {excelNotice && (
+                  <div
+                    className={`p-2.5 rounded-xl border flex items-center gap-2 text-[11px] ${
+                      excelNotice.type === 'success'
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                        : 'bg-red-50 border-red-200 text-red-700'
+                    }`}
+                  >
+                    {excelNotice.type === 'success' ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                    )}
+                    <span>{excelNotice.text}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80 text-xs text-amber-900 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-xs text-amber-950">
+                  <Sparkles className="w-4 h-4 text-[#C5A880]" />
+                  <span>Seri Esensial Editorial: Sebar Praktis</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-amber-800/90">
+                  Anda dapat membuat tautan personal satu per satu melalui formulir di bawah, atau gunakan tab <strong>Satu Link untuk Semua</strong> di atas untuk menyalin pesan undangan langsung ke WhatsApp.
                 </p>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => downloadGuestExcelTemplate(client.slug || client.id)}
-                  className="py-2 px-3 rounded-xl border border-stone-200 hover:bg-stone-50 text-stone-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Template Excel (.xlsx)</span>
-                </button>
-
-                <input
-                  ref={excelInputRef}
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={handleImportExcel}
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={() => excelInputRef.current?.click()}
-                  className="py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Impor File Excel</span>
-                </button>
-              </div>
-
-              {excelNotice && (
-                <div
-                  className={`p-2.5 rounded-xl border flex items-center gap-2 text-[11px] ${
-                    excelNotice.type === 'success'
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                      : 'bg-red-50 border-red-200 text-red-700'
-                  }`}
-                >
-                  {excelNotice.type === 'success' ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                  )}
-                  <span>{excelNotice.text}</span>
-                </div>
-              )}
-            </div>
+            )}
 
             {/* Form Tambah Tamu Satu per Satu */}
             <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-sm space-y-4">
@@ -522,15 +536,17 @@ Terima kasih,
               <div className="flex items-center gap-2">
                 {(client.guestLinks?.length || 0) > 0 && (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => setIsBlastModalOpen(true)}
-                      className="px-3 py-1.5 bg-[#25D366] hover:bg-[#20bd54] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm transition-all cursor-pointer shrink-0"
-                      title="Mulai pengiriman otomatis berurutan"
-                    >
-                      <Zap className="w-3.5 h-3.5 fill-white" />
-                      <span>Mode WA Blast</span>
-                    </button>
+                    {!isEssential && (
+                      <button
+                        type="button"
+                        onClick={() => setIsBlastModalOpen(true)}
+                        className="px-3 py-1.5 bg-[#25D366] hover:bg-[#20bd54] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm transition-all cursor-pointer shrink-0"
+                        title="Mulai pengiriman otomatis berurutan"
+                      >
+                        <Zap className="w-3.5 h-3.5 fill-white" />
+                        <span>Mode WA Blast</span>
+                      </button>
+                    )}
 
                     <button
                       type="button"

@@ -1,0 +1,2134 @@
+<!--
+DESIGN CONCEPT BRIEF — "LANGIT PORSELEN & MEKAR POPPY COBALT"
+Narasi: Undangan pernikahan bergaya cetakan relief porselen Cobalt-Blue & Vermilion untuk Nadia & Raka, di mana kisah cinta bertumbuh layaknya bunga poppy di atas kertas alabaster.
+Palet 60-30-10 (:root): 60% Porcelain Alabaster (#F7F5F0 & #EFECE4), 30% Deep Cobalt Indigo (#16213E & #2B3B66), 10% Poppy Vermilion (#D94E34 & #E88D72).
+Pasangan Font: Display 'Cormorant Garamond' (serif editorial berlekuk organik selaras kelopak poppy) & Body 'Plus Jakarta Sans' (sans-serif geometris presisi).
+Motif Ornamen Utama: Bunga Poppy Mekar & Ranting Polong Kering dengan gaya ilustrasi Layered Paper-Cut & Hand-Ink Line Art berlapis 3 warna palet.
+Signature Element: Mekanisme Tarik Pita Segel Poppy interaktif pada sampul serta botani tumbuh (pathLength) & kelopak mekar pada titik pivot pangkal yang terhubung langsung ke progres scroll (--p).
+Tata Letak Khas: Komposisi asimetris lembaran porselen berjilid—teks rata kiri/kanan bergantian, tipografi raksasa terpotong tepi, dan ornamen skala layar penuh yang berbeda di setiap ruang.
+-->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Nadia &amp; Raka — Langit Porselen &amp; Mekar Poppy | Undangan Pernikahan</title>
+
+  <!-- Google Fonts: Cormorant Garamond (Display) & Plus Jakarta Sans (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            porcelain: {
+              50: '#FBF9F5',
+              100: '#F7F5F0',
+              200: '#EFECE4',
+              300: '#E2DDD1'
+            },
+            cobalt: {
+              950: '#0E162B',
+              900: '#16213E',
+              800: '#213159',
+              700: '#2B3B66',
+              500: '#5C73AD',
+              300: '#A5B4D9'
+            },
+            poppy: {
+              600: '#BF3E26',
+              500: '#D94E34',
+              400: '#E36C54',
+              300: '#E88D72',
+              200: '#F2BEB0'
+            }
+          },
+          fontFamily: {
+            display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            body: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* =====================================================================
+       1. DESIGN TOKENS & CSS VARIABLES (60-30-10 RATIO, ZERO GREEN)
+    ====================================================================== */
+    :root {
+      --bg-paper: #F7F5F0;          /* 60% Primary Porcelain Alabaster */
+      --bg-paper-tint: #EFECE4;     /* Secondary Porcelain Relief */
+      --ink-cobalt: #16213E;        /* 30% Deep Cobalt Indigo */
+      --ink-cobalt-mid: #2B3B66;
+      --ink-cobalt-soft: #5C73AD;
+      --accent-poppy: #D94E34;      /* 10% Poppy Vermilion */
+      --accent-petal: #E88D72;      /* Inner Poppy Petal Coral */
+      --accent-blush: #F2BEB0;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #0E162B;
+      color: var(--ink-cobalt);
+      font-family: var(--font-body);
+      overflow: hidden;
+    }
+
+    /* =====================================================================
+       2. FULL-SVH SCROLL-SNAP STAGE (EXACT 100svh PER ROOM)
+    ====================================================================== */
+    .porcelain-scroller {
+      height: 100svh;
+      width: 100%;
+      overflow-y: hidden; /* Unlocked upon opening the Poppy Ribbon Cover */
+      overflow-x: hidden;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      position: relative;
+    }
+
+    .porcelain-scroller.is-unlocked {
+      overflow-y: auto;
+    }
+
+    .porcelain-scroller::-webkit-scrollbar {
+      width: 3px;
+    }
+    .porcelain-scroller::-webkit-scrollbar-track {
+      background: var(--ink-cobalt);
+    }
+    .porcelain-scroller::-webkit-scrollbar-thumb {
+      background: var(--accent-poppy);
+    }
+
+    .porcelain-room {
+      --p: 0; /* Scroll progress 0..1 */
+      --a: 0; /* Active visibility 0..1 */
+      height: 100svh;
+      min-height: 100svh;
+      max-height: 100svh;
+      width: 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* =====================================================================
+       3. COVER CURTAIN & INTERACTIVE POPPY RIBBON PULL
+    ====================================================================== */
+    #cover-curtain {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      height: 100svh;
+      width: 100%;
+      background-color: var(--bg-paper);
+      transition: transform 920ms cubic-bezier(0.77, 0, 0.175, 1), opacity 820ms ease;
+      will-change: transform;
+    }
+
+    #cover-curtain.is-opened {
+      transform: translateY(-102%);
+      pointer-events: none;
+    }
+
+    /* =====================================================================
+       4. BOTANICAL POPPY MOTION CHOREOGRAPHY (PIVOTS, SWAY, BLOOM, DRAW)
+    ====================================================================== */
+    /* Organic Wind Sway with Distinct Phases & Pivot Origins */
+    @keyframes poppyWindSwayA {
+      0%, 100% { transform: rotate(-2.4deg); }
+      50% { transform: rotate(2.8deg); }
+    }
+    @keyframes poppyWindSwayB {
+      0%, 100% { transform: rotate(2.2deg); }
+      50% { transform: rotate(-2.6deg); }
+    }
+    @keyframes poppyHeadNod {
+      0%, 100% { transform: rotate(-3.5deg) scale(1); }
+      50% { transform: rotate(3.2deg) scale(1.02); }
+    }
+
+    .sway-stem-slow {
+      transform-box: fill-box;
+      transform-origin: 50% 96%;
+      animation: poppyWindSwayA 7.4s ease-in-out infinite;
+    }
+    .sway-stem-alt {
+      transform-box: fill-box;
+      transform-origin: 50% 96%;
+      animation: poppyWindSwayB 6.2s ease-in-out infinite;
+      animation-delay: -1.8s;
+    }
+    .sway-head-pivot {
+      transform-box: fill-box;
+      transform-origin: 50% 50%;
+      animation: poppyHeadNod 5.6s ease-in-out infinite;
+      animation-delay: -0.9s;
+    }
+
+    /* Staggered Blooming Petals When Room Enters View */
+    .bloom-petal {
+      transform-box: fill-box;
+      transform-origin: 50% 50%;
+      transform: scale(0.15) rotate(-18deg);
+      opacity: 0;
+      transition: transform 950ms cubic-bezier(0.22, 1, 0.36, 1), opacity 650ms ease;
+    }
+    .room-active .bloom-petal {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+
+    /* Interactive Tap-to-Bloom Burst */
+    @keyframes tapBloomBurst {
+      0% { transform: scale(1) rotate(0deg); }
+      40% { transform: scale(1.16) rotate(11deg); }
+      75% { transform: scale(0.96) rotate(-4deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .is-tapped-bloom {
+      animation: tapBloomBurst 680ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Staggered Masked Editorial Text Reveal */
+    .text-mask {
+      overflow: hidden;
+      display: block;
+    }
+    .text-mask-inner {
+      display: block;
+      transform: translateY(108%);
+      opacity: 0;
+      transition: transform 820ms cubic-bezier(0.22, 1, 0.36, 1), opacity 650ms ease;
+    }
+    .room-active .text-mask-inner {
+      transform: translateY(0%);
+      opacity: 1;
+    }
+
+    /* Big-Type Kinetic Outline-to-Fill Transition */
+    .kinetic-outline-text {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(22, 33, 62, 0.24);
+      transition: color 600ms ease;
+    }
+    .room-active .kinetic-outline-text {
+      color: rgba(22, 33, 62, 0.06);
+    }
+
+    /* Countdown Digit Slide Flip */
+    @keyframes digitSlideUp {
+      0% { opacity: 0; transform: translateY(55%); }
+      100% { opacity: 1; transform: translateY(0%); }
+    }
+    .digit-flip {
+      display: inline-block;
+      animation: digitSlideUp 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Audio Flower Disc Spin */
+    @keyframes flowerDiscSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .flower-spinning {
+      animation: flowerDiscSpin 10s linear infinite;
+    }
+    .flower-paused {
+      animation-play-state: paused;
+    }
+
+    /* Guestbook New Wish Slide-In */
+    @keyframes wishArrive {
+      0% { opacity: 0; transform: translateY(-10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .wish-new {
+      animation: wishArrive 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Desktop Subtle Pointer Ornament Ring */
+    #desktop-botanical-cursor {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(217, 78, 52, 0.65);
+      border-radius: 9999px;
+      transform: translate(-50%, -50%);
+      z-index: 70;
+      display: none;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      #desktop-botanical-cursor {
+        display: block;
+      }
+    }
+
+    /* =====================================================================
+       5. ACCESSIBILITY: PREFERS-REDUCED-MOTION
+    ====================================================================== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .text-mask-inner, .bloom-petal {
+        transform: none !important;
+        opacity: 1 !important;
+      }
+      #desktop-botanical-cursor {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-poppy-500 selection:text-porcelain-50">
+
+  <!-- =====================================================================
+       HANDCRAFTED SVG ORNAMENT SYMBOL LIBRARY (POPPY & DRIED PODS FAMILY)
+       Zero Photos. Layered Paper-Cut + Hand-Ink Line Art (Cobalt & Vermilion).
+  ====================================================================== -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden" aria-hidden="true">
+    <defs>
+      <!-- 1. LARGE LAYERED POPPY BLOOM (#orn-poppy-bloom) | Pivot: (110, 110) -->
+      <symbol id="orn-poppy-bloom" viewBox="0 0 220 220">
+        <!-- Outer Ruffled Vermilion Petals (Asymmetric Organic Bezier Curves) -->
+        <g>
+          <path d="M110 108 C86 64, 34 52, 26 92 C19 124, 58 138, 108 112 Z" fill="var(--p-outer, #D94E34)" stroke="var(--p-ink, #16213E)" stroke-width="1.2"/>
+          <path d="M110 108 C126 56, 178 44, 192 84 C203 116, 162 136, 112 112 Z" fill="var(--p-outer, #D94E34)" stroke="var(--p-ink, #16213E)" stroke-width="1.2"/>
+          <path d="M108 112 C62 122, 36 168, 74 192 C104 210, 122 168, 110 114 Z" fill="var(--p-outer, #D94E34)" stroke="var(--p-ink, #16213E)" stroke-width="1.2"/>
+          <path d="M112 112 C156 124, 184 166, 148 192 C118 212, 102 168, 110 114 Z" fill="var(--p-outer, #D94E34)" stroke="var(--p-ink, #16213E)" stroke-width="1.2"/>
+          <path d="M110 108 C78 52, 92 18, 118 22 C144 26, 142 62, 112 108 Z" fill="var(--p-outer, #D94E34)" stroke="var(--p-ink, #16213E)" stroke-width="1.2"/>
+        </g>
+        <!-- Middle Paper-Cut Coral-Blush Layer -->
+        <g>
+          <path d="M110 110 C82 78, 54 84, 58 112 C62 136, 90 132, 109 112 Z" fill="var(--p-mid, #E88D72)" stroke="var(--p-ink, #16213E)" stroke-width="0.9"/>
+          <path d="M110 110 C138 78, 166 86, 162 114 C158 136, 130 132, 111 112 Z" fill="var(--p-mid, #E88D72)" stroke="var(--p-ink, #16213E)" stroke-width="0.9"/>
+          <path d="M110 110 C92 70, 110 46, 128 54 C144 62, 132 88, 111 110 Z" fill="var(--p-mid, #E88D72)" stroke="var(--p-ink, #16213E)" stroke-width="0.9"/>
+          <path d="M110 112 C88 138, 96 168, 118 164 C138 160, 132 134, 111 112 Z" fill="var(--p-mid, #E88D72)" stroke="var(--p-ink, #16213E)" stroke-width="0.9"/>
+        </g>
+        <!-- Delicate Hand-Ink Petal Veins -->
+        <g stroke="var(--p-ink, #16213E)" stroke-width="0.7" stroke-opacity="0.45" fill="none" stroke-linecap="round">
+          <path d="M104 106 Q72 88 46 92"/>
+          <path d="M116 106 Q148 86 174 88"/>
+          <path d="M110 102 Q112 66 116 40"/>
+          <path d="M106 116 Q88 152 80 176"/>
+          <path d="M114 116 Q134 152 142 176"/>
+        </g>
+        <!-- Inner Porcelain Relief Ring & Cobalt Stamen Crown -->
+        <circle cx="110" cy="110" r="21" fill="var(--p-inner, #F7F5F0)" stroke="var(--p-ink, #16213E)" stroke-width="1.1"/>
+        <circle cx="110" cy="110" r="14" fill="none" stroke="var(--p-ink, #16213E)" stroke-width="1.4" stroke-dasharray="2.5 3.5"/>
+        <circle cx="110" cy="110" r="9.5" fill="var(--p-ink, #16213E)"/>
+        <circle cx="110" cy="110" r="4" fill="var(--p-outer, #D94E34)"/>
+        <!-- Radiating Stamen Dots -->
+        <g fill="var(--p-ink, #16213E)">
+          <circle cx="110" cy="92" r="1.7"/><circle cx="123" cy="97" r="1.7"/>
+          <circle cx="128" cy="110" r="1.7"/><circle cx="123" cy="123" r="1.7"/>
+          <circle cx="110" cy="128" r="1.7"/><circle cx="97" cy="123" r="1.7"/>
+          <circle cx="92" cy="110" r="1.7"/><circle cx="97" cy="97" r="1.7"/>
+        </g>
+      </symbol>
+
+      <!-- 2. LONG CURVED POPPY STEM WITH COBALT LEAVES & NODDING BUD (#orn-poppy-stem) -->
+      <symbol id="orn-poppy-stem" viewBox="0 0 180 340">
+        <!-- Main Curved Stem -->
+        <path d="M88 334 C84 265, 114 210, 96 142 C82 90, 98 48, 112 18" fill="none" stroke="var(--s-ink, #16213E)" stroke-width="2.1" stroke-linecap="round"/>
+        <!-- Side Branch to Nodding Poppy Bud -->
+        <path d="M98 188 C68 172, 46 142, 42 108 C40 94, 48 86, 56 92" fill="none" stroke="var(--s-ink, #16213E)" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Nodding Poppy Bud (Cobalt & Vermilion Split) -->
+        <g transform="translate(56, 94) rotate(22)">
+          <path d="M0 0 C-10 8, -12 24, 0 32 C12 24, 10 8, 0 0 Z" fill="var(--s-accent, #D94E34)" stroke="var(--s-ink, #16213E)" stroke-width="1.1"/>
+          <path d="M0 0 C-8 6, -9 18, 0 22 C9 18, 8 6, 0 0 Z" fill="var(--s-leaf, #2B3B66)"/>
+        </g>
+        <!-- Serrated Cobalt-Blue Poppy Leaves (Zero Green!) -->
+        <path d="M92 268 C118 256, 148 232, 162 204 C144 208, 134 216, 128 212 C134 202, 142 192, 146 184 C126 196, 106 226, 92 268 Z" fill="var(--s-leaf, #2B3B66)" fill-opacity="0.88" stroke="var(--s-ink, #16213E)" stroke-width="1"/>
+        <path d="M94 234 C66 222, 36 202, 20 176 C36 180, 46 186, 52 182 C46 172, 38 164, 34 156 C56 168, 76 196, 94 234 Z" fill="var(--s-leaf-soft, #5C73AD)" fill-opacity="0.85" stroke="var(--s-ink, #16213E)" stroke-width="1"/>
+        <path d="M96 146 C118 134, 142 114, 152 92 C136 96, 126 104, 118 112 C110 122, 102 134, 96 146 Z" fill="var(--s-leaf, #2B3B66)" fill-opacity="0.8" stroke="var(--s-ink, #16213E)" stroke-width="0.9"/>
+      </symbol>
+
+      <!-- 3. DRIED TWIG WITH POPPY SEED PODS (#orn-dried-twig) -->
+      <symbol id="orn-dried-twig" viewBox="0 0 180 280">
+        <g fill="none" stroke="var(--t-ink, #16213E)" stroke-linecap="round">
+          <path d="M32 272 C46 208, 42 146, 78 86 C96 56, 124 34, 148 16" stroke-width="1.8"/>
+          <path d="M52 192 C86 178, 122 168, 154 142" stroke-width="1.3"/>
+          <path d="M62 128 C38 106, 26 78, 22 48" stroke-width="1.3"/>
+          <path d="M94 64 C118 68, 144 64, 164 52" stroke-width="1.1"/>
+        </g>
+        <!-- Sculpted Poppy Seed Capsules -->
+        <g transform="translate(148, 16) rotate(35)">
+          <ellipse cx="0" cy="0" rx="7" ry="11" fill="var(--t-pod, #EFECE4)" stroke="var(--t-ink, #16213E)" stroke-width="1.2"/>
+          <path d="M-8 -10 Q0 -14 8 -10" fill="none" stroke="var(--t-accent, #D94E34)" stroke-width="2"/>
+          <line x1="0" y1="-10" x2="0" y2="10" stroke="var(--t-ink, #16213E)" stroke-width="0.8"/>
+        </g>
+        <g transform="translate(154, 142) rotate(58)">
+          <ellipse cx="0" cy="0" rx="6" ry="9.5" fill="var(--t-pod, #EFECE4)" stroke="var(--t-ink, #16213E)" stroke-width="1.1"/>
+          <path d="M-7 -9 Q0 -12 7 -9" fill="none" stroke="var(--t-accent, #D94E34)" stroke-width="1.8"/>
+        </g>
+        <g transform="translate(22, 48) rotate(-18)">
+          <ellipse cx="0" cy="0" rx="6.5" ry="10" fill="var(--t-pod, #EFECE4)" stroke="var(--t-ink, #16213E)" stroke-width="1.1"/>
+          <path d="M-7 -9 Q0 -13 7 -9" fill="none" stroke="var(--t-accent, #D94E34)" stroke-width="1.8"/>
+        </g>
+      </symbol>
+
+      <!-- 4. SINGLE FALLING POPPY PETAL (#orn-poppy-petal) | Pivot: (22, 54) -->
+      <symbol id="orn-poppy-petal" viewBox="0 0 48 60">
+        <path d="M22 55 C8 44, 4 22, 16 8 C24 2, 36 6, 42 18 C46 30, 36 46, 22 55 Z" fill="var(--pt-fill, #D94E34)" stroke="var(--pt-ink, #16213E)" stroke-width="0.9"/>
+        <path d="M22 53 Q20 32 24 12 M22 53 Q14 36 14 20 M22 53 Q30 36 33 22" fill="none" stroke="var(--pt-ink, #16213E)" stroke-width="0.6" stroke-opacity="0.45"/>
+      </symbol>
+
+      <!-- 5. SMALL FILLER: POPPY SEED POD & POLLEN SPECKS (#orn-seed-bud) -->
+      <symbol id="orn-seed-bud" viewBox="0 0 44 64">
+        <path d="M22 62 L22 34" stroke="var(--b-ink, #16213E)" stroke-width="1.3" stroke-linecap="round"/>
+        <ellipse cx="22" cy="22" rx="9" ry="13" fill="var(--b-fill, #EFECE4)" stroke="var(--b-ink, #16213E)" stroke-width="1.2"/>
+        <path d="M12 10 Q22 5 32 10" fill="none" stroke="var(--b-accent, #D94E34)" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M17 11 L18 33 M22 10 L22 34 M27 11 L26 33" stroke="var(--b-ink, #16213E)" stroke-width="0.75"/>
+      </symbol>
+
+      <!-- 6. HERO SECTION MEDALLION / WREATH CREST (#orn-poppy-medallion) -->
+      <symbol id="orn-poppy-medallion" viewBox="0 0 360 360">
+        <!-- Double Hand-Inked Porcelain Ring -->
+        <circle cx="180" cy="180" r="154" fill="none" stroke="var(--m-ink, #16213E)" stroke-width="1.1" stroke-opacity="0.45"/>
+        <circle cx="180" cy="180" r="144" fill="none" stroke="var(--m-ink, #16213E)" stroke-width="0.8" stroke-dasharray="3 5" stroke-opacity="0.55"/>
+        <!-- Sweeping Dried Cobalt Twigs Following Arc -->
+        <path d="M44 236 C24 166, 52 88, 118 48" fill="none" stroke="var(--m-ink, #16213E)" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M316 124 C336 194, 308 272, 242 312" fill="none" stroke="var(--m-ink, #16213E)" stroke-width="1.7" stroke-linecap="round"/>
+        <!-- Cobalt Leaves Along Rim -->
+        <path d="M42 192 C20 182, 12 162, 18 144 C30 156, 38 172, 42 192 Z" fill="var(--m-leaf, #2B3B66)"/>
+        <path d="M58 122 C36 106, 34 84, 46 68 C54 84, 58 102, 58 122 Z" fill="var(--m-leaf-soft, #5C73AD)"/>
+        <path d="M318 168 C340 178, 348 198, 342 216 C330 204, 322 188, 318 168 Z" fill="var(--m-leaf, #2B3B66)"/>
+        <path d="M302 238 C324 254, 326 276, 314 292 C306 276, 302 258, 302 238 Z" fill="var(--m-leaf-soft, #5C73AD)"/>
+        <!-- Asymmetric Cluster of Three Layered Poppy Blooms -->
+        <use href="#orn-poppy-bloom" x="28" y="218" width="118" height="118"/>
+        <use href="#orn-poppy-bloom" x="216" y="24" width="112" height="112"/>
+        <use href="#orn-poppy-bloom" x="116" y="268" width="76" height="76"/>
+        <!-- Seed Pods Accenting Opposite Corners -->
+        <use href="#orn-seed-bud" x="114" y="18" width="32" height="46" transform="rotate(-24 130 41)"/>
+        <use href="#orn-seed-bud" x="216" y="294" width="32" height="46" transform="rotate(154 232 317)"/>
+      </symbol>
+
+      <!-- 7. BOTANICAL HORIZONTAL DIVIDER (#orn-divider-poppy) -->
+      <symbol id="orn-divider-poppy" viewBox="0 0 320 34">
+        <line x1="6" y1="17" x2="124" y2="17" stroke="currentColor" stroke-opacity="0.28" stroke-width="1"/>
+        <line x1="196" y1="17" x2="314" y2="17" stroke="currentColor" stroke-opacity="0.28" stroke-width="1"/>
+        <circle cx="132" cy="17" r="2" fill="#D94E34"/>
+        <circle cx="188" cy="17" r="2" fill="#D94E34"/>
+        <!-- Central Small Poppy Bud Emblem -->
+        <path d="M160 6 C151 11, 149 21, 160 28 C171 21, 169 11, 160 6 Z" fill="#D94E34"/>
+        <path d="M144 17 C149 12, 154 13, 157 17 C154 21, 149 22, 144 17 Z" fill="currentColor" fill-opacity="0.7"/>
+        <path d="M176 17 C171 12, 166 13, 163 17 C166 21, 171 22, 176 17 Z" fill="currentColor" fill-opacity="0.7"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- Desktop Subtle Pointer Follower Ring -->
+  <div id="desktop-botanical-cursor" aria-hidden="true"></div>
+
+  <!-- Desktop Outer Ambient Backdrop Pattern (Porcelain Poppy Line Art on Deep Cobalt) -->
+  <div class="fixed inset-0 pointer-events-none hidden md:flex items-center justify-between px-10 opacity-20" aria-hidden="true">
+    <svg class="w-72 h-72 text-porcelain-100" style="--m-ink: #F7F5F0; --m-leaf: #5C73AD; --m-leaf-soft: #A5B4D9; --p-outer: #D94E34; --p-mid: #E88D72; --p-inner: #16213E; --p-ink: #F7F5F0;">
+      <use href="#orn-poppy-medallion"/>
+    </svg>
+    <svg class="w-72 h-72 text-porcelain-100 rotate-180" style="--m-ink: #F7F5F0; --m-leaf: #5C73AD; --m-leaf-soft: #A5B4D9; --p-outer: #D94E34; --p-mid: #E88D72; --p-inner: #16213E; --p-ink: #F7F5F0;">
+      <use href="#orn-poppy-medallion"/>
+    </svg>
+  </div>
+
+  <!-- Centered Mobile-First Porcelain Broadsheet Column (max-w-[480px]) -->
+  <div class="relative mx-auto w-full max-w-[480px] h-[100svh] bg-porcelain-100 shadow-[0_0_90px_rgba(0,0,0,0.65)] border-x border-porcelain-100/15 overflow-hidden">
+
+    <!-- Top Hairline Scroll Progress Bar -->
+    <div class="absolute top-0 left-0 right-0 h-[3px] bg-cobalt-900/15 z-40 pointer-events-none">
+      <div id="scroll-progress-bar" class="h-full w-0 bg-poppy-500 transition-[width] duration-100 ease-out"></div>
+    </div>
+
+    <!-- Fixed Editorial Room Index Header -->
+    <header class="absolute top-3.5 left-5 right-5 z-40 flex items-center justify-between pointer-events-none mix-blend-difference text-porcelain-50">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-poppy-500"></span>
+        <span class="text-[9.5px] font-semibold tracking-[0.26em] uppercase">PORSELEN &amp; POPPY • N&amp;R</span>
+      </div>
+      <div class="text-[10.5px] font-bold tracking-[0.22em] tabular-nums">
+        <span id="current-room-num">01</span>
+        <span class="opacity-50 mx-0.5">/</span>
+        <span class="opacity-70">08</span>
+      </div>
+    </header>
+
+    <!-- ===================================================================
+         COVER CURTAIN (100svh): POPPY MEDALLION & INTERACTIVE RIBBON PULL
+    ==================================================================== -->
+    <section id="cover-curtain" aria-label="Sampul Undangan Pernikahan Nadia dan Raka">
+      <!-- Giant Full-Scale Hero Medallion Ornament Behind Cover Card -->
+      <svg
+        aria-hidden="true"
+        class="pointer-events-none absolute -top-16 -right-20 w-[390px] h-[390px] sway-stem-slow opacity-95"
+      >
+        <use href="#orn-poppy-medallion"/>
+      </svg>
+
+      <!-- Lower Left Sweeping Poppy Stem Ornament -->
+      <svg
+        aria-hidden="true"
+        class="pointer-events-none absolute -bottom-8 -left-10 w-52 h-80 sway-stem-alt opacity-90"
+      >
+        <use href="#orn-poppy-stem"/>
+      </svg>
+
+      <!-- Cover Content Grid (Asymmetric Left-Weighted Editorial Layout) -->
+      <div class="relative z-10 h-full flex flex-col justify-between px-6 py-7 text-cobalt-900">
+        <!-- Top Porcelain Relief Header -->
+        <div class="flex items-center justify-between border-b border-cobalt-900/15 pb-3">
+          <div>
+            <p class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-poppy-500">
+              LEMBAR UNDANGAN RESMI
+            </p>
+            <p class="text-[11px] tracking-[0.14em] uppercase text-cobalt-900/75 mt-0.5">
+              21 NOVEMBER 2026 • YOGYAKARTA
+            </p>
+          </div>
+          <!-- Original Poppy & Pod Monogram N&R -->
+          <svg class="w-11 h-11 text-cobalt-900" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+            <circle cx="28" cy="28" r="25" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"/>
+            <path d="M15 39V17L27 39V17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M31 39V17H37.5C41 17 43 19.2 43 22.5C43 25.8 41 28 37.5 28H31M37 28L43.5 39" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="28" cy="10" r="2.5" fill="#D94E34"/>
+          </svg>
+        </div>
+
+        <!-- Asymmetric Main Title & Guest Pass -->
+        <div class="my-auto pr-4">
+          <span class="inline-block px-2.5 py-1 bg-cobalt-900 text-porcelain-50 text-[9px] font-bold tracking-[0.26em] uppercase mb-3">
+            PERAYAAN PERNIKAHAN
+          </span>
+
+          <h1 class="font-display text-[clamp(3.6rem,14.5vw,5.4rem)] leading-[0.88] font-normal text-cobalt-900 -ml-0.5">
+            Nadia<br />
+            <span class="italic text-poppy-500 pl-8">&amp; Raka</span>
+          </h1>
+
+          <!-- Guest Recipient Card (Populated Safely via URL ?to= or ?u=) -->
+          <div class="mt-7 bg-porcelain-50/95 border border-cobalt-900/20 border-l-4 border-l-poppy-500 p-4 shadow-sm max-w-[330px]">
+            <p class="text-[9px] font-bold tracking-[0.24em] uppercase text-cobalt-900/60">
+              KEPADA YTH. BAPAK / IBU / SAUDARA/I
+            </p>
+            <p id="cover-guest-name" class="mt-1.5 font-display text-2xl font-semibold text-cobalt-900 leading-snug break-words">
+              Tamu Undangan Terhormat
+            </p>
+            <p class="mt-1.5 text-[10.5px] text-cobalt-900/70">
+              Tanpa mengurangi rasa hormat, kami mengundang Anda hadir dalam hari bahagia kami.
+            </p>
+          </div>
+        </div>
+
+        <!-- Unique Signature Interaction: Pull / Tap Poppy Ribbon Seal -->
+        <div class="pt-2">
+          <div
+            id="poppy-ribbon-track"
+            role="button"
+            tabindex="0"
+            aria-label="Geser atau ketuk segel bunga poppy untuk membuka undangan"
+            class="relative h-14 w-full bg-cobalt-900 text-porcelain-50 border border-cobalt-900 overflow-hidden select-none cursor-pointer group"
+          >
+            <!-- Ribbon Stitch Line -->
+            <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 border-t border-dashed border-porcelain-100/30 pointer-events-none"></div>
+
+            <div class="absolute inset-y-0 right-0 left-16 flex items-center justify-between px-4 pointer-events-none">
+              <span id="poppy-ribbon-hint" class="text-[10px] font-bold tracking-[0.22em] uppercase text-porcelain-50/90 transition-opacity">
+                TARIK PITA POPPY / KETUK BUKA
+              </span>
+              <svg class="w-4 h-4 text-poppy-400 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M5 12H19M13 6L19 12L13 18"/>
+              </svg>
+            </div>
+
+            <!-- Draggable Poppy Seal Handle -->
+            <div
+              id="poppy-ribbon-thumb"
+              class="absolute top-0 bottom-0 left-0 w-16 bg-poppy-500 group-hover:bg-poppy-400 text-porcelain-50 flex items-center justify-center transition-colors"
+            >
+              <svg class="w-9 h-9" viewBox="0 0 220 220" aria-hidden="true" style="--p-outer: #F7F5F0; --p-mid: #F2BEB0; --p-inner: #D94E34; --p-ink: #16213E;">
+                <use href="#orn-poppy-bloom"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         MAIN SCROLL-SNAP CONTAINER (8 FULL-SVH PORCELAIN ROOMS)
+    ==================================================================== -->
+    <main id="porcelain-scroller" class="porcelain-scroller">
+
+      <!-- =================================================================
+           ROOM 01 (01/08): HERO & MONOGRAM (RIGHT-ANCHORED GIANT POPPY + TEXT MASK)
+      ================================================================== -->
+      <section id="room-hero" data-room="01" aria-label="Halaman Utama Nadia dan Raka" class="porcelain-room bg-porcelain-100 text-cobalt-900">
+        <!-- Multi-Layer Parallax Botanical Composition (Right-Anchored Giant Stem + Bloom) -->
+        <div id="hero-orn-back" aria-hidden="true" class="pointer-events-none absolute -top-10 -right-14 w-72 h-72 opacity-20 will-change-transform">
+          <svg class="w-full h-full">
+            <use href="#orn-dried-twig"/>
+          </svg>
+        </div>
+
+        <div id="hero-orn-front" aria-hidden="true" class="pointer-events-none absolute top-6 -right-16 w-[315px] h-[440px] will-change-transform">
+          <svg class="w-full h-full sway-stem-slow" viewBox="0 0 300 420">
+            <use href="#orn-poppy-stem" x="75" y="75" width="215" height="350"/>
+            <!-- Staggered Blooming Poppy Heads -->
+            <g class="bloom-petal" style="transition-delay: 220ms;">
+              <use href="#orn-poppy-bloom" x="58" y="8" width="215" height="215" class="sway-head-pivot"/>
+            </g>
+            <g class="bloom-petal" style="transition-delay: 420ms;">
+              <use href="#orn-poppy-bloom" x="18" y="168" width="110" height="110"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Subtle Giant Cropped Watermark Letter -->
+        <div aria-hidden="true" class="pointer-events-none select-none absolute -bottom-10 -right-6 font-display italic text-[11rem] leading-none text-cobalt-900/[0.04]">
+          26
+        </div>
+
+        <div class="relative z-10 h-full flex flex-col justify-between px-6 pt-14 pb-16">
+          <!-- Top Left Original Botanical Monogram N&R -->
+          <div class="flex items-start justify-between">
+            <div>
+              <svg class="w-16 h-16 text-cobalt-900" viewBox="0 0 76 76" fill="none" aria-label="Monogram Nadia dan Raka">
+                <circle cx="38" cy="38" r="35" stroke="currentColor" stroke-opacity="0.28" stroke-width="1"/>
+                <circle cx="38" cy="38" r="30" stroke="#D94E34" stroke-opacity="0.55" stroke-width="0.9" stroke-dasharray="2 3"/>
+                <path d="M21 50V26L35 50V26" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M40 50V26H48C52.2 26 54.5 28.5 54.5 32.2C54.5 36 52.2 38.5 48 38.5H40M47.5 38.5L55 50" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M38 12 C34 15, 34 19, 38 22 C42 19, 42 15, 38 12 Z" fill="#D94E34"/>
+              </svg>
+              <p class="mt-2 text-[9.5px] font-bold tracking-[0.28em] uppercase text-poppy-500">
+                THE WEDDING OF
+              </p>
+            </div>
+          </div>
+
+          <!-- Left-Aligned Staggered Masked Editorial Title -->
+          <div class="max-w-[330px]">
+            <h2 class="font-display text-[clamp(3.6rem,14vw,5.2rem)] leading-[0.89] font-normal text-cobalt-900">
+              <span class="text-mask">
+                <span class="text-mask-inner" style="transition-delay: 100ms;">Nadia</span>
+              </span>
+              <span class="text-mask">
+                <span class="text-mask-inner italic text-poppy-500 pl-6" style="transition-delay: 220ms;">
+                  <span class="not-italic text-cobalt-900">&amp;</span> Raka
+                </span>
+              </span>
+            </h2>
+
+            <svg class="w-48 h-5 my-4 text-cobalt-900" aria-hidden="true">
+              <use href="#orn-divider-poppy"/>
+            </svg>
+
+            <span class="text-mask">
+              <span class="text-mask-inner text-xs font-bold tracking-[0.24em] uppercase text-cobalt-900" style="transition-delay: 320ms;">
+                SABTU, 21 NOVEMBER 2026
+              </span>
+            </span>
+            <span class="text-mask">
+              <span class="text-mask-inner text-xs text-cobalt-900/75 mt-1" style="transition-delay: 400ms;">
+                Pendopo Agung Royal Ambarrukmo, Yogyakarta
+              </span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           ROOM 02 (02/08): AYAT SUCI & DOA (SCROLL-GROWING STEM + BLOOMING POPPY)
+      ================================================================== -->
+      <section id="room-verse" data-room="02" aria-labelledby="verse-heading" class="porcelain-room bg-cobalt-900 text-porcelain-50">
+        <!-- Bottom-Left Growing Botanical Stem & Blooming Poppy (Scroll-Linked --p) -->
+        <div aria-hidden="true" class="pointer-events-none absolute -bottom-6 -left-8 w-[310px] h-[410px]">
+          <svg class="w-full h-full" viewBox="0 0 260 360" fill="none">
+            <!-- Scroll-Drawn Stem (pathLength="1") -->
+            <path
+              id="verse-grow-stem"
+              d="M52 355 C66 280, 44 210, 88 142 C114 102, 146 84, 174 68"
+              stroke="#A5B4D9"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              pathLength="1"
+              stroke-dasharray="1"
+              stroke-dashoffset="1"
+            />
+            <!-- Secondary Twig -->
+            <path
+              id="verse-grow-branch"
+              d="M72 226 C112 212, 148 198, 182 172"
+              stroke="#5C73AD"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              pathLength="1"
+              stroke-dasharray="1"
+              stroke-dashoffset="1"
+            />
+            <!-- Cobalt Leaves Scaling From Stem Pivot -->
+            <path
+              id="verse-grow-leaf-1"
+              d="M62 276 C94 264, 124 242, 138 216 C116 222, 92 246, 62 276 Z"
+              fill="#2B3B66"
+              stroke="#A5B4D9"
+              stroke-width="0.9"
+              style="transform-box: fill-box; transform-origin: 0% 100%; transform: scale(0);"
+            />
+            <path
+              id="verse-grow-leaf-2"
+              d="M78 182 C52 162, 34 134, 28 106 C48 118, 66 148, 78 182 Z"
+              fill="#5C73AD"
+              fill-opacity="0.7"
+              stroke="#A5B4D9"
+              stroke-width="0.9"
+              style="transform-box: fill-box; transform-origin: 100% 100%; transform: scale(0);"
+            />
+            <!-- Main Poppy Head Blooming From Center Pivot on Scroll -->
+            <g id="verse-bloom-head" style="transform-box: fill-box; transform-origin: 50% 50%; transform: scale(0) rotate(-25deg);">
+              <use
+                href="#orn-poppy-bloom"
+                x="104" y="4" width="144" height="144"
+                style="--p-outer: #D94E34; --p-mid: #E88D72; --p-inner: #F7F5F0; --p-ink: #16213E;"
+              />
+            </g>
+            <!-- Seed Pod on Branch -->
+            <g id="verse-bloom-pod" style="transform-box: fill-box; transform-origin: 50% 100%; transform: scale(0);">
+              <use
+                href="#orn-seed-bud"
+                x="166" y="136" width="36" height="52"
+                transform="rotate(38 184 162)"
+                style="--b-ink: #A5B4D9; --b-fill: #213159; --b-accent: #D94E34;"
+              />
+            </g>
+          </svg>
+        </div>
+
+        <div class="relative z-10 h-full flex flex-col justify-between px-6 pt-15 pb-16">
+          <div class="flex items-center justify-between border-b border-porcelain-100/15 pb-3">
+            <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-poppy-400">
+              UNTAIAN DOA SUCI
+            </span>
+            <span class="text-[10px] tracking-[0.22em] uppercase text-porcelain-100/65">
+              QS. AR-RUM : 21
+            </span>
+          </div>
+
+          <!-- Right-Aligned Asymmetric Verse Typography -->
+          <div class="ml-auto max-w-[360px] text-right my-auto">
+            <p class="font-display italic text-lg text-poppy-300 mb-3">
+              Assalamu’alaikum Warahmatullahi Wabarakatuh
+            </p>
+            <h2 id="verse-heading" class="sr-only">Ayat Suci Pernikahan</h2>
+            <blockquote class="font-display text-[clamp(1.38rem,5.2vw,1.76rem)] leading-[1.46] text-porcelain-50 font-normal">
+              “Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang.”
+            </blockquote>
+            <cite class="block not-italic text-[10px] font-semibold tracking-[0.28em] uppercase text-porcelain-100/75 mt-5">
+              — SURAH AR-RUM AYAT 21
+            </cite>
+          </div>
+
+          <div class="text-right text-[9.5px] tracking-[0.22em] uppercase text-porcelain-100/55">
+            <span>GULIR UNTUK MENGENAL KAMI</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           ROOM 03 (03/08): PROFIL MEMPELAI (TYPOGRAPHY + CENTER POPPY CLUSTER, NO PHOTO)
+      ================================================================== -->
+      <section id="room-couple" data-room="03" aria-labelledby="couple-heading" class="porcelain-room bg-porcelain-100 text-cobalt-900">
+        <!-- Big-Type Kinetic Outline-to-Fill Background Names -->
+        <div
+          id="couple-kinetic-bg"
+          aria-hidden="true"
+          class="pointer-events-none select-none absolute top-1/2 -translate-y-1/2 -left-8 font-display italic text-[6.8rem] leading-none kinetic-outline-text whitespace-nowrap will-change-transform"
+        >
+          NADIA • RAKA
+        </div>
+
+        <!-- Center-Left Interactive Poppy Cluster Dividing Groom & Bride -->
+        <button
+          type="button"
+          aria-label="Ketuk bunga poppy untuk memekarkan kelopak"
+          class="interactive-bloom-trigger absolute top-1/2 -translate-y-1/2 -left-10 w-44 h-44 z-10 cursor-pointer focus:outline-none"
+        >
+          <svg class="w-full h-full sway-head-pivot" viewBox="0 0 220 220" aria-hidden="true">
+            <use href="#orn-poppy-bloom"/>
+          </svg>
+        </button>
+
+        <div class="relative z-20 h-full flex flex-col justify-between px-6 pt-14 pb-16">
+          <div class="flex items-center justify-between border-b border-cobalt-900/15 pb-2.5">
+            <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-poppy-500">
+              MEMPELAI BERBAHAGIA
+            </span>
+            <h2 id="couple-heading" class="font-display italic text-xl text-cobalt-900">
+              Dua Jiwa
+            </h2>
+          </div>
+
+          <!-- Asymmetric Typographic Couple Profiles (No Photos) -->
+          <div class="my-auto space-y-8">
+            <!-- Groom Profile: Right-Aligned Upper Tier -->
+            <article class="ml-auto max-w-[310px] text-right border-r-2 border-cobalt-900 pr-4">
+              <span class="text-[9px] font-bold tracking-[0.26em] uppercase text-poppy-500">
+                MEMPELAI PRIA
+              </span>
+              <h3 class="font-display text-3xl sm:text-[34px] leading-[1.05] font-semibold text-cobalt-900 mt-1">
+                Raka Mahendra Wijaya, S.Ars.
+              </h3>
+              <p class="mt-2 text-xs leading-relaxed text-cobalt-900/80">
+                Putra Pertama dari<br />
+                <strong class="font-semibold text-cobalt-900">Bpk. Ir. Hendra Wijaya</strong> &amp;<br />
+                <strong class="font-semibold text-cobalt-900">Ibu Ratna Kusumawardhani</strong>
+              </p>
+            </article>
+
+            <!-- Handcrafted Botanical Divider -->
+            <div class="pl-24">
+              <svg class="w-full h-6 text-cobalt-900" aria-hidden="true">
+                <use href="#orn-divider-poppy"/>
+              </svg>
+            </div>
+
+            <!-- Bride Profile: Left-Aligned Lower Tier (Offset Past Center Bloom) -->
+            <article class="ml-16 max-w-[310px] text-left border-l-2 border-poppy-500 pl-4">
+              <span class="text-[9px] font-bold tracking-[0.26em] uppercase text-poppy-500">
+                MEMPELAI WANITA
+              </span>
+              <h3 class="font-display text-3xl sm:text-[34px] leading-[1.05] font-semibold text-cobalt-900 mt-1">
+                Nadia Larasati Putri, M.Ds.
+              </h3>
+              <p class="mt-2 text-xs leading-relaxed text-cobalt-900/80">
+                Putri Bungsu dari<br />
+                <strong class="font-semibold text-cobalt-900">Bpk. Drs. Bambang Sutrisno</strong> &amp;<br />
+                <strong class="font-semibold text-cobalt-900">Ibu Endang Sulistyowati</strong>
+              </p>
+            </article>
+          </div>
+
+          <div class="flex justify-between text-[9.5px] font-semibold tracking-[0.22em] uppercase text-cobalt-900/60">
+            <span>YOGYAKARTA — SURAKARTA</span>
+            <span>KETUK BUNGA</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           ROOM 04 (04/08): KISAH KAMI / TIMELINE (LEFT VERTICAL GROWING POPPY BRANCH)
+      ================================================================== -->
+      <section id="room-story" data-room="04" aria-labelledby="story-heading" class="porcelain-room bg-porcelain-200 text-cobalt-900">
+        <!-- Left Vertical Tall Poppy Stem With 3 Staggered Blooms Growing on Scroll -->
+        <div aria-hidden="true" class="pointer-events-none absolute inset-y-0 left-0 w-28">
+          <svg class="w-full h-full" viewBox="0 0 120 680" preserveAspectRatio="none" fill="none">
+            <path
+              id="timeline-stem-path"
+              d="M46 650 C34 510, 62 390, 42 260 C28 170, 52 95, 44 36"
+              stroke="#16213E"
+              stroke-width="2"
+              stroke-linecap="round"
+              pathLength="1"
+              stroke-dasharray="1"
+              stroke-dashoffset="1"
+            />
+            <!-- Three Milestone Blooms Along Stem -->
+            <g class="bloom-petal" style="transition-delay: 140ms;">
+              <use href="#orn-poppy-bloom" x="12" y="102" width="66" height="66"/>
+            </g>
+            <g class="bloom-petal" style="transition-delay: 300ms;">
+              <use href="#orn-poppy-bloom" x="10" y="295" width="72" height="72"/>
+            </g>
+            <g class="bloom-petal" style="transition-delay: 460ms;">
+              <use href="#orn-poppy-bloom" x="6" y="485" width="80" height="80"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="relative z-10 h-full flex flex-col justify-between pl-24 pr-6 pt-14 pb-16">
+          <div class="border-b border-cobalt-900/15 pb-2.5">
+            <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-poppy-500">
+              JEJAK LANGKAH
+            </span>
+            <h2 id="story-heading" class="font-display text-3xl text-cobalt-900 mt-0.5">
+              Kisah Perjalanan
+            </h2>
+          </div>
+
+          <!-- Three Asymmetric Tilted Porcelain Archival Slips -->
+          <div class="my-auto space-y-4">
+            <article class="bg-porcelain-50 border border-cobalt-900/15 p-3.5 -rotate-[0.8deg]">
+              <div class="flex items-center justify-between">
+                <span class="text-[9.5px] font-bold tracking-[0.22em] uppercase text-poppy-500">2021 • PERTEMUAN</span>
+                <span class="text-[9px] font-semibold text-cobalt-900/50">01</span>
+              </div>
+              <h3 class="font-display text-xl font-semibold text-cobalt-900 mt-0.5">
+                Pameran Keramik Kotagede
+              </h3>
+              <p class="mt-1 text-xs leading-relaxed text-cobalt-900/80">
+                Obrolan ringan tentang glasir biru kobalt dan sketsa bunga poppy menjadi awal percakapan panjang yang tak pernah usai.
+              </p>
+            </article>
+
+            <article class="bg-porcelain-50 border border-cobalt-900/15 p-3.5 rotate-[0.9deg] ml-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[9.5px] font-bold tracking-[0.22em] uppercase text-poppy-500">2024 • LAMARAN</span>
+                <span class="text-[9px] font-semibold text-cobalt-900/50">02</span>
+              </div>
+              <h3 class="font-display text-xl font-semibold text-cobalt-900 mt-0.5">
+                Restu Dua Keluarga
+              </h3>
+              <p class="mt-1 text-xs leading-relaxed text-cobalt-900/80">
+                Di hadapan kedua orang tua, kami mengikat niat tulus untuk melangkah menuju kehidupan rumah tangga yang sakinah.
+              </p>
+            </article>
+
+            <article class="bg-cobalt-900 text-porcelain-50 p-3.5 -rotate-[0.5deg] border-l-4 border-poppy-500">
+              <div class="flex items-center justify-between">
+                <span class="text-[9.5px] font-bold tracking-[0.22em] uppercase text-poppy-400">2026 • PERNIKAHAN</span>
+                <span class="text-[9px] font-semibold text-porcelain-100/50">03</span>
+              </div>
+              <h3 class="font-display text-xl font-semibold text-porcelain-50 mt-0.5">
+                Janji Suci di Yogyakarta
+              </h3>
+              <p class="mt-1 text-xs leading-relaxed text-porcelain-100/85">
+                Babak baru dimulai, memohon doa restu sahabat dan keluarga tercinta.
+              </p>
+            </article>
+          </div>
+
+          <div class="text-[9.5px] font-semibold tracking-[0.22em] uppercase text-cobalt-900/60">
+            <span>TUMBUH BERSAMA WAKTU</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           ROOM 05 (05/08): RANGKAIAN ACARA (TOP-RIGHT CROPPED MEDALLION + STEPPED BLOCKS)
+      ================================================================== -->
+      <section id="room-events" data-room="05" aria-labelledby="events-heading" class="porcelain-room bg-cobalt-900 text-porcelain-50">
+        <!-- Giant Top-Right Cropped Poppy Medallion Rotating on Scroll -->
+        <div
+          id="events-medallion-spin"
+          aria-hidden="true"
+          class="pointer-events-none absolute -top-24 -right-24 w-[350px] h-[350px] will-change-transform opacity-90"
+        >
+          <svg class="w-full h-full" style="--m-ink: #A5B4D9; --m-leaf: #2B3B66; --m-leaf-soft: #5C73AD; --p-outer: #D94E34; --p-mid: #E88D72; --p-inner: #F7F5F0; --p-ink: #16213E;">
+            <use href="#orn-poppy-medallion"/>
+          </svg>
+        </div>
+
+        <div class="relative z-10 h-full flex flex-col justify-between px-6 pt-14 pb-16">
+          <div>
+            <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-poppy-400">
+              WAKTU &amp; TEMPAT
+            </span>
+            <h2 id="events-heading" class="font-display text-3xl sm:text-4xl text-porcelain-50 mt-0.5">
+              Rangkaian Acara
+            </h2>
+          </div>
+
+          <!-- Stepped Asymmetric Event Schedule -->
+          <div class="my-auto space-y-4">
+            <!-- Akad Nikah (Left-Anchored Porcelain Relief) -->
+            <article class="mr-5 bg-porcelain-100 text-cobalt-900 p-4 border-l-4 border-poppy-500">
+              <div class="flex items-center justify-between text-[9.5px] font-bold tracking-[0.22em] uppercase text-poppy-500">
+                <span>PROSESI I • SAKRAL</span>
+                <span>08.00 – 10.00 WIB</span>
+              </div>
+              <h3 class="font-display text-2xl font-semibold text-cobalt-900 mt-1">
+                Akad Nikah
+              </h3>
+              <p class="mt-1.5 text-xs leading-relaxed text-cobalt-900/80">
+                Sabtu, 21 November 2026<br />
+                <strong class="font-semibold text-cobalt-900">Pendopo Agung Royal Ambarrukmo</strong><br />
+                Jl. Laksda Adisucipto No. 81, Yogyakarta
+              </p>
+              <a
+                href="https://maps.google.com/?q=Pendopo+Agung+Royal+Ambarrukmo+Yogyakarta"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-3 inline-flex items-center gap-2 px-3.5 py-2 bg-cobalt-900 hover:bg-poppy-500 text-porcelain-50 text-[9.5px] font-bold tracking-[0.2em] uppercase transition-colors"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 21C16 17 19 13.4183 19 9C19 5.13401 15.866 2 12 2C8.13401 2 5 5.13401 5 9C5 13.4183 8 17 12 21Z"/>
+                  <circle cx="12" cy="9" r="2.5"/>
+                </svg>
+                <span>Buka Google Maps</span>
+              </a>
+            </article>
+
+            <!-- Resepsi (Right-Indented Cobalt Frame) -->
+            <article class="ml-5 bg-cobalt-800/90 border border-porcelain-100/25 border-r-4 border-r-poppy-400 p-4 text-right">
+              <div class="flex items-center justify-between text-[9.5px] font-bold tracking-[0.22em] uppercase text-poppy-300">
+                <span>11.30 – 14.30 WIB</span>
+                <span>PROSESI II • PERAYAAN</span>
+              </div>
+              <h3 class="font-display text-2xl font-semibold text-porcelain-50 mt-1">
+                Resepsi Pernikahan
+              </h3>
+              <p class="mt-1.5 text-xs leading-relaxed text-porcelain-100/85">
+                Sabtu, 21 November 2026<br />
+                <strong class="font-semibold text-porcelain-50">Bale Kambang &amp; Taman Pelataran</strong><br />
+                Jl. Laksda Adisucipto No. 81, Yogyakarta
+              </p>
+              <a
+                href="https://maps.google.com/?q=Pendopo+Agung+Royal+Ambarrukmo+Yogyakarta"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-3 inline-flex items-center gap-2 px-3.5 py-2 bg-poppy-500 hover:bg-porcelain-100 text-porcelain-50 hover:text-cobalt-900 text-[9.5px] font-bold tracking-[0.2em] uppercase transition-colors"
+              >
+                <span>Buka Google Maps</span>
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 21C16 17 19 13.4183 19 9C19 5.13401 15.866 2 12 2C8.13401 2 5 5.13401 5 9C5 13.4183 8 17 12 21Z"/>
+                  <circle cx="12" cy="9" r="2.5"/>
+                </svg>
+              </a>
+            </article>
+          </div>
+
+          <div class="text-[9.5px] tracking-[0.22em] uppercase text-porcelain-100/60 flex justify-between">
+            <span>MOHON HADIR TEPAT WAKTU</span>
+            <span>YOGYAKARTA</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           ROOM 06 (06/08): COUNTDOWN & DRESS CODE (HORIZONTAL BOTANICAL GARLAND MOTION)
+      ================================================================== -->
+      <section id="room-countdown" data-room="06" aria-labelledby="countdown-heading" class="porcelain-room bg-porcelain-100 text-cobalt-900">
+        <div class="h-full flex flex-col justify-between pt-14 pb-16">
+          <div class="px-6">
+            <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-poppy-500">
+              HITUNG MUNDUR &amp; BUSANA
+            </span>
+            <h2 id="countdown-heading" class="font-display text-3xl sm:text-4xl text-cobalt-900 mt-0.5 leading-none">
+              Menanti Hari Bahagia
+            </h2>
+
+            <!-- 4-Unit Realtime Countdown with Digit Flip Animation -->
+            <div class="mt-4 grid grid-cols-4 gap-2 border-y border-cobalt-900/20 py-3.5">
+              <div class="border-r border-cobalt-900/15 pr-2">
+                <div class="overflow-hidden h-10 flex items-center">
+                  <span id="cd-days" class="font-display text-4xl font-semibold text-cobalt-900 tabular-nums">00</span>
+                </div>
+                <span class="block text-[9px] font-semibold tracking-[0.22em] uppercase text-cobalt-900/65 mt-0.5">HARI</span>
+              </div>
+
+              <div class="border-r border-cobalt-900/15 px-2">
+                <div class="overflow-hidden h-10 flex items-center">
+                  <span id="cd-hours" class="font-display text-4xl font-semibold text-cobalt-900 tabular-nums">00</span>
+                </div>
+                <span class="block text-[9px] font-semibold tracking-[0.22em] uppercase text-cobalt-900/65 mt-0.5">JAM</span>
+              </div>
+
+              <div class="border-r border-cobalt-900/15 px-2">
+                <div class="overflow-hidden h-10 flex items-center">
+                  <span id="cd-minutes" class="font-display text-4xl font-semibold text-cobalt-900 tabular-nums">00</span>
+                </div>
+                <span class="block text-[9px] font-semibold tracking-[0.22em] uppercase text-cobalt-900/65 mt-0.5">MENIT</span>
+              </div>
+
+              <div class="pl-2 bg-cobalt-900 text-porcelain-50 py-1 px-2.5">
+                <div class="overflow-hidden h-9 flex items-center">
+                  <span id="cd-seconds" class="font-display text-3xl font-semibold text-poppy-400 tabular-nums">00</span>
+                </div>
+                <span class="block text-[8.5px] font-semibold tracking-[0.22em] uppercase text-porcelain-100/75">DETIK</span>
+              </div>
+            </div>
+
+            <p id="countdown-status-note" class="mt-2 text-[10.5px] font-semibold tracking-[0.18em] uppercase text-poppy-500">
+              SABTU, 21 NOVEMBER 2026 • PUKUL 08.00 WIB
+            </p>
+          </div>
+
+          <!-- Horizontal Botanical Poppy Garland Moving With Vertical Scroll -->
+          <div class="w-full overflow-hidden py-2 bg-porcelain-200/80 border-y border-cobalt-900/15" aria-hidden="true">
+            <div id="horizontal-poppy-garland" class="flex items-center gap-4 w-[760px] will-change-transform">
+              <svg class="w-16 h-16 shrink-0"><use href="#orn-poppy-bloom"/></svg>
+              <svg class="w-8 h-12 shrink-0 rotate-12"><use href="#orn-seed-bud"/></svg>
+              <svg class="w-14 h-14 shrink-0 rotate-45"><use href="#orn-poppy-bloom"/></svg>
+              <svg class="w-8 h-12 shrink-0 -rotate-12"><use href="#orn-seed-bud"/></svg>
+              <svg class="w-16 h-16 shrink-0 rotate-12"><use href="#orn-poppy-bloom"/></svg>
+              <svg class="w-8 h-12 shrink-0 rotate-24"><use href="#orn-seed-bud"/></svg>
+              <svg class="w-14 h-14 shrink-0 -rotate-12"><use href="#orn-poppy-bloom"/></svg>
+              <svg class="w-8 h-12 shrink-0 rotate-6"><use href="#orn-seed-bud"/></svg>
+              <svg class="w-16 h-16 shrink-0 rotate-45"><use href="#orn-poppy-bloom"/></svg>
+            </div>
+          </div>
+
+          <!-- Guest Dress Code Swatches (Cobalt, Alabaster, Vermilion, Coral — Zero Green) -->
+          <div class="px-6">
+            <div class="bg-porcelain-50 border border-cobalt-900/20 p-3.5">
+              <div class="flex items-center justify-between mb-2.5">
+                <span class="text-[9.5px] font-bold tracking-[0.24em] uppercase text-cobalt-900">
+                  PALET BUSANA TAMU
+                </span>
+                <span id="dress-swatch-label" class="text-[9.5px] font-bold tracking-[0.18em] uppercase text-poppy-500">
+                  COBALT INDIGO
+                </span>
+              </div>
+
+              <div class="grid grid-cols-4 gap-2">
+                <button
+                  type="button"
+                  data-swatch-title="COBALT INDIGO"
+                  data-swatch-note="Beskap, kebaya beludru, atau setelan jas biru kobalt tua."
+                  class="dress-swatch-btn flex flex-col items-start cursor-pointer"
+                >
+                  <span class="w-full h-8 bg-[#16213E] border-2 border-poppy-500"></span>
+                  <span class="mt-1 text-[8.5px] font-bold tracking-wider uppercase">Cobalt</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-swatch-title="PORCELAIN WHITE"
+                  data-swatch-note="Kemeja putih porselen, kebaya encim gading, atau batik tulis klasik."
+                  class="dress-swatch-btn flex flex-col items-start cursor-pointer"
+                >
+                  <span class="w-full h-8 bg-[#F7F5F0] border border-cobalt-900/30"></span>
+                  <span class="mt-1 text-[8.5px] font-bold tracking-wider uppercase">Porcelain</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-swatch-title="POPPY VERMILION"
+                  data-swatch-note="Aksen selendang merah poppy, dasi sutra, atau gaun malam hangat."
+                  class="dress-swatch-btn flex flex-col items-start cursor-pointer"
+                >
+                  <span class="w-full h-8 bg-[#D94E34] border border-cobalt-900/20"></span>
+                  <span class="mt-1 text-[8.5px] font-bold tracking-wider uppercase">Vermilion</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-swatch-title="CORAL BLUSH"
+                  data-swatch-note="Nuansa koral lembut atau kain tenun bernuansa pastel hangat."
+                  class="dress-swatch-btn flex flex-col items-start cursor-pointer"
+                >
+                  <span class="w-full h-8 bg-[#E88D72] border border-cobalt-900/20"></span>
+                  <span class="mt-1 text-[8.5px] font-bold tracking-wider uppercase">Coral</span>
+                </button>
+              </div>
+
+              <p id="dress-swatch-note" class="mt-2.5 pt-2 border-t border-cobalt-900/12 text-xs text-cobalt-900/80">
+                Beskap, kebaya beludru, atau setelan jas biru kobalt tua.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           ROOM 07 (07/08): TANDA KASIH (BOTTOM-FILLING POPPY MEADOW + COPY + TOAST)
+      ================================================================== -->
+      <section id="room-gift" data-room="07" aria-labelledby="gift-heading" class="porcelain-room bg-porcelain-100 text-cobalt-900">
+        <!-- Bottom-Filling Blooming Poppy Garden Ornament -->
+        <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 -bottom-6 h-44">
+          <svg class="w-full h-full" viewBox="0 0 420 170" preserveAspectRatio="xMidYMax slice">
+            <use href="#orn-poppy-stem" x="-15" y="-10" width="130" height="220" class="sway-stem-slow"/>
+            <use href="#orn-poppy-stem" x="305" y="-15" width="130" height="220" class="sway-stem-alt"/>
+            <g class="bloom-petal" style="transition-delay: 140ms;">
+              <use href="#orn-poppy-bloom" x="24" y="42" width="115" height="115"/>
+            </g>
+            <g class="bloom-petal" style="transition-delay: 280ms;">
+              <use href="#orn-poppy-bloom" x="155" y="64" width="105" height="105"/>
+            </g>
+            <g class="bloom-petal" style="transition-delay: 420ms;">
+              <use href="#orn-poppy-bloom" x="282" y="38" width="118" height="118"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="relative z-10 h-full flex flex-col justify-between px-6 pt-14 pb-28">
+          <div>
+            <span class="text-[9.5px] font-bold tracking-[0.28em] uppercase text-poppy-500">
+              TANDA KASIH
+            </span>
+            <h2 id="gift-heading" class="font-display text-3xl text-cobalt-900 mt-0.5">
+              Amplop Digital
+            </h2>
+            <p class="mt-1.5 text-xs leading-relaxed text-cobalt-900/75 max-w-[360px]">
+              Doa restu Anda merupakan karunia terindah bagi kami. Apabila berkenan memberikan tanda kasih secara nontunai, dapat melalui rekening berikut:
+            </p>
+          </div>
+
+          <div class="my-auto space-y-3.5">
+            <!-- Account 1: Cobalt Porcelain Card -->
+            <div class="bg-cobalt-900 text-porcelain-50 p-4 border-l-4 border-poppy-500">
+              <div class="flex items-center justify-between border-b border-porcelain-100/15 pb-2">
+                <span class="text-[10px] font-bold tracking-[0.24em] uppercase text-poppy-400">
+                  BANK CENTRAL ASIA (BCA)
+                </span>
+                <span class="text-[9px] tracking-[0.2em] uppercase text-porcelain-100/60">014</span>
+              </div>
+              <p class="mt-2.5 font-display text-2xl sm:text-[28px] tracking-[0.12em] text-porcelain-50 select-all">
+                4561 8920 34
+              </p>
+              <p class="mt-0.5 text-xs text-porcelain-100/80">
+                a.n. <strong class="font-semibold text-porcelain-50">Raka Mahendra Wijaya</strong>
+              </p>
+              <button
+                type="button"
+                data-copy-num="4561892034"
+                data-copy-label="Rekening BCA"
+                class="copy-bank-btn mt-3 w-full py-2 px-4 bg-poppy-500 hover:bg-poppy-400 text-porcelain-50 text-[9.5px] font-bold tracking-[0.22em] uppercase flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13"/>
+                  <path d="M5 15H4V4H15V5"/>
+                </svg>
+                <span>Salin Nomor Rekening</span>
+              </button>
+            </div>
+
+            <!-- Account 2: Alabaster Relief Card -->
+            <div class="bg-porcelain-50/95 text-cobalt-900 p-4 border border-cobalt-900/25 border-r-4 border-r-cobalt-900">
+              <div class="flex items-center justify-between border-b border-cobalt-900/15 pb-2">
+                <span class="text-[10px] font-bold tracking-[0.24em] uppercase text-cobalt-900">
+                  BANK MANDIRI
+                </span>
+                <span class="text-[9px] tracking-[0.2em] uppercase text-cobalt-900/60">008</span>
+              </div>
+              <p class="mt-2.5 font-display text-2xl sm:text-[28px] tracking-[0.12em] text-cobalt-900 select-all">
+                1370 0842 9150 2
+              </p>
+              <p class="mt-0.5 text-xs text-cobalt-900/80">
+                a.n. <strong class="font-semibold text-cobalt-900">Nadia Larasati Putri</strong>
+              </p>
+              <button
+                type="button"
+                data-copy-num="1370084291502"
+                data-copy-label="Rekening Mandiri"
+                class="copy-bank-btn mt-3 w-full py-2 px-4 bg-cobalt-900 hover:bg-poppy-500 text-porcelain-50 text-[9.5px] font-bold tracking-[0.22em] uppercase flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13"/>
+                  <path d="M5 15H4V4H15V5"/>
+                </svg>
+                <span>Salin Nomor Rekening</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           ROOM 08 (08/08): BUKU DOA, RSVP REALTIME & PENUTUP (FALLING PETALS CANVAS)
+      ================================================================== -->
+      <section id="room-rsvp" data-room="08" aria-labelledby="rsvp-heading" class="porcelain-room bg-cobalt-900 text-porcelain-50">
+        <!-- Grand Right-Side Poppy Medallion Ornament -->
+        <svg
+          aria-hidden="true"
+          class="pointer-events-none absolute -top-20 -right-24 w-[340px] h-[340px] opacity-30 sway-stem-slow"
+          style="--m-ink: #A5B4D9; --m-leaf: #2B3B66; --m-leaf-soft: #5C73AD; --p-outer: #D94E34; --p-mid: #E88D72; --p-inner: #F7F5F0; --p-ink: #16213E;"
+        >
+          <use href="#orn-poppy-medallion"/>
+        </svg>
+
+        <!-- Lightweight 60fps Falling Poppy Petals Canvas -->
+        <canvas id="falling-petals-canvas" aria-hidden="true" class="pointer-events-none absolute inset-0 w-full h-full opacity-75"></canvas>
+
+        <div class="relative z-10 h-full flex flex-col justify-between px-6 pt-13 pb-16">
+          <!-- Header + Live RSVP Tally -->
+          <div class="flex items-end justify-between border-b border-porcelain-100/20 pb-2">
+            <div>
+              <span class="text-[9px] font-bold tracking-[0.28em] uppercase text-poppy-400">
+                KONFIRMASI &amp; DOA RESTU
+              </span>
+              <h2 id="rsvp-heading" class="font-display text-2xl sm:text-3xl text-porcelain-50">
+                Buku Tamu &amp; RSVP
+              </h2>
+            </div>
+            <div class="flex gap-3 text-right">
+              <div>
+                <span id="count-hadir" class="block font-display text-lg font-bold text-poppy-400 leading-none">2</span>
+                <span class="text-[8px] tracking-widest uppercase text-porcelain-100/65">HADIR</span>
+              </div>
+              <div>
+                <span id="count-ragu" class="block font-display text-lg font-bold text-porcelain-50 leading-none">1</span>
+                <span class="text-[8px] tracking-widest uppercase text-porcelain-100/65">RAGU</span>
+              </div>
+              <div>
+                <span id="count-tidak" class="block font-display text-lg font-bold text-porcelain-100/50 leading-none">0</span>
+                <span class="text-[8px] tracking-widest uppercase text-porcelain-100/65">ABSEN</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Validated RSVP & Guestbook Form -->
+          <form id="poppy-rsvp-form" novalidate class="mt-2.5 space-y-2">
+            <div>
+              <label for="input-guest-name" class="sr-only">Nama Lengkap</label>
+              <input
+                id="input-guest-name"
+                type="text"
+                maxlength="60"
+                required
+                placeholder="Nama Lengkap Anda"
+                class="w-full bg-cobalt-950/85 border border-porcelain-100/25 focus:border-poppy-500 px-3 py-2 text-xs text-porcelain-50 placeholder-porcelain-100/45 focus:outline-none"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label for="input-attendance" class="sr-only">Kehadiran</label>
+                <select
+                  id="input-attendance"
+                  class="w-full bg-cobalt-950/85 border border-porcelain-100/25 focus:border-poppy-500 px-2.5 py-2 text-xs text-porcelain-50 focus:outline-none"
+                >
+                  <option value="Hadir">Hadir</option>
+                  <option value="Ragu">Ragu</option>
+                  <option value="Tidak Hadir">Tidak Hadir</option>
+                </select>
+              </div>
+              <div>
+                <label for="input-guest-count" class="sr-only">Jumlah Tamu</label>
+                <select
+                  id="input-guest-count"
+                  class="w-full bg-cobalt-950/85 border border-porcelain-100/25 focus:border-poppy-500 px-2.5 py-2 text-xs text-porcelain-50 focus:outline-none"
+                >
+                  <option value="1 Tamu">1 Tamu</option>
+                  <option value="2 Tamu" selected>2 Tamu</option>
+                  <option value="Keluarga">Keluarga</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label for="input-guest-wish" class="sr-only">Ucapan &amp; Doa</label>
+              <textarea
+                id="input-guest-wish"
+                rows="2"
+                maxlength="280"
+                required
+                placeholder="Tuliskan doa restu untuk Nadia & Raka..."
+                class="w-full bg-cobalt-950/85 border border-porcelain-100/25 focus:border-poppy-500 px-3 py-2 text-xs text-porcelain-50 placeholder-porcelain-100/45 focus:outline-none resize-none"
+              ></textarea>
+            </div>
+
+            <p id="rsvp-validation-msg" class="hidden text-[11px] text-poppy-200 bg-poppy-500/20 border border-poppy-500/50 px-3 py-1">
+              Mohon isi nama lengkap dan ucapan doa Anda terlebih dahulu.
+            </p>
+
+            <button
+              type="submit"
+              class="w-full py-2.5 px-4 bg-poppy-500 hover:bg-poppy-400 text-porcelain-50 text-[10px] font-bold tracking-[0.22em] uppercase transition-colors cursor-pointer"
+            >
+              Kirim Ucapan &amp; Konfirmasi
+            </button>
+          </form>
+
+          <!-- Internal Scrollable Guestbook List -->
+          <div class="mt-2.5 flex-1 min-h-0 flex flex-col border-t border-porcelain-100/20 pt-2">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[9px] font-semibold tracking-[0.24em] uppercase text-porcelain-100/65">
+                DOA &amp; HARAPAN TAMU
+              </span>
+              <span id="wishes-total-badge" class="text-[9.5px] font-bold text-poppy-400">
+                3 UCAPAN
+              </span>
+            </div>
+
+            <div id="wishes-scroll-box" class="space-y-2 overflow-y-auto pr-1 max-h-[155px] sm:max-h-[180px]">
+              <article class="bg-cobalt-950/80 border-l-2 border-poppy-500 p-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <h4 class="font-display text-base font-semibold text-porcelain-50">Sekar &amp; Bagas</h4>
+                  <span class="px-2 py-0.5 bg-poppy-500/25 text-poppy-200 text-[8.5px] font-bold tracking-wider uppercase">Hadir • 2 Tamu</span>
+                </div>
+                <p class="mt-1 text-[11px] leading-relaxed text-porcelain-100/85">
+                  Selamat menempuh hidup baru Nadia &amp; Raka! Semoga cinta kalian senantiasa mekar dan membawa ketenteraman.
+                </p>
+              </article>
+
+              <article class="bg-cobalt-950/80 border-l-2 border-poppy-300 p-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <h4 class="font-display text-base font-semibold text-porcelain-50">Farhan Pratama</h4>
+                  <span class="px-2 py-0.5 bg-poppy-500/25 text-poppy-200 text-[8.5px] font-bold tracking-wider uppercase">Hadir • 1 Tamu</span>
+                </div>
+                <p class="mt-1 text-[11px] leading-relaxed text-porcelain-100/85">
+                  Turut berbahagia untuk sahabat terbaik! Sampai berjumpa di Pendopo Royal Ambarrukmo Yogyakarta.
+                </p>
+              </article>
+
+              <article class="bg-cobalt-950/80 border-l-2 border-porcelain-100/35 p-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <h4 class="font-display text-base font-semibold text-porcelain-50">Dinda Maharani</h4>
+                  <span class="px-2 py-0.5 bg-porcelain-100/15 text-porcelain-100/85 text-[8.5px] font-bold tracking-wider uppercase">Ragu • 2 Tamu</span>
+                </div>
+                <p class="mt-1 text-[11px] leading-relaxed text-porcelain-100/85">
+                  Barakallahu lakuma wa baraka ‘alaikuma. Doa tulus selalu menyertai keluarga kecil kalian berdua.
+                </p>
+              </article>
+            </div>
+          </div>
+
+          <!-- Closing Thank-You Sign-Off -->
+          <footer class="mt-2 pt-2 border-t border-porcelain-100/15 flex items-center justify-between text-[9px] font-semibold tracking-[0.22em] uppercase text-porcelain-100/75">
+            <span>TERIMA KASIH — NADIA &amp; RAKA</span>
+            <span class="text-poppy-400">21.11.2026</span>
+          </footer>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ===================================================================
+         FLOATING AUDIO CONTROLLER PILL (BOTTOM-RIGHT)
+    ==================================================================== -->
+    <div class="absolute bottom-3.5 right-4 z-50">
+      <button
+        id="audio-toggle-btn"
+        type="button"
+        aria-label="Kontrol Musik Latar"
+        aria-pressed="false"
+        class="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-cobalt-950/92 border border-porcelain-100/30 hover:border-poppy-500 text-porcelain-50 shadow-lg transition-colors cursor-pointer"
+      >
+        <svg id="audio-flower-icon" class="w-5 h-5 flower-spinning flower-paused" viewBox="0 0 220 220" aria-hidden="true">
+          <use href="#orn-poppy-bloom"/>
+        </svg>
+        <span id="audio-label-text" class="text-[9px] font-bold tracking-[0.2em] uppercase">
+          MUSIK
+        </span>
+      </button>
+    </div>
+
+    <!-- ===================================================================
+         AUTO-DISMISS TOAST NOTIFICATION (2 SECONDS)
+    ==================================================================== -->
+    <div
+      id="porcelain-toast"
+      role="status"
+      aria-live="polite"
+      class="pointer-events-none fixed bottom-16 left-1/2 -translate-x-1/2 z-50 opacity-0 translate-y-2 transition-all duration-250 w-[calc(100%-40px)] max-w-[380px]"
+    >
+      <div class="bg-cobalt-950 border-l-4 border-poppy-500 border-y border-r border-porcelain-100/25 text-porcelain-50 px-4 py-2.5 shadow-xl flex items-center gap-2.5">
+        <svg class="w-4 h-4 text-poppy-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span id="porcelain-toast-msg" class="text-xs tracking-wide">
+          Nomor rekening berhasil disalin
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- =====================================================================
+       MODULAR VANILLA JAVASCRIPT (ZERO EXTERNAL DEPENDENCIES)
+  ====================================================================== -->
+  <script>
+    (() => {
+      'use strict';
+
+      const WEDDING_DATE_ISO = '2026-11-21T08:00:00+07:00';
+
+      /* -------------------------------------------------------------------
+         1. GUEST RECIPIENT RESOLVER (?to= / ?u= WITH SAFE textContent)
+      -------------------------------------------------------------------- */
+      function initGuestResolver() {
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get('to') || params.get('u');
+        const coverGuest = document.getElementById('cover-guest-name');
+        const rsvpNameInput = document.getElementById('input-guest-name');
+
+        if (raw && raw.trim().length > 0) {
+          const clean = raw.replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 64);
+          if (clean.length > 0) {
+            if (coverGuest) coverGuest.textContent = clean;
+            if (rsvpNameInput) rsvpNameInput.value = clean;
+          }
+        }
+      }
+
+      /* -------------------------------------------------------------------
+         2. GENTLE PORCELAIN HARP / MUSIC BOX AUDIO ENGINE (SAFE AUTOPLAY)
+      -------------------------------------------------------------------- */
+      class PorcelainMusicEngine {
+        constructor() {
+          this.ctx = null;
+          this.masterGain = null;
+          this.isPlaying = false;
+          this.intervalId = null;
+          this.step = 0;
+          // Serene Gmaj7 -> Bm7 -> Cmaj7 -> D6 music-box arpeggio
+          this.scale = [
+            392.00, 493.88, 587.33, 739.99,
+            493.88, 587.33, 739.99, 880.00,
+            523.25, 659.25, 783.99, 987.77,
+            587.33, 739.99, 880.00, 987.77
+          ];
+        }
+
+        async play() {
+          try {
+            if (!this.ctx) {
+              const AudioCtx = window.AudioContext || window.webkitAudioContext;
+              if (!AudioCtx) return false;
+              this.ctx = new AudioCtx();
+              this.masterGain = this.ctx.createGain();
+              this.masterGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+              this.masterGain.connect(this.ctx.destination);
+            }
+            if (this.ctx.state === 'suspended') {
+              await this.ctx.resume();
+            }
+            if (this.isPlaying) return true;
+
+            this.isPlaying = true;
+            const now = this.ctx.currentTime;
+            this.masterGain.gain.cancelScheduledValues(now);
+            this.masterGain.gain.setValueAtTime(0.0001, now);
+            this.masterGain.gain.linearRampToValueAtTime(0.65, now + 0.8);
+
+            const pluck = () => {
+              if (!this.isPlaying || !this.ctx) return;
+              const t = this.ctx.currentTime;
+              const freq = this.scale[this.step % this.scale.length];
+              const osc = this.ctx.createOscillator();
+              const filter = this.ctx.createBiquadFilter();
+              const env = this.ctx.createGain();
+
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, t);
+
+              filter.type = 'lowpass';
+              filter.frequency.setValueAtTime(1100, t);
+
+              env.gain.setValueAtTime(0.0001, t);
+              env.gain.linearRampToValueAtTime(0.045, t + 0.06);
+              env.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
+
+              osc.connect(filter);
+              filter.connect(env);
+              env.connect(this.masterGain);
+
+              osc.start(t);
+              osc.stop(t + 2.7);
+              this.step++;
+            };
+
+            pluck();
+            this.intervalId = setInterval(pluck, 740);
+            return true;
+          } catch (_) {
+            this.isPlaying = false;
+            return false;
+          }
+        }
+
+        pause() {
+          this.isPlaying = false;
+          if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+          }
+          if (this.ctx && this.masterGain) {
+            const now = this.ctx.currentTime;
+            this.masterGain.gain.cancelScheduledValues(now);
+            this.masterGain.gain.setValueAtTime(Math.max(0.0001, this.masterGain.gain.value), now);
+            this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.35);
+          }
+        }
+
+        async toggle() {
+          if (this.isPlaying) {
+            this.pause();
+            return false;
+          }
+          return await this.play();
+        }
+      }
+
+      /* -------------------------------------------------------------------
+         3. INTERACTIVE POPPY RIBBON SEAL COVER MECHANISM
+      -------------------------------------------------------------------- */
+      function initPoppyRibbonCover(onOpened) {
+        const track = document.getElementById('poppy-ribbon-track');
+        const thumb = document.getElementById('poppy-ribbon-thumb');
+        const hint = document.getElementById('poppy-ribbon-hint');
+        const curtain = document.getElementById('cover-curtain');
+        if (!track || !thumb || !curtain) return;
+
+        let dragging = false;
+        let startX = 0;
+        let currentX = 0;
+        let unlocked = false;
+
+        const openCover = () => {
+          if (unlocked) return;
+          unlocked = true;
+          const maxShift = Math.max(0, track.clientWidth - thumb.clientWidth);
+          thumb.style.transition = 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)';
+          thumb.style.transform = `translateX(${maxShift}px) rotate(120deg)`;
+          if (hint) hint.style.opacity = '0';
+
+          setTimeout(() => {
+            curtain.classList.add('is-opened');
+            onOpened();
+          }, 180);
+        };
+
+        const onStart = (x) => {
+          if (unlocked) return;
+          dragging = true;
+          startX = x;
+          currentX = 0;
+          thumb.style.transition = 'none';
+        };
+
+        const onMove = (x) => {
+          if (!dragging || unlocked) return;
+          const maxShift = Math.max(1, track.clientWidth - thumb.clientWidth);
+          currentX = Math.max(0, Math.min(maxShift, x - startX));
+          const deg = (currentX / maxShift) * 120;
+          thumb.style.transform = `translateX(${currentX}px) rotate(${deg}deg)`;
+          if (hint) {
+            hint.style.opacity = String(Math.max(0.15, 1 - (currentX / maxShift) * 1.4));
+          }
+          if (currentX >= maxShift * 0.58) {
+            dragging = false;
+            openCover();
+          }
+        };
+
+        const onEnd = () => {
+          if (!dragging || unlocked) return;
+          dragging = false;
+          if (currentX < 10) {
+            openCover();
+            return;
+          }
+          thumb.style.transition = 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)';
+          thumb.style.transform = 'translateX(0px) rotate(0deg)';
+          if (hint) hint.style.opacity = '1';
+        };
+
+        track.addEventListener('mousedown', (e) => onStart(e.clientX));
+        window.addEventListener('mousemove', (e) => onMove(e.clientX));
+        window.addEventListener('mouseup', onEnd);
+
+        track.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 1) onStart(e.touches[0].clientX);
+        }, { passive: true });
+        window.addEventListener('touchmove', (e) => {
+          if (dragging && e.touches.length === 1) onMove(e.touches[0].clientX);
+        }, { passive: true });
+        window.addEventListener('touchend', onEnd);
+
+        track.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openCover();
+          }
+        });
+      }
+
+      /* -------------------------------------------------------------------
+         4. LIGHTWEIGHT 60FPS FALLING POPPY PETALS CANVAS (CLOSING ROOM)
+      -------------------------------------------------------------------- */
+      function initFallingPetalsCanvas() {
+        const canvas = document.getElementById('falling-petals-canvas');
+        if (!canvas) return null;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+
+        let width = 0;
+        let height = 0;
+        const petals = Array.from({ length: 16 }, (_, i) => ({
+          x: Math.random(),
+          y: Math.random(),
+          size: 7 + Math.random() * 6,
+          vy: 0.0008 + Math.random() * 0.0009,
+          swayFreq: 1.5 + Math.random() * 1.5,
+          phase: Math.random() * Math.PI * 2,
+          rot: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 0.025,
+          coral: i % 3 === 0
+        }));
+
+        const resize = () => {
+          const rect = canvas.getBoundingClientRect();
+          width = rect.width || window.innerWidth;
+          height = rect.height || window.innerHeight;
+          canvas.width = width;
+          canvas.height = height;
+        };
+        resize();
+        window.addEventListener('resize', resize, { passive: true });
+
+        return {
+          render(timeSec) {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < petals.length; i++) {
+              const p = petals[i];
+              p.y += p.vy;
+              p.rot += p.vRot;
+              if (p.y > 1.05) {
+                p.y = -0.05;
+                p.x = Math.random();
+              }
+              const px = p.x * width + Math.sin(timeSec * p.swayFreq + p.phase) * 16;
+              const py = p.y * height;
+
+              ctx.save();
+              ctx.translate(px, py);
+              ctx.rotate(p.rot);
+              ctx.fillStyle = p.coral ? 'rgba(232, 141, 114, 0.72)' : 'rgba(217, 78, 52, 0.78)';
+              ctx.beginPath();
+              ctx.moveTo(0, p.size * 0.6);
+              ctx.bezierCurveTo(-p.size * 0.7, p.size * 0.2, -p.size * 0.6, -p.size * 0.6, 0, -p.size * 0.7);
+              ctx.bezierCurveTo(p.size * 0.6, -p.size * 0.6, p.size * 0.7, p.size * 0.2, 0, p.size * 0.6);
+              ctx.fill();
+              ctx.restore();
+            }
+          }
+        };
+      }
+
+      /* -------------------------------------------------------------------
+         5. CENTRALIZED SCROLL-LINKED BOTANICAL MOTION ENGINE (SINGLE rAF)
+      -------------------------------------------------------------------- */
+      function initBotanicalScrollEngine(petalsController) {
+        const scroller = document.getElementById('porcelain-scroller');
+        const progressBar = document.getElementById('scroll-progress-bar');
+        const roomNumEl = document.getElementById('current-room-num');
+        const rooms = Array.from(document.querySelectorAll('.porcelain-room'));
+
+        // Botanical Motion Elements
+        const heroRoom = document.getElementById('room-hero');
+        const heroOrnBack = document.getElementById('hero-orn-back');
+        const heroOrnFront = document.getElementById('hero-orn-front');
+
+        const verseRoom = document.getElementById('room-verse');
+        const verseStem = document.getElementById('verse-grow-stem');
+        const verseBranch = document.getElementById('verse-grow-branch');
+        const verseLeaf1 = document.getElementById('verse-grow-leaf-1');
+        const verseLeaf2 = document.getElementById('verse-grow-leaf-2');
+        const verseHead = document.getElementById('verse-bloom-head');
+        const versePod = document.getElementById('verse-bloom-pod');
+
+        const coupleRoom = document.getElementById('room-couple');
+        const coupleKinetic = document.getElementById('couple-kinetic-bg');
+
+        const storyRoom = document.getElementById('room-story');
+        const timelineStem = document.getElementById('timeline-stem-path');
+
+        const eventsRoom = document.getElementById('room-events');
+        const eventsMedallion = document.getElementById('events-medallion-spin');
+
+        const countdownRoom = document.getElementById('room-countdown');
+        const horizontalGarland = document.getElementById('horizontal-poppy-garland');
+
+        let scrollDirty = true;
+        if (scroller) {
+          scroller.addEventListener('scroll', () => {
+            scrollDirty = true;
+          }, { passive: true });
+        }
+
+        const updateAllSections = () => {
+          if (!scroller) return;
+          const vh = window.innerHeight || 1;
+          const scrollTop = scroller.scrollTop;
+          const maxScroll = Math.max(1, scroller.scrollHeight - scroller.clientHeight);
+          const totalPct = Math.min(1, Math.max(0, scrollTop / maxScroll));
+
+          if (progressBar) {
+            progressBar.style.width = `${totalPct * 100}%`;
+          }
+
+          let activeCode = '01';
+          let minCenterDist = Infinity;
+
+          rooms.forEach((room) => {
+            const rect = room.getBoundingClientRect();
+            const p = Math.min(1, Math.max(0, 1 - (rect.top / vh)));
+            const a = rect.top < vh * 0.65 && rect.bottom > vh * 0.25 ? 1 : 0;
+
+            room.style.setProperty('--p', p.toFixed(3));
+            room.style.setProperty('--a', String(a));
+
+            if (a === 1) {
+              room.classList.add('room-active');
+            }
+
+            const dist = Math.abs(rect.top);
+            if (dist < minCenterDist) {
+              minCenterDist = dist;
+              activeCode = room.getAttribute('data-room') || '01';
+            }
+          });
+
+          if (roomNumEl) {
+            roomNumEl.textContent = activeCode;
+          }
+
+          // 1. Hero Multi-Layer Parallax
+          if (heroRoom) {
+            const rect = heroRoom.getBoundingClientRect();
+            const exit = Math.min(1, Math.max(0, -rect.top / vh));
+            if (heroOrnBack) {
+              heroOrnBack.style.transform = `translate3d(${exit * 22}px, ${exit * 45}px, 0)`;
+            }
+            if (heroOrnFront) {
+              heroOrnFront.style.transform = `translate3d(0, ${exit * -36}px, 0)`;
+            }
+          }
+
+          // 2. Verse Room: Stem Grows via pathLength & Poppy Blooms at Pivot
+          if (verseRoom) {
+            const rect = verseRoom.getBoundingClientRect();
+            const p = Math.min(1, Math.max(0, 1 - (rect.top / (vh * 0.85))));
+            const stemDraw = Math.min(1, p * 1.45);
+            const branchDraw = Math.min(1, Math.max(0, (p - 0.25) * 1.6));
+            const leafScale = Math.min(1, Math.max(0, (p - 0.3) * 1.7));
+            const bloomScale = Math.min(1, Math.max(0, (p - 0.42) * 1.8));
+
+            if (verseStem) verseStem.setAttribute('stroke-dashoffset', String((1 - stemDraw).toFixed(3)));
+            if (verseBranch) verseBranch.setAttribute('stroke-dashoffset', String((1 - branchDraw).toFixed(3)));
+            if (verseLeaf1) verseLeaf1.style.transform = `scale(${leafScale.toFixed(3)})`;
+            if (verseLeaf2) verseLeaf2.style.transform = `scale(${leafScale.toFixed(3)})`;
+            if (verseHead) verseHead.style.transform = `scale(${bloomScale.toFixed(3)}) rotate(${(-25 * (1 - bloomScale)).toFixed(1)}deg)`;
+            if (versePod) versePod.style.transform = `scale(${bloomScale.toFixed(3)})`;
+          }
+
+          // 3. Couple Room: Kinetic Big-Type Horizontal Shift
+          if (coupleRoom && coupleKinetic) {
+            const rect = coupleRoom.getBoundingClientRect();
+            const norm = rect.top / vh;
+            coupleKinetic.style.transform = `translate3d(${norm * 65}px, -50%, 0)`;
+          }
+
+          // 4. Story Room: Vertical Milestone Stem Growth
+          if (storyRoom && timelineStem) {
+            const rect = storyRoom.getBoundingClientRect();
+            const p = Math.min(1, Math.max(0, 1 - (rect.top / (vh * 0.85))));
+            timelineStem.setAttribute('stroke-dashoffset', String((1 - p).toFixed(3)));
+          }
+
+          // 5. Events Room: Rotating Poppy Medallion Linked to Scroll
+          if (eventsRoom && eventsMedallion) {
+            const rect = eventsRoom.getBoundingClientRect();
+            const norm = rect.top / vh;
+            eventsMedallion.style.transform = `rotate(${(-norm * 48).toFixed(1)}deg)`;
+          }
+
+          // 6. Countdown Room: Horizontal Poppy Garland Translation
+          if (countdownRoom && horizontalGarland) {
+            const rect = countdownRoom.getBoundingClientRect();
+            const norm = Math.min(1, Math.max(-1, rect.top / vh));
+            horizontalGarland.style.transform = `translate3d(${-60 - norm * 75}px, 0, 0)`;
+          }
+        };
+
+        // Tap-on-Flower Bloom Interaction + Desktop Cursor Follower
+        document.querySelectorAll('.interactive-bloom-trigger').forEach((trigger) => {
+          trigger.addEventListener('click', () => {
+            const svg = trigger.querySelector('svg');
+            if (!svg) return;
+            svg.classList.remove('is-tapped-bloom');
+            void svg.offsetWidth;
+            svg.classList.add('is-tapped-bloom');
+          });
+        });
+
+        const cursorRing = document.getElementById('desktop-botanical-cursor');
+        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && cursorRing) {
+          window.addEventListener('mousemove', (e) => {
+            cursorRing.style.left = `${e.clientX}px`;
+            cursorRing.style.top = `${e.clientY}px`;
+          }, { passive: true });
+        }
+
+        // Single Centralized 60fps rAF Loop
+        const frame = (nowMs) => {
+          if (petalsController && typeof petalsController.render === 'function') {
+            petalsController.render(nowMs * 0.001);
+          }
+          if (scrollDirty) {
+            updateAllSections();
+            scrollDirty = false;
+          }
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+
+        return {
+          refreshNow: () => {
+            scrollDirty = true;
+            updateAllSections();
+          }
+        };
+      }
+
+      /* -------------------------------------------------------------------
+         6. REALTIME COUNTDOWN, DRESS CODE SWATCHES, CLIPBOARD TOAST & RSVP
+      -------------------------------------------------------------------- */
+      function initRealtimeCountdown() {
+        const dEl = document.getElementById('cd-days');
+        const hEl = document.getElementById('cd-hours');
+        const mEl = document.getElementById('cd-minutes');
+        const sEl = document.getElementById('cd-seconds');
+        const noteEl = document.getElementById('countdown-status-note');
+
+        const targetTime = new Date(WEDDING_DATE_ISO).getTime();
+        const prev = { d: '', h: '', m: '', s: '' };
+
+        const renderDigit = (el, key, val) => {
+          if (!el || prev[key] === val) return;
+          prev[key] = val;
+          el.textContent = val;
+          el.classList.remove('digit-flip');
+          void el.offsetWidth;
+          el.classList.add('digit-flip');
+        };
+
+        const pad2 = (n) => String(Math.max(0, n)).padStart(2, '0');
+
+        const tick = () => {
+          const diff = targetTime - Date.now();
+          if (diff <= 0) {
+            renderDigit(dEl, 'd', '00');
+            renderDigit(hEl, 'h', '00');
+            renderDigit(mEl, 'm', '00');
+            renderDigit(sEl, 's', '00');
+            if (noteEl) {
+              noteEl.textContent = 'HARI BAHAGIA TELAH TIBA — TERIMA KASIH ATAS DOA RESTU ANDA';
+            }
+            return;
+          }
+          renderDigit(dEl, 'd', pad2(Math.floor(diff / 86400000)));
+          renderDigit(hEl, 'h', pad2(Math.floor((diff / 3600000) % 24)));
+          renderDigit(mEl, 'm', pad2(Math.floor((diff / 60000) % 60)));
+          renderDigit(sEl, 's', pad2(Math.floor((diff / 1000) % 60)));
+        };
+
+        tick();
+        setInterval(tick, 1000);
+      }
+
+      function initDressCodeSwatches() {
+        const btns = Array.from(document.querySelectorAll('.dress-swatch-btn'));
+        const labelEl = document.getElementById('dress-swatch-label');
+        const noteEl = document.getElementById('dress-swatch-note');
+
+        btns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            btns.forEach((b) => {
+              const box = b.querySelector('span:first-child');
+              if (box) {
+                box.classList.remove('border-2', 'border-poppy-500');
+                box.classList.add('border', 'border-cobalt-900/25');
+              }
+            });
+            const activeBox = btn.querySelector('span:first-child');
+            if (activeBox) {
+              activeBox.classList.remove('border', 'border-cobalt-900/25');
+              activeBox.classList.add('border-2', 'border-poppy-500');
+            }
+            if (labelEl) labelEl.textContent = btn.getAttribute('data-swatch-title') || '';
+            if (noteEl) noteEl.textContent = btn.getAttribute('data-swatch-note') || '';
+          });
+        });
+      }
+
+      let toastTimeout = null;
+      function showPorcelainToast(text) {
+        const toast = document.getElementById('porcelain-toast');
+        const msg = document.getElementById('porcelain-toast-msg');
+        if (!toast || !msg) return;
+
+        msg.textContent = text;
+        toast.classList.remove('opacity-0', 'translate-y-2');
+        toast.classList.add('opacity-100', 'translate-y-0');
+
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toast.classList.remove('opacity-100', 'translate-y-0');
+          toast.classList.add('opacity-0', 'translate-y-2');
+        }, 2000);
+      }
+
+      async function copyTextSafe(text) {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return true;
+          }
+        } catch (_) {}
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        document.body.appendChild(temp);
+        temp.select();
+        let ok = false;
+        try {
+          ok = document.execCommand('copy');
+        } catch (_) {}
+        document.body.removeChild(temp);
+        return ok;
+      }
+
+      function initBankCopyButtons() {
+        document.querySelectorAll('.copy-bank-btn').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const num = btn.getAttribute('data-copy-num') || '';
+            const label = btn.getAttribute('data-copy-label') || 'Nomor rekening';
+            await copyTextSafe(num);
+            showPorcelainToast(`${label} (${num}) berhasil disalin`);
+          });
+        });
+      }
+
+      function initGuestbookAndRsvp() {
+        const form = document.getElementById('poppy-rsvp-form');
+        const nameInput = document.getElementById('input-guest-name');
+        const attendanceSelect = document.getElementById('input-attendance');
+        const countSelect = document.getElementById('input-guest-count');
+        const wishInput = document.getElementById('input-guest-wish');
+        const validationMsg = document.getElementById('rsvp-validation-msg');
+        const scrollBox = document.getElementById('wishes-scroll-box');
+        const totalBadge = document.getElementById('wishes-total-badge');
+
+        const hadirEl = document.getElementById('count-hadir');
+        const raguEl = document.getElementById('count-ragu');
+        const tidakEl = document.getElementById('count-tidak');
+
+        const tally = { 'Hadir': 2, 'Ragu': 1, 'Tidak Hadir': 0 };
+        let totalWishes = 3;
+
+        if (!form || !scrollBox) return;
+
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const guestName = nameInput.value.replace(/[<>]/g, '').trim();
+          const status = attendanceSelect.value;
+          const qty = countSelect.value;
+          const wishText = wishInput.value.replace(/[<>]/g, '').trim();
+
+          if (!guestName || !wishText) {
+            if (validationMsg) validationMsg.classList.remove('hidden');
+            return;
+          }
+          if (validationMsg) validationMsg.classList.add('hidden');
+
+          if (Object.prototype.hasOwnProperty.call(tally, status)) {
+            tally[status] += 1;
+          }
+          totalWishes += 1;
+
+          if (hadirEl) hadirEl.textContent = String(tally['Hadir']);
+          if (raguEl) raguEl.textContent = String(tally['Ragu']);
+          if (tidakEl) tidakEl.textContent = String(tally['Tidak Hadir']);
+          if (totalBadge) totalBadge.textContent = `${totalWishes} UCAPAN`;
+
+          // Safe DOM Node Construction (XSS-Free via textContent)
+          const card = document.createElement('article');
+          card.className = 'wish-new bg-cobalt-950/90 border-l-2 border-poppy-500 p-2.5';
+
+          const header = document.createElement('div');
+          header.className = 'flex items-center justify-between gap-2';
+
+          const title = document.createElement('h4');
+          title.className = 'font-display text-base font-semibold text-porcelain-50';
+          title.textContent = guestName;
+
+          const pill = document.createElement('span');
+          pill.className = status === 'Hadir'
+            ? 'px-2 py-0.5 bg-poppy-500/25 text-poppy-200 text-[8.5px] font-bold tracking-wider uppercase'
+            : 'px-2 py-0.5 bg-porcelain-100/15 text-porcelain-100/85 text-[8.5px] font-bold tracking-wider uppercase';
+          pill.textContent = status === 'Tidak Hadir' ? 'Tidak Hadir' : `${status} • ${qty}`;
+
+          header.appendChild(title);
+          header.appendChild(pill);
+
+          const body = document.createElement('p');
+          body.className = 'mt-1 text-[11px] leading-relaxed text-porcelain-100/85 whitespace-pre-line';
+          body.textContent = wishText;
+
+          card.appendChild(header);
+          card.appendChild(body);
+
+          scrollBox.insertBefore(card, scrollBox.firstChild);
+          scrollBox.scrollTo({ top: 0, behavior: 'smooth' });
+
+          wishInput.value = '';
+          showPorcelainToast('Terima kasih, ucapan & konfirmasi Anda telah tercatat');
+        });
+      }
+
+      /* -------------------------------------------------------------------
+         7. BOOTSTRAP APPLICATION
+      -------------------------------------------------------------------- */
+      document.addEventListener('DOMContentLoaded', () => {
+        initGuestResolver();
+
+        const petalsController = initFallingPetalsCanvas();
+        const scrollEngine = initBotanicalScrollEngine(petalsController);
+        const musicEngine = new PorcelainMusicEngine();
+
+        const audioBtn = document.getElementById('audio-toggle-btn');
+        const flowerIcon = document.getElementById('audio-flower-icon');
+        const audioLabel = document.getElementById('audio-label-text');
+
+        const syncAudioUI = (playing) => {
+          if (!audioBtn) return;
+          audioBtn.setAttribute('aria-pressed', String(playing));
+          if (playing) {
+            flowerIcon?.classList.remove('flower-paused');
+            if (audioLabel) audioLabel.textContent = 'PUTAR';
+          } else {
+            flowerIcon?.classList.add('flower-paused');
+            if (audioLabel) audioLabel.textContent = 'JEDA';
+          }
+        };
+
+        audioBtn?.addEventListener('click', async () => {
+          const active = await musicEngine.toggle();
+          syncAudioUI(active);
+        });
+
+        const scroller = document.getElementById('porcelain-scroller');
+        initPoppyRibbonCover(async () => {
+          scroller?.classList.add('is-unlocked');
+          scrollEngine?.refreshNow();
+          const started = await musicEngine.play();
+          syncAudioUI(started);
+        });
+
+        initRealtimeCountdown();
+        initDressCodeSwatches();
+        initBankCopyButtons();
+        initGuestbookAndRsvp();
+      });
+    })();
+  </script>
+</body>
+</html>

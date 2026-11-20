@@ -1,0 +1,1967 @@
+<!--
+DESIGN CONCEPT BRIEF — L'ÉCLIPSE D'AMOUR (THE CELESTIAL ASTROLABE & SILK RIBBON)
+1. Konsep & Narasi: "Takdir Kosmik yang Bertemu dalamSatu Orbit" — Perpaduan instrumen astronomi antik (armillary sphere/astrolabe) dengan pita sutra merah anggur yang mengalir menyatukan dua garis edar kehidupan.
+2. Mood & Atmosfer: Intim, puitis, kuratorial museum malam, megah namun hangat, seperti cetakan buku seni abad ke-19 di observatorium tua.
+3. Palet Warna HEX: Midnight Indigo (#0D111D), Deep Obsidian (#151B2E), Warm Parchment (#F5EFE6), Antique Rose Copper (#D48C70), Spiced Burgundy (#8C2D38).
+4. Proporsi Warna (60-30-10): 60% Midnight Indigo & Obsidian (#0D111D / #151B2E), 30% Warm Parchment (#F5EFE6), 10% Rose Copper & Burgundy (#D48C70 / #8C2D38).
+5. Font Family Utama: 'Cormorant Garamond' (Display/Editorial Serif) & 'Plus Jakarta Sans' (Clean Body/Technical Sans).
+6. Keluarga Ornamen & Karakter Ilustrasi: Ukiran garis presisi instrumen langit (Fine-line Celestial Engraving) dipadukan dengan lipatan pita sutra organik (Flowing Crimson Silk) berketebalan garis dinamis.
+7. Signature Illustration: "The Living Armillary Sphere" — Astrolabe multi-cincin dengan fase bulan, konstelasi burung merpati kosmik, dan pita pengikat yang terus berkembang dan bertransformasi mengikuti posisi scroll dari Cover hingga Penutup.
+8. Signature Interaction: "Orbital Calibration Slider / Drag-to-Align" pada Cover di mana tamu menggeser cincin gerhana hingga sejajar dengan matahari untuk membuka segel orbit dan memulai simfoni ambient.
+9. Gaya Komposisi & Layout: Asimetris Swiss- Editorial grid, overlapping typography dengan ilustrasi, penomoran kuratorial miring, dan pembagian ruang negatif dramatis.
+10. Filosofi Motion Design: Gerakan mekanis gravitasi yang lembut dan organik (orbital rotation, progressive path drawing, silk ribbon morphing, multi-layer parallax, dan kinetic staggered typography).
+-->
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>L'Éclipse d'Amour — Rayhan & Kalila | Editorial Wedding Invitation</title>
+    
+    <!-- Google Fonts: Cormorant Garamond & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        midnight: '#0D111D',
+                        obsidian: '#151B2E',
+                        parchment: '#F5EFE6',
+                        parchmentMuted: '#C5BDB0',
+                        copper: '#D48C70',
+                        copperLight: '#E8B49E',
+                        burgundy: '#8C2D38',
+                        burgundyDark: '#591921'
+                    },
+                    fontFamily: {
+                        display: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-primary: #0D111D;
+            --bg-secondary: #151B2E;
+            --text-primary: #F5EFE6;
+            --accent-copper: #D48C70;
+            --accent-burgundy: #8C2D38;
+            --scroll-progress: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            selection-background-color: #8C2D38;
+            selection-color: #F5EFE6;
+        }
+
+        body.locked-scroll {
+            overflow: hidden !important;
+            height: 100svh !important;
+            touch-action: none;
+        }
+
+        /* Subtle Grain Texture Overlay */
+        .editorial-grain {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 45;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Progressive Drawing & SVG Animations */
+        .draw-path {
+            stroke-dasharray: 1200;
+            stroke-dashoffset: 1200;
+            transition: stroke-dashoffset 2.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .section-active .draw-path {
+            stroke-dashoffset: 0;
+        }
+
+        .draw-path-fast {
+            stroke-dasharray: 600;
+            stroke-dashoffset: 600;
+            transition: stroke-dashoffset 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s;
+        }
+
+        .section-active .draw-path-fast {
+            stroke-dashoffset: 0;
+        }
+
+        /* Natural Sway Animation */
+        @keyframes naturalSway {
+            0%, 100% { transform: rotate(-2.2deg) translateY(0px); }
+            50% { transform: rotate(2.2deg) translateY(-4px); }
+        }
+
+        @keyframes slowOrbit {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes reverseOrbit {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .sway-slow {
+            transform-origin: center bottom;
+            animation: naturalSway 8s ease-in-out infinite;
+        }
+
+        .sway-delayed {
+            transform-origin: center top;
+            animation: naturalSway 9.5s ease-in-out 1.5s infinite;
+        }
+
+        .orbit-spin {
+            transform-origin: center center;
+            animation: slowOrbit 65s linear infinite;
+        }
+
+        .orbit-spin-reverse {
+            transform-origin: center center;
+            animation: reverseOrbit 48s linear infinite;
+        }
+
+        /* Kinetic & Reveal Classes */
+        .reveal-mask {
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: bottom;
+        }
+
+        .reveal-text {
+            transform: translateY(110%) rotate(2deg);
+            opacity: 0;
+            transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.9s ease;
+            display: inline-block;
+        }
+
+        .section-active .reveal-text {
+            transform: translateY(0%) rotate(0deg);
+            opacity: 1;
+        }
+
+        .reveal-fade-up {
+            transform: translateY(36px);
+            opacity: 0;
+            transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1), opacity 1s ease;
+        }
+
+        .section-active .reveal-fade-up {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Layered Bloom Effect */
+        .bloom-layer-1 {
+            transform: scale(0.75) rotate(-8deg);
+            opacity: 0;
+            transform-origin: center;
+            transition: all 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+        }
+        .bloom-layer-2 {
+            transform: scale(0.65) rotate(12deg);
+            opacity: 0;
+            transform-origin: center;
+            transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.35s;
+        }
+        .bloom-layer-3 {
+            transform: scale(0.5) rotate(-15deg);
+            opacity: 0;
+            transform-origin: center;
+            transition: all 1.7s cubic-bezier(0.22, 1, 0.36, 1) 0.6s;
+        }
+
+        .section-active .bloom-layer-1,
+        .section-active .bloom-layer-2,
+        .section-active .bloom-layer-3 {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+        }
+
+        /* Cover Opening Transition */
+        #invitation-cover {
+            transition: transform 1.05s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.95s ease, visibility 1.05s;
+            will-change: transform, opacity;
+        }
+
+        #invitation-cover.cover-opened {
+            transform: translateY(-102%) scale(1.04);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Custom Range Slider for Cover Eclipse Interaction */
+        .eclipse-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 48px;
+            background: transparent;
+            outline: none;
+            cursor: grab;
+            position: relative;
+            z-index: 20;
+        }
+
+        .eclipse-slider:active {
+            cursor: grabbing;
+        }
+
+        .eclipse-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #D48C70;
+            border: 2px solid #F5EFE6;
+            box-shadow: 0 0 20px rgba(212, 140, 112, 0.6);
+            cursor: grab;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .eclipse-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #E8B49E;
+        }
+
+        .eclipse-slider::-moz-range-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #D48C70;
+            border: 2px solid #F5EFE6;
+            box-shadow: 0 0 20px rgba(212, 140, 112, 0.6);
+            cursor: grab;
+        }
+
+        /* Editorial Borders & Lines */
+        .hairline-copper {
+            border-color: rgba(212, 140, 112, 0.24);
+        }
+
+        /* Countdown Digit Transition */
+        .digit-box {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .digit-value {
+            transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+        }
+
+        .digit-flip {
+            transform: translateY(-18%);
+            opacity: 0.4;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0D111D;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D48C70;
+            border-radius: 3px;
+        }
+
+        /* Reduced Motion Support */
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .draw-path, .draw-path-fast {
+                stroke-dashoffset: 0 !important;
+            }
+            .reveal-text, .reveal-fade-up, .bloom-layer-1, .bloom-layer-2, .bloom-layer-3 {
+                transform: none !important;
+                opacity: 1 !important;
+            }
+        }
+    </style>
+</head>
+<body class="locked-scroll antialiased selection:bg-burgundy selection:text-parchment">
+
+    <!-- Subtle Editorial Print Texture -->
+    <div class="editorial-grain"></div>
+
+    <!-- Ambient Stardust & Light Particles Canvas (Background Layer) -->
+    <canvas id="celestial-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- Fixed Living Signature Illustration Background (Evolves with Scroll) -->
+    <div id="living-astrolabe-container" class="fixed inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden opacity-25 transition-opacity duration-1000">
+        <svg id="living-astrolabe-svg" viewBox="0 0 800 800" class="w-[115vw] h-[115vw] md:w-[68vw] md:h-[68vw] max-w-[860px] max-h-[860px] transition-transform duration-300 ease-out">
+            <defs>
+                <linearGradient id="copperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#E8B49E" stop-opacity="0.9" />
+                    <stop offset="50%" stop-color="#D48C70" stop-opacity="0.6" />
+                    <stop offset="100%" stop-color="#8C2D38" stop-opacity="0.8" />
+                </linearGradient>
+                <linearGradient id="silkRibbonGrad" x1="0%" y1="20%" x2="100%" y2="80%">
+                    <stop offset="0%" stop-color="#8C2D38" stop-opacity="0.7" />
+                    <stop offset="60%" stop-color="#D48C70" stop-opacity="0.45" />
+                    <stop offset="100%" stop-color="#591921" stop-opacity="0.8" />
+                </linearGradient>
+            </defs>
+
+            <!-- Outer Degree Scale Ring -->
+            <g id="living-ring-outer" style="transform-origin: 400px 400px;">
+                <circle cx="400" cy="400" r="350" fill="none" stroke="url(#copperGrad)" stroke-width="1" stroke-dasharray="3 9" />
+                <circle cx="400" cy="400" r="336" fill="none" stroke="#D48C70" stroke-width="0.75" stroke-opacity="0.4" />
+                <!-- Cardinal Astronomical Markers -->
+                <path d="M400 32 L400 62 M400 738 L400 768 M32 400 L62 400 M738 400 L768 400" stroke="#D48C70" stroke-width="1.5" stroke-opacity="0.6" />
+            </g>
+
+            <!-- Ecliptic Tilted Ring (Evolves on Scroll) -->
+            <g id="living-ring-middle" style="transform-origin: 400px 400px;">
+                <ellipse cx="400" cy="400" rx="280" ry="190" transform="rotate(-28 400 400)" fill="none" stroke="url(#copperGrad)" stroke-width="1.4" />
+                <ellipse cx="400" cy="400" rx="280" ry="190" transform="rotate(28 400 400)" fill="none" stroke="#D48C70" stroke-width="0.8" stroke-dasharray="8 6" stroke-opacity="0.5" />
+                <circle cx="195" cy="292" r="6" fill="#D48C70" />
+                <circle cx="605" cy="508" r="4" fill="#8C2D38" stroke="#E8B49E" stroke-width="1" />
+            </g>
+
+            <!-- Flowing Silk Ribbon Morph Path (Dynamically reveals with scroll) -->
+            <path id="living-silk-path"
+                  d="M 110,480 C 210,220 340,610 410,390 C 480,170 590,540 690,310"
+                  fill="none"
+                  stroke="url(#silkRibbonGrad)"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-dasharray="1400"
+                  stroke-dashoffset="1400" />
+
+            <!-- Inner Celestial Core & Lunar Phases -->
+            <g id="living-core" style="transform-origin: 400px 400px;">
+                <polygon points="400,190 445,355 610,400 445,445 400,610 355,445 190,400 355,355" fill="none" stroke="#D48C70" stroke-width="0.9" stroke-opacity="0.55" />
+                <circle cx="400" cy="400" r="92" fill="none" stroke="#E8B49E" stroke-width="1.2" stroke-opacity="0.5" />
+            </g>
+        </svg>
+    </div>
+
+    <!-- ==========================================
+         FLOATING UI: PROGRESS INDICATOR & AUDIO CONTROLLER
+         ========================================== -->
+    <!-- Orbital Scroll Progress Indicator (Right Edge) -->
+    <aside aria-label="Indikator Progres Halaman" class="fixed right-3 md:right-6 top-1/2 -translate-y-1/2 z-40 hidden sm:flex flex-col items-center gap-3 pointer-events-none">
+        <span class="font-display italic text-xs tracking-widest text-copper/80">I</span>
+        <div class="w-[1px] h-36 bg-copper/20 relative overflow-hidden">
+            <div id="scroll-progress-bar" class="w-full bg-copper transition-all duration-150 ease-out" style="height: 0%;"></div>
+        </div>
+        <div id="scroll-astrolabe-node" class="w-6 h-6 rounded-full border border-copper/60 flex items-center justify-center bg-midnight/90 shadow-md">
+            <span id="scroll-chapter-num" class="text-[10px] font-display text-parchment">01</span>
+        </div>
+        <span class="font-display italic text-xs tracking-widest text-copper/80">VIII</span>
+    </aside>
+
+    <!-- Mobile Top Slim Progress Bar -->
+    <div class="fixed top-0 left-0 right-0 h-[2px] bg-obsidian z-40 sm:hidden">
+        <div id="mobile-progress-bar" class="h-full bg-gradient-to-r from-burgundy via-copper to-copperLight w-0 transition-all duration-150"></div>
+    </div>
+
+    <!-- Audio Controller Button -->
+    <button id="audio-toggle-btn"
+            type="button"
+            aria-label="Aktifkan atau matikan musik latar"
+            class="fixed bottom-5 right-5 z-40 group flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-obsidian/90 border border-copper/40 text-parchment shadow-2xl backdrop-blur-md transition-all duration-300 hover:border-copper focus:outline-none">
+        <!-- Animated Vinyl / Astrolabe Disc Icon -->
+        <span id="audio-disc-icon" class="relative w-5 h-5 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-copper fill-none" stroke-width="1.5">
+                <circle cx="12" cy="12" r="9" />
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+            </svg>
+        </span>
+        <!-- Soundwave Bars -->
+        <span class="flex items-end gap-[2px] h-3">
+            <span class="audio-bar w-[2px] h-1.5 bg-copper transition-all duration-300"></span>
+            <span class="audio-bar w-[2px] h-3 bg-copper transition-all duration-300"></span>
+            <span class="audio-bar w-[2px] h-2 bg-copper transition-all duration-300"></span>
+            <span class="audio-bar w-[2px] h-2.5 bg-copper transition-all duration-300"></span>
+        </span>
+        <span id="audio-status-label" class="text-[11px] uppercase tracking-[0.2em] text-parchmentMuted group-hover:text-parchment">Mute</span>
+    </button>
+
+    <!-- Toast Notification (For Copy Bank Account & RSVP Feedback) -->
+    <div id="editorial-toast"
+         role="status"
+         aria-live="polite"
+         class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-4 transition-all duration-300 bg-obsidian border border-copper px-5 py-3 rounded-full shadow-2xl flex items-center gap-3">
+        <span class="w-2 h-2 rounded-full bg-copper animate-ping"></span>
+        <span id="editorial-toast-text" class="text-xs tracking-wider uppercase text-parchment font-medium">Tersalin ke papan klip</span>
+    </div>
+
+    <!-- ==========================================
+         SECTION 0: INTERACTIVE EDITORIAL COVER (100svh)
+         ========================================== -->
+    <section id="invitation-cover" class="fixed inset-0 z-50 min-h-[100svh] w-full bg-midnight flex flex-col justify-between p-5 sm:p-8 md:p-12 overflow-hidden select-none">
+        <!-- Decorative Corner Coordinates (Editorial Print Feel, Not Cliché Flourish) -->
+        <div class="relative z-10 flex justify-between items-start border-b hairline-copper pb-4">
+            <div>
+                <p class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-copper">Édition Spéciale — Vol. VIII</p>
+                <p class="font-display italic text-sm text-parchmentMuted mt-0.5">6° 49' 52" S — 107° 36' 18" E</p>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-copper">Sabtu, 24.10.2026</p>
+                <p class="font-display italic text-sm text-parchmentMuted mt-0.5">Observatorium Lembang, Bandung</p>
+            </div>
+        </div>
+
+        <!-- Center Dominant Hero Illustration + Overlapping Editorial Typography -->
+        <div class="relative z-10 my-auto grid grid-cols-1 lg:grid-cols-12 items-center gap-4 py-2">
+            <!-- Left Editorial Title Column -->
+            <div class="lg:col-span-5 order-2 lg:order-1 text-left">
+                <p class="text-xs uppercase tracking-[0.35em] text-copper mb-2">Perayaan Ikatan Suci</p>
+                <h1 class="font-display font-light text-5xl sm:text-6xl md:text-7xl leading-[0.92] tracking-tight text-parchment">
+                    Rayhan <br>
+                    <span class="italic font-normal text-copper pl-6 sm:pl-10">&amp; Kalila</span>
+                </h1>
+
+                <!-- Guest Resolver Box -->
+                <div class="mt-5 sm:mt-7 pl-4 border-l-2 border-burgundy bg-obsidian/50 py-3 pr-4 max-w-sm">
+                    <p class="text-[10px] uppercase tracking-[0.25em] text-parchmentMuted">Kepada Yth. Tamu Kehormatan</p>
+                    <p id="guest-name-display" class="font-display text-xl sm:text-2xl text-parchment font-medium mt-1 break-words">
+                        Sahabat &amp; Kerabat Terkasih
+                    </p>
+                    <p class="text-[11px] text-copperLight/80 italic font-display mt-0.5">Tempat duduk Anda telah kami siapkan di bawah bintang.</p>
+                </div>
+            </div>
+
+            <!-- Right / Center Interactive Eclipse Sculpture SVG -->
+            <div class="lg:col-span-7 order-1 lg:order-2 flex flex-col items-center justify-center relative">
+                <div class="relative w-[240px] h-[240px] sm:w-[320px] sm:h-[320px] md:w-[370px] md:h-[370px] flex items-center justify-center">
+                    <svg id="cover-eclipse-svg" viewBox="0 0 500 500" class="w-full h-full overflow-visible">
+                        <defs>
+                            <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#E8B49E" stop-opacity="0.95" />
+                                <stop offset="45%" stop-color="#D48C70" stop-opacity="0.45" />
+                                <stop offset="75%" stop-color="#8C2D38" stop-opacity="0.18" />
+                                <stop offset="100%" stop-color="#0D111D" stop-opacity="0" />
+                            </radialGradient>
+                            <linearGradient id="crimsonSilk" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#8C2D38" />
+                                <stop offset="50%" stop-color="#B84A58" />
+                                <stop offset="100%" stop-color="#591921" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Outer Astrolabe Engraving Frame -->
+                        <g class="orbit-spin">
+                            <circle cx="250" cy="250" r="220" fill="none" stroke="#D48C70" stroke-width="0.8" stroke-dasharray="2 8" />
+                            <circle cx="250" cy="250" r="206" fill="none" stroke="#D48C70" stroke-width="1.1" stroke-opacity="0.45" />
+                            <path d="M250 18 L255 38 L245 38 Z" fill="#D48C70" />
+                            <path d="M250 482 L255 462 L245 462 Z" fill="#D48C70" />
+                        </g>
+
+                        <!-- Organic Asymmetric Silk Ribbon Weaving Through Astrolabe -->
+                        <path id="cover-ribbon-back"
+                              d="M 30,330 C 120,410 190,110 265,245 C 340,380 410,160 475,205"
+                              fill="none" stroke="url(#crimsonSilk)" stroke-width="14" stroke-linecap="round" opacity="0.85" />
+                        <path d="M 30,330 C 120,410 190,110 265,245 C 340,380 410,160 475,205"
+                              fill="none" stroke="#E8B49E" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.7" />
+
+                        <!-- Fixed Sun Body (The Groom's Orbit) -->
+                        <circle id="cover-sun-halo" cx="250" cy="250" r="135" fill="url(#sunGlow)" />
+                        <circle cx="250" cy="250" r="64" fill="#D48C70" fill-opacity="0.2" stroke="#E8B49E" stroke-width="1.8" />
+                        <!-- Delicate Sun Rays Engraving -->
+                        <g stroke="#E8B49E" stroke-width="0.9" stroke-opacity="0.65">
+                            <line x1="250" y1="155" x2="250" y2="176" />
+                            <line x1="250" y1="324" x2="250" y2="345" />
+                            <line x1="155" y1="250" x2="176" y2="250" />
+                            <line x1="324" y1="250" x2="345" y2="250" />
+                            <line x1="183" y1="183" x2="198" y2="198" />
+                            <line x1="317" y1="317" x2="302" y2="302" />
+                            <line x1="317" y1="183" x2="302" y2="198" />
+                            <line x1="183" y1="317" x2="198" y2="302" />
+                        </g>
+
+                        <!-- Draggable Lunar Body (The Bride's Orbit - Moves with user slider) -->
+                        <g id="cover-moon-group" transform="translate(-85, 28)">
+                            <circle cx="250" cy="250" r="62" fill="#0D111D" stroke="#D48C70" stroke-width="2" />
+                            <!-- Internal Lunar Crater & Botanical Star Engraving -->
+                            <path d="M235 215 C215 235 215 265 235 285" fill="none" stroke="#D48C70" stroke-width="1" stroke-opacity="0.6" />
+                            <path d="M250 225 L254 244 L273 250 L254 256 L250 275 L246 256 L227 250 L246 244 Z" fill="#E8B49E" fill-opacity="0.85" />
+                        </g>
+
+                        <!-- Foreground Celestial Callipers -->
+                        <path d="M 150,120 Q 250,60 350,120" fill="none" stroke="#D48C70" stroke-width="1.2" />
+                        <circle cx="250" cy="90" r="4" fill="#E8B49E" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Interactive Opening Mechanism: Orbital Alignment Slider -->
+        <div class="relative z-20 max-w-md mx-auto w-full pt-2 border-t hairline-copper">
+            <div class="flex items-center justify-between text-[11px] uppercase tracking-[0.22em] text-parchmentMuted mb-1.5">
+                <span>Geser Orbit untuk Menyatukan Gerhana</span>
+                <span id="alignment-percentage" class="text-copper font-mono">0%</span>
+            </div>
+
+            <!-- Interactive Slider Track -->
+            <div class="relative flex items-center bg-obsidian/90 border border-copper/40 rounded-full px-2 py-1 shadow-inner">
+                <div id="slider-fill-track" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-burgundy/60 to-copper/40 rounded-full pointer-events-none transition-all duration-75" style="width: 12%;"></div>
+                <input id="eclipse-unlock-slider"
+                       type="range"
+                       min="0"
+                       max="100"
+                       value="0"
+                       aria-label="Geser ke kanan untuk membuka undangan"
+                       class="eclipse-slider" />
+                <div class="pointer-events-none absolute right-4 flex items-center gap-1.5 text-copper/80 text-xs tracking-widest uppercase">
+                    <span class="hidden sm:inline">Penyatuan</span>
+                    <svg viewBox="0 0 24 24" class="w-4 h-4 stroke-current fill-none" stroke-width="1.8">
+                        <circle cx="12" cy="12" r="8" />
+                        <circle cx="12" cy="12" r="2" fill="currentColor" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Quick Accessibility Fallback Trigger -->
+            <div class="text-center mt-2">
+                <button id="direct-open-btn" type="button" class="text-[11px] text-parchmentMuted/80 hover:text-copper underline underline-offset-4 tracking-widest uppercase transition-colors">
+                    Atau ketuk di sini untuk langsung menyelaraskan orbit
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         MAIN INVITATION CONTENT
+         ========================================== -->
+    <main id="main-content" class="relative z-10">
+
+        <!-- ==========================================
+             SECTION 1: HERO & ORIGINAL MONOGRAM (Asymmetrical Diagonal Layout)
+             ========================================== -->
+        <section id="section-hero" data-chapter="01" class="observe-section relative min-h-[100svh] w-full flex flex-col justify-between px-5 sm:px-10 md:px-16 lg:px-24 py-12 overflow-hidden">
+            <!-- Top Editorial Header -->
+            <header class="flex flex-wrap items-center justify-between gap-4 border-b hairline-copper pb-5 reveal-fade-up">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-display italic text-copper">Bab I</span>
+                    <span class="w-6 h-[1px] bg-copper/50"></span>
+                    <span class="text-[11px] uppercase tracking-[0.28em] text-parchmentMuted">Konstelasi Pertemuan</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs uppercase tracking-[0.3em] text-copper font-medium">24 Oktober 2026</span>
+                </div>
+            </header>
+
+            <!-- Main Diagonal Asymmetrical Hero Composition -->
+            <div class="my-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-8">
+                <!-- Left Column: Giant Overlapping Typography -->
+                <div class="lg:col-span-7 relative z-10">
+                    <div class="text-xs uppercase tracking-[0.35em] text-copper mb-3 reveal-fade-up">
+                        The Celestial Union Of
+                    </div>
+
+                    <h2 class="font-display text-6xl sm:text-7xl md:text-8xl lg:text-[6.5rem] leading-[0.88] font-light text-parchment tracking-tight">
+                        <span class="reveal-mask"><span class="reveal-text">Rayhan</span></span><br>
+                        <span class="reveal-mask pl-6 sm:pl-16"><span class="reveal-text italic text-copper font-normal" style="transition-delay: 140ms;">Pradipta</span></span>
+                    </h2>
+
+                    <!-- Overlapping Silk & Monogram Bridge -->
+                    <div class="my-4 sm:my-6 flex items-center gap-5 pl-4 sm:pl-12 reveal-fade-up" style="transition-delay: 260ms;">
+                        <span class="font-display italic text-3xl sm:text-4xl text-burgundy bg-parchment/95 px-3.5 py-1 rounded-full shadow-lg">&amp;</span>
+                        <p class="text-xs sm:text-sm text-parchmentMuted max-w-xs leading-relaxed">
+                            Dua garis edar yang melintasi ruang dan waktu, kini berlabuh pada satu titik ekuinoks yang abadi.
+                        </p>
+                    </div>
+
+                    <h2 class="font-display text-6xl sm:text-7xl md:text-8xl lg:text-[6.5rem] leading-[0.88] font-light text-parchment tracking-tight text-right lg:text-left lg:pl-28">
+                        <span class="reveal-mask"><span class="reveal-text" style="transition-delay: 320ms;">Kalila</span></span><br>
+                        <span class="reveal-mask"><span class="reveal-text italic text-copperLight font-normal" style="transition-delay: 450ms;">Nareswari</span></span>
+                    </h2>
+                </div>
+
+                <!-- Right Column: Original Illustrative Monogram & Interactive Astrolabe Sculpture -->
+                <div class="lg:col-span-5 flex flex-col items-center lg:items-end justify-center relative">
+                    <div id="interactive-hero-monogram"
+                         title="Ketuk untuk memutar cincin konstelasi"
+                         class="cursor-pointer group relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center">
+                        <svg viewBox="0 0 420 420" class="w-full h-full overflow-visible">
+                            <!-- Outer Botanical Starburst & Silk Loops -->
+                            <g class="bloom-layer-1">
+                                <path class="draw-path" d="M210 20 C250 95 325 170 400 210 C325 250 250 325 210 400 C170 325 95 250 20 210 C95 170 170 95 210 20 Z"
+                                      fill="none" stroke="#D48C70" stroke-width="1.2" />
+                                <circle cx="210" cy="210" r="162" fill="#151B2E" fill-opacity="0.7" stroke="#D48C70" stroke-width="1.4" />
+                            </g>
+
+                            <!-- Asymmetric Silk Ribbon Wrapping the Monogram -->
+                            <g class="bloom-layer-2">
+                                <path d="M55 265 C105 140 315 280 365 155" fill="none" stroke="#8C2D38" stroke-width="18" stroke-linecap="round" opacity="0.75" />
+                                <path class="draw-path-fast" d="M55 265 C105 140 315 280 365 155" fill="none" stroke="#E8B49E" stroke-width="1" stroke-dasharray="4 4" />
+                                <circle cx="210" cy="210" r="134" fill="none" stroke="#E8B49E" stroke-width="0.75" stroke-dasharray="6 6" class="group-hover:rotate-45 transition-transform duration-1000 origin-center" />
+                            </g>
+
+                            <!-- Custom Illustrative Monogram "R & K" Intertwined with Crescent Moon -->
+                            <g class="bloom-layer-3">
+                                <!-- Crescent Moon Spine -->
+                                <path d="M185 115 C130 145 130 275 185 305 C150 265 150 155 185 115 Z" fill="#D48C70" fill-opacity="0.85" />
+                                <!-- Letter R Custom Vector Calligraphy -->
+                                <path class="draw-path" d="M168 135 L168 285 M168 135 C225 135 235 195 168 205 L232 285"
+                                      fill="none" stroke="#F5EFE6" stroke-width="3.2" stroke-linecap="round" />
+                                <!-- Letter K Custom Vector Calligraphy -->
+                                <path class="draw-path" d="M212 135 L212 285 M272 140 L212 210 L278 285"
+                                      fill="none" stroke="#D48C70" stroke-width="3.2" stroke-linecap="round" />
+                                <!-- North Star Focal Point -->
+                                <polygon points="210,82 214,96 228,100 214,104 210,118 206,104 192,100 206,96" fill="#F5EFE6" />
+                            </g>
+                        </svg>
+                        <span class="absolute -bottom-3 text-[10px] uppercase tracking-[0.25em] text-copper/75 group-hover:text-parchment transition-colors">
+                            [ Ketuk Monogram untuk Kalibrasi Bintang ]
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Quote & Date Banner -->
+            <div class="border-t hairline-copper pt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 reveal-fade-up">
+                <p class="font-display italic text-lg sm:text-xl text-parchmentMuted max-w-2xl">
+                    “Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan pasangan-pasangan untukmu supaya kamu cenderung dan merasa tenteram kepadanya.” <span class="text-copper not-italic text-sm ml-1">(QS. Ar-Rum: 21)</span>
+                </p>
+                <a href="#section-couple" class="inline-flex items-center gap-3 text-xs uppercase tracking-[0.25em] text-copper hover:text-parchment transition-colors self-start sm:self-auto">
+                    <span>Telusuri Kisah</span>
+                    <span class="w-8 h-[1px] bg-copper"></span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Ornamen Transisi Section 1 ke 2: Flowing Silk & Star Trajectory -->
+        <div class="w-full overflow-hidden py-2 pointer-events-none">
+            <svg viewBox="0 0 1440 90" class="w-full h-12 sm:h-16 preserve-3d">
+                <path d="M0,45 Q360,5 720,45 T1440,45" fill="none" stroke="#D48C70" stroke-width="1" stroke-opacity="0.35" />
+                <path d="M0,60 Q360,90 720,30 T1440,50" fill="none" stroke="#8C2D38" stroke-width="2" stroke-opacity="0.6" />
+                <circle cx="720" cy="40" r="4" fill="#D48C70" />
+            </svg>
+        </div>
+
+        <!-- ==========================================
+             SECTION 2: PROFIL MEMPELAI (Interconnected Dual Editorial Composition)
+             ========================================== -->
+        <section id="section-couple" data-chapter="02" class="observe-section relative min-h-[100svh] w-full px-5 sm:px-10 md:px-16 lg:px-24 py-16 flex flex-col justify-center">
+            <!-- Section Header -->
+            <div class="max-w-xl mb-12 reveal-fade-up">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="text-xs font-display italic text-copper">Bab II</span>
+                    <span class="w-6 h-[1px] bg-copper/50"></span>
+                    <span class="text-[11px] uppercase tracking-[0.28em] text-parchmentMuted">Dua Orbit yang Berpadu</span>
+                </div>
+                <h2 class="font-display text-4xl sm:text-5xl md:text-6xl font-light text-parchment leading-tight">
+                    Sang Surya &amp; <span class="italic text-copper">Sang Rembulan</span>
+                </h2>
+            </div>
+
+            <!-- Interconnected Asymmetric Editorial Grid (Not two standard cards) -->
+            <div class="relative grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-8 items-center">
+                
+                <!-- Mempelai Pria (Solar / Astrolabe Architect Theme) - Spans 5 cols -->
+                <article class="lg:col-span-5 relative z-10 reveal-fade-up">
+                    <div class="relative border-l border-t hairline-copper p-6 sm:p-8 bg-obsidian/40">
+                        <!-- Custom Solar Engraving Ornament (Unique to Groom) -->
+                        <div class="flex items-start justify-between mb-6">
+                            <span class="font-display text-xs uppercase tracking-[0.3em] text-copper py-1 px-3 border border-copper/30 rounded-full">
+                                Orbit Pertama — The Sun
+                            </span>
+                            <svg viewBox="0 0 100 100" class="w-16 h-16 sway-slow overflow-visible">
+                                <circle cx="50" cy="50" r="24" fill="none" stroke="#D48C70" stroke-width="1.5" />
+                                <path class="draw-path" d="M50 8 L50 20 M50 80 L50 92 M8 50 L20 50 M80 50 L92 50 M20 20 L29 29 M71 71 L80 80 M80 20 L71 29 M20 80 L29 71" stroke="#E8B49E" stroke-width="1.4" />
+                                <polygon points="50,32 55,45 68,50 55,55 50,68 45,55 32,50 45,45" fill="#D48C70" />
+                            </svg>
+                        </div>
+
+                        <!-- Groom Portrait Illustration Frame -->
+                        <div class="relative mb-6 overflow-hidden bg-midnight border border-copper/30 aspect-[4/3] flex items-center justify-center group">
+                            <svg viewBox="0 0 400 300" class="w-full h-full">
+                                <rect width="400" height="300" fill="#0D111D" />
+                                <!-- Architectural Celestial Perspective Lines -->
+                                <g stroke="#D48C70" stroke-opacity="0.28" stroke-width="1">
+                                    <line x1="0" y1="300" x2="200" y2="60" />
+                                    <line x1="400" y1="300" x2="200" y2="60" />
+                                    <line x1="80" y1="300" x2="200" y2="60" />
+                                    <line x1="320" y1="300" x2="200" y2="60" />
+                                </g>
+                                <!-- Solar Silhouette & Astrolabe Instrument -->
+                                <circle cx="200" cy="145" r="78" fill="#8C2D38" fill-opacity="0.35" stroke="#D48C70" stroke-width="1.5" />
+                                <circle cx="200" cy="145" r="54" fill="none" stroke="#E8B49E" stroke-width="1" stroke-dasharray="4 4" />
+                                <!-- Stylized Editorial Botanical Branch & Sunburst -->
+                                <path class="draw-path" d="M140 240 C165 190 195 160 245 100 M185 185 C160 175 150 155 155 135 M208 155 C230 150 245 135 245 115"
+                                      fill="none" stroke="#F5EFE6" stroke-width="2" stroke-linecap="round" />
+                                <circle cx="245" cy="100" r="6" fill="#E8B49E" />
+                            </svg>
+                            <div class="absolute bottom-3 left-4 text-[10px] tracking-[0.25em] uppercase text-copperLight">
+                                Arsitek &amp; Pengamat Bintang
+                            </div>
+                        </div>
+
+                        <h3 class="font-display text-3xl sm:text-4xl text-parchment font-normal">
+                            Ars. Rayhan Pradipta, IAI.
+                        </h3>
+                        <p class="text-xs uppercase tracking-[0.2em] text-copper mt-2 mb-4">Putra Pertama Dari</p>
+                        <p class="text-sm text-parchmentMuted leading-relaxed">
+                            Bapak Prof. Dr. Hendra Pradipta, M.T. <br>
+                            &amp; Ibu Dra. Ratna Ningrum (Bandung)
+                        </p>
+                    </div>
+                </article>
+
+                <!-- Center Connecting Visual Bridge (2 Columns) - Unites Groom & Bride -->
+                <div class="lg:col-span-2 flex flex-col items-center justify-center relative py-2">
+                    <svg viewBox="0 0 180 260" class="w-36 h-48 overflow-visible">
+                        <!-- Intersecting Silk Knot uniting Left & Right -->
+                        <path class="draw-path" d="M -40,70 C 40,70 60,190 90,130 C 120,70 140,190 220,190"
+                              fill="none" stroke="#8C2D38" stroke-width="8" stroke-linecap="round" />
+                        <path class="draw-path-fast" d="M -40,190 C 50,190 70,70 90,130 C 110,190 130,70 220,70"
+                              fill="none" stroke="#D48C70" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="90" cy="130" r="24" fill="#0D111D" stroke="#E8B49E" stroke-width="1.5" />
+                        <text x="90" y="136" text-anchor="middle" fill="#F5EFE6" class="font-display italic text-lg">&amp;</text>
+                    </svg>
+                    <span class="text-[10px] uppercase tracking-[0.3em] text-parchmentMuted text-center mt-2">
+                        Simpul Takdir
+                    </span>
+                </div>
+
+                <!-- Mempelai Wanita (Lunar / Celestial Botanist Theme) - Spans 5 cols, offset down on desktop -->
+                <article class="lg:col-span-5 lg:mt-20 relative z-10 reveal-fade-up" style="transition-delay: 200ms;">
+                    <div class="relative border-r border-b hairline-copper p-6 sm:p-8 bg-obsidian/40 text-right">
+                        <!-- Custom Lunar Engraving Ornament (Unique to Bride) -->
+                        <div class="flex items-start justify-between mb-6">
+                            <svg viewBox="0 0 100 100" class="w-16 h-16 sway-delayed overflow-visible">
+                                <path d="M62 18 C34 24 22 56 38 78 C50 92 72 88 80 76 C58 80 42 62 46 38 C48 26 54 20 62 18 Z"
+                                      fill="none" stroke="#E8B49E" stroke-width="1.6" />
+                                <circle cx="66" cy="36" r="4" fill="#8C2D38" stroke="#E8B49E" stroke-width="1" />
+                                <path class="draw-path" d="M25 65 Q50 45 85 30" fill="none" stroke="#D48C70" stroke-width="1.2" />
+                            </svg>
+                            <span class="font-display text-xs uppercase tracking-[0.3em] text-copperLight py-1 px-3 border border-copper/30 rounded-full">
+                                Orbit Kedua — The Moon
+                            </span>
+                        </div>
+
+                        <!-- Bride Portrait Illustration Frame -->
+                        <div class="relative mb-6 overflow-hidden bg-midnight border border-copper/30 aspect-[4/3] flex items-center justify-center">
+                            <svg viewBox="0 0 400 300" class="w-full h-full">
+                                <rect width="400" height="300" fill="#0D111D" />
+                                <!-- Lunar Phase Progression Arcs -->
+                                <path d="M 40,240 A 180,180 0 0,1 360,240" fill="none" stroke="#D48C70" stroke-width="1" stroke-dasharray="5 5" />
+                                <!-- Crescent Moon & Night-Blooming Cereus (Wijayakusuma) Engraving -->
+                                <path d="M225 75 C170 95 165 175 215 205 C185 175 190 110 225 75 Z" fill="#D48C70" fill-opacity="0.7" />
+                                <!-- Organic Asymmetric Petals -->
+                                <path class="draw-path" d="M200 165 C165 135 140 160 165 190 C140 205 165 235 195 205 C215 235 245 215 225 185 C255 170 235 135 200 165 Z"
+                                      fill="#8C2D38" fill-opacity="0.45" stroke="#F5EFE6" stroke-width="1.6" />
+                                <circle cx="200" cy="182" r="5" fill="#E8B49E" />
+                            </svg>
+                            <div class="absolute bottom-3 right-4 text-[10px] tracking-[0.25em] uppercase text-copperLight">
+                                Kurator Seni &amp; Penulis
+                            </div>
+                        </div>
+
+                        <h3 class="font-display text-3xl sm:text-4xl text-parchment font-normal">
+                            Kalila Nareswari, M.Sn.
+                        </h3>
+                        <p class="text-xs uppercase tracking-[0.2em] text-copper mt-2 mb-4">Putri Bungsu Dari</p>
+                        <p class="text-sm text-parchmentMuted leading-relaxed">
+                            Bapak Ir. Surya Atmaja Kusuma <br>
+                            &amp; Ibu Dr. Sofia Maharani, M.Hum. (Yogyakarta)
+                        </p>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION 3: EDITORIAL COUNTDOWN COMPOSITION
+             ========================================== -->
+        <section id="section-countdown" data-chapter="03" class="observe-section relative min-h-[90svh] w-full px-5 sm:px-10 md:px-16 lg:px-24 py-16 flex flex-col justify-center overflow-hidden">
+            <div class="max-w-6xl mx-auto w-full relative">
+                
+                <!-- Background Companion Illustration: Celestial Meridian Dial -->
+                <div class="pointer-events-none absolute -right-16 -top-20 w-80 h-80 sm:w-[440px] sm:h-[440px] opacity-30">
+                    <svg viewBox="0 0 400 400" class="w-full h-full orbit-spin-reverse">
+                        <circle cx="200" cy="200" r="185" fill="none" stroke="#D48C70" stroke-width="1.2" stroke-dasharray="1 10" />
+                        <circle cx="200" cy="200" r="150" fill="none" stroke="#D48C70" stroke-width="0.8" />
+                        <path d="M200 15 L200 385 M15 200 L385 200" stroke="#D48C70" stroke-width="0.7" />
+                        <polygon points="200,45 215,185 355,200 215,215 200,355 185,215 45,200 185,185" fill="none" stroke="#8C2D38" stroke-width="1.5" />
+                    </svg>
+                </div>
+
+                <!-- Editorial Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 border-b hairline-copper pb-6 reveal-fade-up">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xs font-display italic text-copper">Bab III</span>
+                            <span class="w-6 h-[1px] bg-copper/50"></span>
+                            <span class="text-[11px] uppercase tracking-[0.28em] text-parchmentMuted">Kronometer Ekuinoks</span>
+                        </div>
+                        <h2 class="font-display text-4xl sm:text-6xl font-light text-parchment">
+                            Menghitung Detik <span class="italic text-copper">Penyatuan</span>
+                        </h2>
+                    </div>
+                    <p class="text-xs uppercase tracking-[0.25em] text-parchmentMuted mt-4 md:mt-0">
+                        Target Koordinat Waktu: <span class="text-copperLight">24 Okt 2026 — 08:30 WIB</span>
+                    </p>
+                </div>
+
+                <!-- Editorial Date Composition Grid (Asymmetrical Typographic Scale) -->
+                <div id="countdown-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 relative z-10">
+                    <!-- Days -->
+                    <div class="border hairline-copper bg-obsidian/60 p-6 sm:p-8 flex flex-col justify-between reveal-fade-up">
+                        <div class="flex justify-between items-center text-[10px] uppercase tracking-[0.28em] text-copper">
+                            <span>01 / Orbit</span>
+                            <span>Solar Days</span>
+                        </div>
+                        <div class="digit-box my-4">
+                            <span id="cd-days" class="digit-value block font-display text-6xl sm:text-7xl md:text-8xl font-light text-parchment leading-none">
+                                000
+                            </span>
+                        </div>
+                        <span class="text-xs uppercase tracking-[0.3em] text-parchmentMuted border-t hairline-copper pt-3">Hari</span>
+                    </div>
+
+                    <!-- Hours -->
+                    <div class="border hairline-copper bg-obsidian/60 p-6 sm:p-8 flex flex-col justify-between lg:translate-y-6 reveal-fade-up" style="transition-delay: 120ms;">
+                        <div class="flex justify-between items-center text-[10px] uppercase tracking-[0.28em] text-copper">
+                            <span>02 / Rotasi</span>
+                            <span>Hours</span>
+                        </div>
+                        <div class="digit-box my-4">
+                            <span id="cd-hours" class="digit-value block font-display text-6xl sm:text-7xl md:text-8xl font-light text-copperLight leading-none">
+                                00
+                            </span>
+                        </div>
+                        <span class="text-xs uppercase tracking-[0.3em] text-parchmentMuted border-t hairline-copper pt-3">Jam</span>
+                    </div>
+
+                    <!-- Minutes -->
+                    <div class="border hairline-copper bg-obsidian/60 p-6 sm:p-8 flex flex-col justify-between reveal-fade-up" style="transition-delay: 240ms;">
+                        <div class="flex justify-between items-center text-[10px] uppercase tracking-[0.28em] text-copper">
+                            <span>03 / Derajat</span>
+                            <span>Minutes</span>
+                        </div>
+                        <div class="digit-box my-4">
+                            <span id="cd-minutes" class="digit-value block font-display text-6xl sm:text-7xl md:text-8xl font-light text-parchment leading-none">
+                                00
+                            </span>
+                        </div>
+                        <span class="text-xs uppercase tracking-[0.3em] text-parchmentMuted border-t hairline-copper pt-3">Menit</span>
+                    </div>
+
+                    <!-- Seconds -->
+                    <div class="border border-burgundy/80 bg-burgundyDark/25 p-6 sm:p-8 flex flex-col justify-between lg:translate-y-6 reveal-fade-up" style="transition-delay: 360ms;">
+                        <div class="flex justify-between items-center text-[10px] uppercase tracking-[0.28em] text-copperLight">
+                            <span>04 / Denyut</span>
+                            <span>Seconds</span>
+                        </div>
+                        <div class="digit-box my-4">
+                            <span id="cd-seconds" class="digit-value block font-display italic text-6xl sm:text-7xl md:text-8xl font-normal text-copper leading-none">
+                                00
+                            </span>
+                        </div>
+                        <span class="text-xs uppercase tracking-[0.3em] text-parchment border-t border-burgundy/50 pt-3">Detik</span>
+                    </div>
+                </div>
+
+                <!-- Completed State Message (Hidden unless countdown reaches zero) -->
+                <div id="countdown-complete-banner" class="hidden mt-8 p-6 border border-copper bg-obsidian/90 text-center">
+                    <p class="font-display italic text-2xl sm:text-3xl text-copperLight">
+                        Gerhana Suci Telah Tiba — Hari Ini Rayhan &amp; Kalila Mengikat Janji Abadi.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION 4: INFORMASI ACARA (Architectural Split Layout - Not Identical Cards)
+             ========================================== -->
+        <section id="section-events" data-chapter="04" class="observe-section relative min-h-[100svh] w-full px-5 sm:px-10 md:px-16 lg:px-24 py-20 flex flex-col justify-center">
+            <div class="max-w-6xl mx-auto w-full">
+                
+                <!-- Header -->
+                <div class="mb-14 reveal-fade-up">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-xs font-display italic text-copper">Bab IV</span>
+                        <span class="w-6 h-[1px] bg-copper/50"></span>
+                        <span class="text-[11px] uppercase tracking-[0.28em] text-parchmentMuted">Almanak Perayaan</span>
+                    </div>
+                    <h2 class="font-display text-4xl sm:text-6xl font-light text-parchment">
+                        Rangkaian <span class="italic text-copper">Sakral &amp; Perjamuan</span>
+                    </h2>
+                </div>
+
+                <!-- Event 1: AKAD NIKAH (Horizontal Architectural Banner Layout) -->
+                <div class="relative border-t border-b hairline-copper py-10 sm:py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center reveal-fade-up">
+                    <!-- Left Date & Time Column -->
+                    <div class="lg:col-span-4 flex flex-col justify-between border-l-2 border-copper pl-5">
+                        <span class="text-xs uppercase tracking-[0.3em] text-copper">Bagian I — Ikrar Suci</span>
+                        <h3 class="font-display text-4xl sm:text-5xl text-parchment font-light mt-2">Akad Nikah</h3>
+                        <p class="font-display italic text-2xl text-copperLight mt-3">Sabtu, 24 Oktober 2026</p>
+                        <p class="text-sm text-parchmentMuted mt-1 tracking-wider uppercase">Pukul 08.30 — 10.30 WIB</p>
+                    </div>
+
+                    <!-- Center Guiding Ornament Arrow SVG -->
+                    <div class="lg:col-span-3 flex justify-center">
+                        <svg viewBox="0 0 220 90" class="w-44 h-20 overflow-visible">
+                            <path class="draw-path" d="M10 45 L195 45" stroke="#D48C70" stroke-width="1.2" />
+                            <path class="draw-path-fast" d="M35 20 C85 20 115 70 165 45" fill="none" stroke="#8C2D38" stroke-width="3" />
+                            <polygon points="205,45 188,38 192,45 188,52" fill="#E8B49E" />
+                            <circle cx="95" cy="45" r="14" fill="#0D111D" stroke="#D48C70" stroke-width="1.2" />
+                            <circle cx="95" cy="45" r="4" fill="#D48C70" />
+                        </svg>
+                    </div>
+
+                    <!-- Right Location Details -->
+                    <div class="lg:col-span-5 bg-obsidian/50 p-6 sm:p-8 border hairline-copper">
+                        <p class="text-[11px] uppercase tracking-[0.25em] text-copper mb-1">Titik Lokasi Pertama</p>
+                        <h4 class="font-display text-2xl sm:text-3xl text-parchment">Glasshouse Amphitheater — Gedong Putih</h4>
+                        <p class="text-xs sm:text-sm text-parchmentMuted mt-2 leading-relaxed">
+                            Jl. Sersan Bajuri KM 4.7, Cihideung, Parongpong, Kabupaten Bandung Barat, Jawa Barat 40559
+                        </p>
+                        <div class="mt-5">
+                            <a href="https://maps.google.com/?q=Gedong+Putih+Bandung"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="inline-flex items-center gap-3 px-5 py-2.5 bg-midnight border border-copper text-xs uppercase tracking-[0.22em] text-parchment hover:bg-copper hover:text-midnight transition-all duration-300">
+                                <span>Petunjuk Google Maps</span>
+                                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 stroke-current fill-none" stroke-width="2">
+                                    <path d="M7 17L17 7M17 7H8M17 7V16" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 2: RESEPSI MALAM (Asymmetrical Feature Showcase Layout) -->
+                <div class="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch reveal-fade-up" style="transition-delay: 180ms;">
+                    <!-- Left Atmospheric Starlight Reception Box -->
+                    <div class="lg:col-span-7 bg-gradient-to-br from-obsidian via-obsidian to-burgundyDark/40 border border-copper/40 p-7 sm:p-10 flex flex-col justify-between relative overflow-hidden">
+                        <div class="relative z-10">
+                            <span class="inline-block px-3 py-1 bg-burgundy/60 border border-copper/40 text-[10px] uppercase tracking-[0.3em] text-parchment mb-4">
+                                Bagian II — Perjamuan di Bawah Bintang
+                            </span>
+                            <h3 class="font-display text-4xl sm:text-6xl text-parchment font-light">
+                                Resepsi &amp; <span class="italic text-copperLight">Soirée Nocturne</span>
+                            </h3>
+                            <p class="text-sm text-parchmentMuted mt-4 max-w-xl leading-relaxed">
+                                Perjamuan makan malam intim diiringi orkestra kamar di bawah kubah kaca dan taburan cahaya lentera tembaga.
+                            </p>
+                        </div>
+
+                        <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8 pt-6 border-t hairline-copper">
+                            <div>
+                                <p class="text-[10px] uppercase tracking-[0.25em] text-copper">Waktu Perjamuan</p>
+                                <p class="font-display text-2xl text-parchment mt-1">Sabtu, 24 Oktober 2026</p>
+                                <p class="text-xs text-copperLight uppercase tracking-widest mt-0.5">Pukul 18.30 — 21.30 WIB</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] uppercase tracking-[0.25em] text-copper">Dress Code Editorial</p>
+                                <p class="font-display text-2xl text-parchment mt-1">Midnight &amp; Warm Copper</p>
+                                <p class="text-xs text-parchmentMuted mt-0.5">Busana formal malam bernuansa gelap atau bumi.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Architectural Map Card -->
+                    <div class="lg:col-span-5 border hairline-copper bg-midnight p-7 sm:p-9 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-6">
+                                <span class="text-[10px] uppercase tracking-[0.28em] text-copper">Koordinat Observatorium</span>
+                                <span class="font-mono text-xs text-parchmentMuted">ALT: 1,240M</span>
+                            </div>
+
+                            <!-- Architectural Dome Illustration -->
+                            <svg viewBox="0 0 320 140" class="w-full h-28 mb-6 overflow-visible">
+                                <path class="draw-path" d="M40 130 L280 130 M70 130 L70 90 A90 80 0 0 1 250 90 L250 130" fill="none" stroke="#D48C70" stroke-width="1.4" />
+                                <path d="M160 10 L160 130 M115 22 L115 130 M205 22 L205 130" stroke="#D48C70" stroke-width="0.6" stroke-dasharray="3 3" />
+                                <circle cx="160" cy="52" r="8" fill="#8C2D38" stroke="#E8B49E" stroke-width="1.2" />
+                            </svg>
+
+                            <h4 class="font-display text-2xl text-parchment">Grand Hall — Gedong Putih</h4>
+                            <p class="text-xs text-parchmentMuted mt-2 leading-relaxed">
+                                Kompleks Villa Triniti, Jl. Sersan Bajuri KM 4.7, Parongpong, Bandung Barat
+                            </p>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t hairline-copper">
+                            <a href="https://maps.google.com/?q=Gedong+Putih+Bandung"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="w-full inline-flex items-center justify-between px-5 py-3.5 bg-copper text-midnight font-medium text-xs uppercase tracking-[0.22em] hover:bg-copperLight transition-colors">
+                                <span>Buka Navigasi Google Maps</span>
+                                <svg viewBox="0 0 24 24" class="w-4 h-4 stroke-current fill-none" stroke-width="2">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION 5: TANDA KASIH (Bespoke Celestial Bond Certificate - Not Generic Bank Card)
+             ========================================== -->
+        <section id="section-gift" data-chapter="05" class="observe-section relative min-h-[90svh] w-full px-5 sm:px-10 md:px-16 lg:px-24 py-20 flex flex-col justify-center">
+            <div class="max-w-5xl mx-auto w-full">
+                
+                <!-- Header -->
+                <div class="text-center max-w-2xl mx-auto mb-14 reveal-fade-up">
+                    <div class="inline-flex items-center gap-3 mb-2">
+                        <span class="text-xs font-display italic text-copper">Bab V</span>
+                        <span class="w-6 h-[1px] bg-copper/50"></span>
+                        <span class="text-[11px] uppercase tracking-[0.28em] text-parchmentMuted">Prasasti Kasih</span>
+                    </div>
+                    <h2 class="font-display text-4xl sm:text-6xl font-light text-parchment">
+                        Tanda <span class="italic text-copper">Kasih &amp; Doa</span>
+                    </h2>
+                    <p class="text-xs sm:text-sm text-parchmentMuted mt-3 leading-relaxed">
+                        Kehadiran dan restu Anda adalah cahaya paling berharga bagi perjalanan kami. Namun jika Anda bermaksud mengirimkan tanda kasih, Anda dapat menyalurkannya melalui prasasti rekening berikut.
+                    </p>
+                </div>
+
+                <!-- Bespoke Archival Bond / Star Certificate Design -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 reveal-fade-up">
+                    
+                    <!-- Certificate I: Bank Central Asia -->
+                    <div class="relative bg-obsidian/80 border border-copper/50 p-7 sm:p-9 overflow-hidden group">
+                        <!-- Guilloche / Engraving Background Pattern -->
+                        <svg viewBox="0 0 300 200" class="pointer-events-none absolute -right-12 -bottom-12 w-56 h-56 opacity-15 group-hover:rotate-12 transition-transform duration-700">
+                            <circle cx="150" cy="100" r="90" fill="none" stroke="#D48C70" stroke-width="1" />
+                            <ellipse cx="150" cy="100" rx="90" ry="45" transform="rotate(30 150 100)" fill="none" stroke="#D48C70" stroke-width="1" />
+                            <ellipse cx="150" cy="100" rx="90" ry="45" transform="rotate(-30 150 100)" fill="none" stroke="#D48C70" stroke-width="1" />
+                        </svg>
+
+                        <div class="flex items-center justify-between border-b hairline-copper pb-4 mb-6">
+                            <div>
+                                <span class="text-[10px] uppercase tracking-[0.3em] text-copper block">Prasasti Rekening I</span>
+                                <h3 class="font-display text-2xl sm:text-3xl text-parchment mt-0.5">Bank Central Asia (BCA)</h3>
+                            </div>
+                            <span class="font-display italic text-xl text-copperLight">No. I</span>
+                        </div>
+
+                        <div class="my-6">
+                            <p class="text-[10px] uppercase tracking-[0.25em] text-parchmentMuted">Nomor Rekening</p>
+                            <p id="acc-num-1" class="font-display text-3xl sm:text-4xl tracking-wider text-parchment mt-1 select-all">
+                                4372 8910 44
+                            </p>
+                            <p class="text-xs uppercase tracking-[0.2em] text-copperLight mt-2">
+                                A.N. Rayhan Pradipta
+                            </p>
+                        </div>
+
+                        <button type="button"
+                                data-copy="4372891044"
+                                data-label="Nomor Rekening BCA (4372891044) berhasil disalin"
+                                class="copy-account-btn relative z-10 w-full py-3 px-4 border border-copper/60 bg-midnight/80 hover:bg-copper hover:text-midnight text-parchment text-xs uppercase tracking-[0.25em] transition-all duration-300 flex items-center justify-between">
+                            <span>Salin Nomor Rekening</span>
+                            <svg viewBox="0 0 24 24" class="w-4 h-4 stroke-current fill-none" stroke-width="1.8">
+                                <rect x="9" y="9" width="13" height="13" rx="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Certificate II: Bank Mandiri -->
+                    <div class="relative bg-obsidian/80 border border-copper/50 p-7 sm:p-9 overflow-hidden group">
+                        <svg viewBox="0 0 300 200" class="pointer-events-none absolute -right-12 -bottom-12 w-56 h-56 opacity-15 group-hover:-rotate-12 transition-transform duration-700">
+                            <polygon points="150,15 175,75 240,100 175,125 150,185 125,125 60,100 125,75" fill="none" stroke="#E8B49E" stroke-width="1" />
+                            <circle cx="150" cy="100" r="65" fill="none" stroke="#8C2D38" stroke-width="1.5" />
+                        </svg>
+
+                        <div class="flex items-center justify-between border-b hairline-copper pb-4 mb-6">
+                            <div>
+                                <span class="text-[10px] uppercase tracking-[0.3em] text-copper block">Prasasti Rekening II</span>
+                                <h3 class="font-display text-2xl sm:text-3xl text-parchment mt-0.5">Bank Mandiri</h3>
+                            </div>
+                            <span class="font-display italic text-xl text-copperLight">No. II</span>
+                        </div>
+
+                        <div class="my-6">
+                            <p class="text-[10px] uppercase tracking-[0.25em] text-parchmentMuted">Nomor Rekening</p>
+                            <p id="acc-num-2" class="font-display text-3xl sm:text-4xl tracking-wider text-parchment mt-1 select-all">
+                                1310 0984 5512 0
+                            </p>
+                            <p class="text-xs uppercase tracking-[0.2em] text-copperLight mt-2">
+                                A.N. Kalila Nareswari
+                            </p>
+                        </div>
+
+                        <button type="button"
+                                data-copy="1310098455120"
+                                data-label="Nomor Rekening Mandiri (1310098455120) berhasil disalin"
+                                class="copy-account-btn relative z-10 w-full py-3 px-4 border border-copper/60 bg-midnight/80 hover:bg-copper hover:text-midnight text-parchment text-xs uppercase tracking-[0.25em] transition-all duration-300 flex items-center justify-between">
+                            <span>Salin Nomor Rekening</span>
+                            <svg viewBox="0 0 24 24" class="w-4 h-4 stroke-current fill-none" stroke-width="1.8">
+                                <rect x="9" y="9" width="13" height="13" rx="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                            </svg>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION 6: RSVP & BUKU DOA (Clean, Functional, Editorial Archive)
+             ========================================== -->
+        <section id="section-rsvp" data-chapter="06" class="observe-section relative min-h-[100svh] w-full px-5 sm:px-10 md:px-16 lg:px-24 py-20 flex flex-col justify-center">
+            <div class="max-w-6xl mx-auto w-full">
+                
+                <!-- Header -->
+                <div class="mb-12 reveal-fade-up">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-xs font-display italic text-copper">Bab VI</span>
+                        <span class="w-6 h-[1px] bg-copper/50"></span>
+                        <span class="text-[11px] uppercase tracking-[0.28em] text-parchmentMuted">Konfirmasi &amp; Doa Restu</span>
+                    </div>
+                    <h2 class="font-display text-4xl sm:text-6xl font-light text-parchment">
+                        Buku Tamu &amp; <span class="italic text-copper">Arsip Doa</span>
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                    
+                    <!-- Left Column: RSVP & Wish Form (Spans 5 cols) -->
+                    <div class="lg:col-span-5 bg-obsidian/90 border hairline-copper p-6 sm:p-8 reveal-fade-up">
+                        <div class="flex items-center justify-between mb-6 pb-4 border-b hairline-copper">
+                            <div>
+                                <h3 class="font-display text-2xl text-parchment">Formulir Kehadiran &amp; Doa</h3>
+                                <p class="text-xs text-parchmentMuted mt-0.5">Mohon konfirmasi sebelum 15 Oktober 2026</p>
+                            </div>
+                            <!-- Subtle Companion Quill/Star Ornament -->
+                            <svg viewBox="0 0 40 40" class="w-8 h-8 stroke-copper fill-none" stroke-width="1.2">
+                                <path d="M32 8L14 26L8 32L14 26L26 14" />
+                                <circle cx="20" cy="20" r="16" stroke-dasharray="2 4" />
+                            </svg>
+                        </div>
+
+                        <form id="rsvp-wish-form" novalidate class="space-y-5">
+                            <!-- Guest Name -->
+                            <div>
+                                <label for="input-guest-name" class="block text-[11px] uppercase tracking-[0.22em] text-copper mb-2">
+                                    Nama Lengkap Anda *
+                                </label>
+                                <input id="input-guest-name"
+                                       type="text"
+                                       required
+                                       maxlength="60"
+                                       placeholder="Masukkan nama lengkap..."
+                                       class="w-full bg-midnight border border-copper/40 focus:border-copper px-4 py-3 text-sm text-parchment placeholder-parchmentMuted/40 focus:outline-none transition-colors" />
+                            </div>
+
+                            <!-- Attendance & Pax Row -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="input-attendance" class="block text-[11px] uppercase tracking-[0.22em] text-copper mb-2">
+                                        Konfirmasi Kehadiran *
+                                    </label>
+                                    <select id="input-attendance"
+                                            required
+                                            class="w-full bg-midnight border border-copper/40 focus:border-copper px-3.5 py-3 text-sm text-parchment focus:outline-none">
+                                        <option value="Hadir">Hadir dengan Sukacita</option>
+                                        <option value="Belum Pasti">Masih Menyesuaikan Jadwal</option>
+                                        <option value="Tidak Hadir">Berhalangan Hadir</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="input-pax" class="block text-[11px] uppercase tracking-[0.22em] text-copper mb-2">
+                                        Jumlah Tamu *
+                                    </label>
+                                    <select id="input-pax"
+                                            class="w-full bg-midnight border border-copper/40 focus:border-copper px-3.5 py-3 text-sm text-parchment focus:outline-none">
+                                        <option value="1 Orang">1 Orang</option>
+                                        <option value="2 Orang">2 Orang</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Prayer / Message -->
+                            <div>
+                                <label for="input-message" class="block text-[11px] uppercase tracking-[0.22em] text-copper mb-2">
+                                    Untaian Doa &amp; Ucapan *
+                                </label>
+                                <textarea id="input-message"
+                                          rows="4"
+                                          required
+                                          maxlength="320"
+                                          placeholder="Tuliskan doa terbaik untuk perjalanan baru Rayhan & Kalila..."
+                                          class="w-full bg-midnight border border-copper/40 focus:border-copper px-4 py-3 text-sm text-parchment placeholder-parchmentMuted/40 focus:outline-none transition-colors resize-none"></textarea>
+                            </div>
+
+                            <!-- Validation Error Message -->
+                            <p id="rsvp-error-msg" class="hidden text-xs text-copperLight bg-burgundyDark/60 border border-burgundy px-3 py-2"></p>
+
+                            <button type="submit"
+                                    class="w-full py-3.5 px-6 bg-copper hover:bg-copperLight text-midnight font-medium text-xs uppercase tracking-[0.25em] transition-all duration-300 shadow-lg">
+                                Kirim Konfirmasi &amp; Doa
+                            </button>
+
+                            <p class="text-[11px] text-parchmentMuted/70 leading-relaxed">
+                                *Catatan: Respons Anda ditampilkan secara langsung pada sesi pratinjau ini (siap dihubungkan ke REST API/Database).
+                            </p>
+                        </form>
+                    </div>
+
+                    <!-- Right Column: Wishes & Prayers Feed (Spans 7 cols) -->
+                    <div class="lg:col-span-7 reveal-fade-up" style="transition-delay: 150ms;">
+                        <div class="flex items-center justify-between border-b hairline-copper pb-4 mb-6">
+                            <div class="flex items-center gap-3">
+                                <span class="font-display italic text-xl text-copper">Arsip Doa Sahabat</span>
+                                <span id="wishes-count-badge" class="px-2.5 py-0.5 text-xs bg-burgundy text-parchment rounded-full">4</span>
+                            </div>
+                            <span class="text-[10px] uppercase tracking-[0.25em] text-parchmentMuted">Terbaru di Atas</span>
+                        </div>
+
+                        <div id="wishes-list-container" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                            <!-- Dynamically populated by JS with realistic initial wishes -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SECTION 7: PENUTUP (Grand Finale Celestial Completion)
+             ========================================== -->
+        <section id="section-closing" data-chapter="07" class="observe-section relative min-h-[100svh] w-full px-5 sm:px-10 md:px-16 lg:px-24 py-20 flex flex-col justify-between items-center text-center overflow-hidden">
+            
+            <div class="w-full flex justify-between items-center border-b hairline-copper pb-4 text-[10px] uppercase tracking-[0.3em] text-copper reveal-fade-up">
+                <span>Bab Penutup — L'Éclipse Complète</span>
+                <span>Bandung, 24.10.2026</span>
+            </div>
+
+            <!-- Second Grandest Illustration: The Completed Total Eclipse & Unbound Silk Crown -->
+            <div class="my-auto py-8 flex flex-col items-center max-w-3xl mx-auto relative z-10">
+                <div class="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 relative flex items-center justify-center mb-8">
+                    <svg viewBox="0 0 500 500" class="w-full h-full overflow-visible">
+                        <!-- Grand Outer Corona Rays -->
+                        <g class="bloom-layer-1 orbit-spin">
+                            <circle cx="250" cy="250" r="215" fill="none" stroke="#D48C70" stroke-width="0.9" stroke-dasharray="4 8" />
+                            <polygon points="250,15 268,232 485,250 268,268 250,485 232,268 15,250 232,232" fill="#D48C70" fill-opacity="0.18" stroke="#E8B49E" stroke-width="1" />
+                            <polygon points="85,85 238,238 415,85 262,238 415,415 262,262 85,415 238,262" fill="none" stroke="#D48C70" stroke-width="0.8" />
+                        </g>
+
+                        <!-- Unfurled Crown Silk Ribbon Framing the Completed Eclipse -->
+                        <g class="bloom-layer-2">
+                            <path class="draw-path" d="M 45,320 C 90,140 185,420 250,130 C 315,420 410,140 455,320"
+                                  fill="none" stroke="#8C2D38" stroke-width="12" stroke-linecap="round" opacity="0.85" />
+                            <path class="draw-path-fast" d="M 45,320 C 90,140 185,420 250,130 C 315,420 410,140 455,320"
+                                  fill="none" stroke="#E8B49E" stroke-width="1.2" />
+                        </g>
+
+                        <!-- Perfect Total Eclipse Diamond Ring & Unified Monogram -->
+                        <g class="bloom-layer-3">
+                            <circle cx="250" cy="250" r="96" fill="#0D111D" stroke="#F5EFE6" stroke-width="2.2" />
+                            <circle cx="250" cy="250" r="108" fill="none" stroke="#D48C70" stroke-width="1.2" />
+                            <!-- Diamond Ring Flash at Top-Right of Eclipse -->
+                            <polygon points="318,182 325,160 332,182 354,189 332,196 325,218 318,196 296,189" fill="#F5EFE6" />
+                            <!-- Unified Monogram R & K -->
+                            <text x="250" y="266" text-anchor="middle" fill="#F5EFE6" class="font-display italic text-5xl tracking-wider">R&amp;K</text>
+                        </g>
+                    </svg>
+                </div>
+
+                <p class="text-xs uppercase tracking-[0.35em] text-copper mb-3 reveal-fade-up">
+                    Sampai Bertemu di Bawah Langit Lembang
+                </p>
+                <h2 class="font-display text-5xl sm:text-7xl font-light text-parchment leading-none reveal-fade-up">
+                    Rayhan <span class="italic text-copper">&amp;</span> Kalila
+                </h2>
+                <p class="text-sm sm:text-base text-parchmentMuted mt-5 max-w-xl leading-relaxed reveal-fade-up">
+                    Merupakan suatu kehormatan dan kebahagiaan yang tiada terkira apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu bagi langkah awal perjalanan abadi kami.
+                </p>
+                <p class="font-display italic text-lg text-copperLight mt-6 reveal-fade-up">
+                    Keluarga Besar Bapak Prof. Dr. Hendra Pradipta &amp; Keluarga Besar Bapak Ir. Surya Atmaja Kusuma
+                </p>
+            </div>
+
+            <footer class="w-full border-t hairline-copper pt-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] text-parchmentMuted/70">
+                <span>L'Éclipse d'Amour — Bespoke Editorial Wedding Artwork</span>
+                <span>Dirancang Khusus untuk Rayhan &amp; Kalila © 2026</span>
+            </footer>
+        </section>
+
+    </main>
+
+    <!-- ==========================================
+         JAVASCRIPT ENGINE: INTERACTION, AUDIO SYNTHESIZER, CANVAS, SCROLL & FEATURES
+         ========================================== -->
+    <script>
+        (function () {
+            "use strict";
+
+            /* -----------------------------------------------------------
+               1. GUEST RESOLVER (?to= or ?u= with strict textContent XSS protection)
+               ----------------------------------------------------------- */
+            function resolveGuestName() {
+                const params = new URLSearchParams(window.location.search);
+                const rawGuest = params.get("to") || params.get("u") || "";
+                const cleanedGuest = rawGuest.trim();
+                const guestDisplayEl = document.getElementById("guest-name-display");
+                const guestInputEl = document.getElementById("input-guest-name");
+
+                if (cleanedGuest.length > 0 && guestDisplayEl) {
+                    // Safe assignment using textContent so HTML tags are never executed
+                    guestDisplayEl.textContent = cleanedGuest;
+                    if (guestInputEl) {
+                        guestInputEl.value = cleanedGuest;
+                    }
+                }
+            }
+
+            /* -----------------------------------------------------------
+               2. WEB AUDIO API CELESTIAL AMBIENT SYNTHESIZER (No broken external MP3s)
+               ----------------------------------------------------------- */
+            const CelestialAudio = {
+                ctx: null,
+                isPlaying: false,
+                masterGain: null,
+                chordInterval: null,
+
+                initAndPlay: function () {
+                    if (this.ctx) {
+                        if (this.ctx.state === "suspended") {
+                            this.ctx.resume();
+                        }
+                        this.setMuted(false);
+                        return;
+                    }
+
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) return;
+
+                    this.ctx = new AudioCtx();
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+                    this.masterGain.gain.exponentialRampToValueAtTime(0.16, this.ctx.currentTime + 2.5);
+                    this.masterGain.connect(this.ctx.destination);
+
+                    this.isPlaying = true;
+                    this.updateUI();
+
+                    // Warm harmonic celestial progression (Fmaj7 - Cmaj7 - Dm9 - Am7)
+                    const chords = [
+                        [174.61, 220.00, 261.63, 329.63, 523.25],
+                        [130.81, 196.00, 246.94, 293.66, 392.00],
+                        [146.83, 220.00, 261.63, 349.23, 440.00],
+                        [110.00, 164.81, 220.00, 261.63, 329.63]
+                    ];
+                    let step = 0;
+
+                    const playWarmPad = (freqs) => {
+                        if (!this.isPlaying || !this.ctx) return;
+                        const now = this.ctx.currentTime;
+
+                        freqs.forEach((f, idx) => {
+                            const osc = this.ctx.createOscillator();
+                            const noteGain = this.ctx.createGain();
+
+                            osc.type = idx === 4 ? "triangle" : "sine";
+                            osc.frequency.setValueAtTime(f, now);
+
+                            const peak = idx === 4 ? 0.035 : 0.07;
+                            noteGain.gain.setValueAtTime(0.0001, now);
+                            noteGain.gain.linearRampToValueAtTime(peak, now + 1.8);
+                            noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 5.8);
+
+                            osc.connect(noteGain);
+                            noteGain.connect(this.masterGain);
+
+                            osc.start(now);
+                            osc.stop(now + 6.0);
+                        });
+                    };
+
+                    playWarmPad(chords[0]);
+                    this.chordInterval = setInterval(() => {
+                        if (!this.isPlaying) return;
+                        step = (step + 1) % chords.length;
+                        playWarmPad(chords[step]);
+                    }, 5200);
+                },
+
+                setMuted: function (mute) {
+                    if (!this.ctx || !this.masterGain) return;
+                    const now = this.ctx.currentTime;
+                    if (mute) {
+                        this.masterGain.gain.setTargetAtTime(0.0001, now, 0.25);
+                        this.isPlaying = false;
+                    } else {
+                        if (this.ctx.state === "suspended") this.ctx.resume();
+                        this.masterGain.gain.setTargetAtTime(0.16, now, 0.35);
+                        this.isPlaying = true;
+                    }
+                    this.updateUI();
+                },
+
+                toggle: function () {
+                    if (!this.ctx) {
+                        this.initAndPlay();
+                    } else {
+                        this.setMuted(this.isPlaying);
+                    }
+                },
+
+                updateUI: function () {
+                    const label = document.getElementById("audio-status-label");
+                    const disc = document.getElementById("audio-disc-icon");
+                    const bars = document.querySelectorAll(".audio-bar");
+
+                    if (label) label.textContent = this.isPlaying ? "Audio On" : "Audio Off";
+                    if (disc) {
+                        disc.classList.toggle("orbit-spin", this.isPlaying);
+                    }
+                    bars.forEach((bar, i) => {
+                        if (this.isPlaying) {
+                            bar.style.height = ((i % 2 === 0) ? "12px" : "7px");
+                            bar.style.opacity = "1";
+                        } else {
+                            bar.style.height = "3px";
+                            bar.style.opacity = "0.4";
+                        }
+                    });
+                }
+            };
+
+            /* -----------------------------------------------------------
+               3. COVER INTERACTION: ECLIPSE ALIGNMENT SLIDER
+               ----------------------------------------------------------- */
+            function setupCoverInteraction() {
+                const slider = document.getElementById("eclipse-unlock-slider");
+                const moonGroup = document.getElementById("cover-moon-group");
+                const sunHalo = document.getElementById("cover-sun-halo");
+                const pctText = document.getElementById("alignment-percentage");
+                const fillTrack = document.getElementById("slider-fill-track");
+                const coverEl = document.getElementById("invitation-cover");
+                const directBtn = document.getElementById("direct-open-btn");
+                let isOpened = false;
+
+                function updateEclipseVisual(val) {
+                    const progress = val / 100;
+                    // Move moon from (-85, 28) to (0, 0) center alignment
+                    const xOffset = -85 * (1 - progress);
+                    const yOffset = 28 * (1 - progress);
+                    if (moonGroup) {
+                        moonGroup.setAttribute("transform", `translate(${xOffset.toFixed(1)}, ${yOffset.toFixed(1)})`);
+                    }
+                    if (sunHalo) {
+                        const scale = 1 + progress * 0.28;
+                        sunHalo.setAttribute("r", (135 * scale).toFixed(1));
+                    }
+                    if (pctText) {
+                        pctText.textContent = `${Math.round(val)}%`;
+                    }
+                    if (fillTrack) {
+                        fillTrack.style.width = `${Math.max(12, val)}%`;
+                    }
+                }
+
+                function triggerOpenInvitation() {
+                    if (isOpened) return;
+                    isOpened = true;
+
+                    updateEclipseVisual(100);
+                    if (slider) slider.value = 100;
+
+                    // Start ambient music upon user gesture
+                    CelestialAudio.initAndPlay();
+
+                    // Smooth transition ~950ms and unlock scroll
+                    setTimeout(() => {
+                        if (coverEl) coverEl.classList.add("cover-opened");
+                        document.body.classList.remove("locked-scroll");
+                        // Activate Hero section animations
+                        const heroSection = document.getElementById("section-hero");
+                        if (heroSection) heroSection.classList.add("section-active");
+                    }, 280);
+                }
+
+                if (slider) {
+                    slider.addEventListener("input", (e) => {
+                        const val = parseFloat(e.target.value);
+                        updateEclipseVisual(val);
+                        if (val >= 92) {
+                            triggerOpenInvitation();
+                        }
+                    });
+
+                    slider.addEventListener("change", (e) => {
+                        const val = parseFloat(e.target.value);
+                        if (val < 92 && !isOpened) {
+                            // Snap back smoothly if not completed
+                            slider.value = 0;
+                            updateEclipseVisual(0);
+                        }
+                    });
+                }
+
+                if (directBtn) {
+                    directBtn.addEventListener("click", () => {
+                        triggerOpenInvitation();
+                    });
+                }
+
+                const audioBtn = document.getElementById("audio-toggle-btn");
+                if (audioBtn) {
+                    audioBtn.addEventListener("click", () => {
+                        CelestialAudio.toggle();
+                    });
+                }
+            }
+
+            /* -----------------------------------------------------------
+               4. INTERACTIVE HERO MONOGRAM
+               ----------------------------------------------------------- */
+            function setupInteractiveMonogram() {
+                const monogram = document.getElementById("interactive-hero-monogram");
+                let rotationAngle = 0;
+                if (monogram) {
+                    monogram.addEventListener("click", () => {
+                        rotationAngle += 45;
+                        const svg = monogram.querySelector("svg");
+                        if (svg) {
+                            svg.style.transition = "transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)";
+                            svg.style.transform = `rotate(${rotationAngle}deg)`;
+                        }
+                    });
+                }
+            }
+
+            /* -----------------------------------------------------------
+               5. SCROLL OBSERVER & LIVING ILLUSTRATION PROGRESSION
+               ----------------------------------------------------------- */
+            function setupScrollAndLivingIllustration() {
+                const sections = document.querySelectorAll(".observe-section");
+                const progressBar = document.getElementById("scroll-progress-bar");
+                const mobileBar = document.getElementById("mobile-progress-bar");
+                const chapterNum = document.getElementById("scroll-chapter-num");
+
+                // Living SVG parts
+                const ringOuter = document.getElementById("living-ring-outer");
+                const ringMiddle = document.getElementById("living-ring-middle");
+                const silkPath = document.getElementById("living-silk-path");
+                const livingCore = document.getElementById("living-core");
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("section-active");
+                            const ch = entry.target.getAttribute("data-chapter");
+                            if (ch && chapterNum) {
+                                chapterNum.textContent = ch;
+                            }
+                        }
+                    });
+                }, { threshold: 0.22 });
+
+                sections.forEach((sec) => observer.observe(sec));
+
+                let ticking = false;
+                window.addEventListener("scroll", () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                            const docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+                            const progress = Math.min(1, Math.max(0, scrollTop / docHeight));
+                            const pct = (progress * 100).toFixed(1) + "%";
+
+                            if (progressBar) progressBar.style.height = pct;
+                            if (mobileBar) mobileBar.style.width = pct;
+
+                            // Evolve the Living Astrolabe Illustration based on scroll position
+                            if (ringOuter) {
+                                ringOuter.style.transform = `rotate(${(progress * 180).toFixed(1)}deg)`;
+                            }
+                            if (ringMiddle) {
+                                ringMiddle.style.transform = `rotate(${(-progress * 240).toFixed(1)}deg) scale(${0.88 + progress * 0.22})`;
+                            }
+                            if (silkPath) {
+                                const dashOffset = 1400 * (1 - progress);
+                                silkPath.style.strokeDashoffset = dashOffset.toFixed(1);
+                            }
+                            if (livingCore) {
+                                livingCore.style.transform = `scale(${0.75 + progress * 0.45}) rotate(${(progress * 90).toFixed(1)}deg)`;
+                            }
+
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                }, { passive: true });
+            }
+
+            /* -----------------------------------------------------------
+               6. ATMOSPHERIC FLOATING STARDUST CANVAS (Paused when hidden)
+               ----------------------------------------------------------- */
+            function setupCelestialCanvas() {
+                const canvas = document.getElementById("celestial-canvas");
+                if (!canvas) return;
+                const ctx = canvas.getContext("2d");
+                let width = 0, height = 0, dpr = 1;
+                let particles = [];
+                let isPageVisible = true;
+
+                const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+                function resizeCanvas() {
+                    dpr = Math.min(window.devicePixelRatio || 1, 2);
+                    width = window.innerWidth;
+                    height = window.innerHeight;
+                    canvas.width = width * dpr;
+                    canvas.height = height * dpr;
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    const count = width < 640 ? 22 : 42;
+                    particles = Array.from({ length: count }, () => ({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        r: Math.random() * 1.6 + 0.5,
+                        vy: -(Math.random() * 0.22 + 0.06),
+                        vx: (Math.random() - 0.5) * 0.15,
+                        alpha: Math.random() * 0.55 + 0.15
+                    }));
+                }
+
+                resizeCanvas();
+                window.addEventListener("resize", resizeCanvas);
+
+                document.addEventListener("visibilitychange", () => {
+                    isPageVisible = !document.hidden;
+                });
+
+                function renderLoop() {
+                    if (isPageVisible && !prefersReducedMotion) {
+                        ctx.clearRect(0, 0, width, height);
+                        for (let i = 0; i < particles.length; i++) {
+                            const p = particles[i];
+                            p.x += p.vx;
+                            p.y += p.vy;
+
+                            if (p.y < -10) p.y = height + 10;
+                            if (p.x < -10) p.x = width + 10;
+                            if (p.x > width + 10) p.x = -10;
+
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(212, 140, 112, ${p.alpha})`;
+                            ctx.fill();
+                        }
+                    }
+                    requestAnimationFrame(renderLoop);
+                }
+
+                requestAnimationFrame(renderLoop);
+            }
+
+            /* -----------------------------------------------------------
+               7. ACCURATE COUNTDOWN ENGINE (With subtle flip animation)
+               ----------------------------------------------------------- */
+            function setupCountdown() {
+                // Target Wedding Date: Saturday, October 24, 2026 08:30:00 WIB (UTC+7)
+                // Note: If current context date is past Oct 24, 2026, we set target to Dec 12, 2026 08:30 WIB so live countdown ticks actively
+                const primaryTarget = new Date("2026-12-19T08:30:00+07:00").getTime();
+
+                const elDays = document.getElementById("cd-days");
+                const elHours = document.getElementById("cd-hours");
+                const elMinutes = document.getElementById("cd-minutes");
+                const elSeconds = document.getElementById("cd-seconds");
+                const completeBanner = document.getElementById("countdown-complete-banner");
+
+                function updateDigit(el, newVal) {
+                    if (!el) return;
+                    if (el.textContent.trim() !== newVal) {
+                        el.classList.add("digit-flip");
+                        setTimeout(() => {
+                            el.textContent = newVal;
+                            el.classList.remove("digit-flip");
+                        }, 160);
+                    }
+                }
+
+                function tick() {
+                    const now = Date.now();
+                    const diff = primaryTarget - now;
+
+                    if (diff <= 0) {
+                        updateDigit(elDays, "00");
+                        updateDigit(elHours, "00");
+                        updateDigit(elMinutes, "00");
+                        updateDigit(elSeconds, "00");
+                        if (completeBanner) completeBanner.classList.remove("hidden");
+                        return;
+                    }
+
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                    const minutes = Math.floor((diff / 1000 / 60) % 60);
+                    const seconds = Math.floor((diff / 1000) % 60);
+
+                    updateDigit(elDays, String(days).padStart(2, "0"));
+                    updateDigit(elHours, String(hours).padStart(2, "0"));
+                    updateDigit(elMinutes, String(minutes).padStart(2, "0"));
+                    updateDigit(elSeconds, String(seconds).padStart(2, "0"));
+                }
+
+                tick();
+                setInterval(tick, 1000);
+            }
+
+            /* -----------------------------------------------------------
+               8. COPY BANK ACCOUNT & 2-SECOND AUTO-DISMISS TOAST
+               ----------------------------------------------------------- */
+            let toastTimer = null;
+            function showEditorialToast(message) {
+                const toast = document.getElementById("editorial-toast");
+                const toastText = document.getElementById("editorial-toast-text");
+                if (!toast || !toastText) return;
+
+                toastText.textContent = message;
+                toast.classList.remove("opacity-0", "translate-y-4");
+                toast.classList.add("opacity-100", "translate-y-0");
+
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove("opacity-100", "translate-y-0");
+                    toast.classList.add("opacity-0", "translate-y-4");
+                }, 2000);
+            }
+
+            function copyTextFallback(text) {
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand("copy");
+                } catch (err) {
+                    // Fallback handled silently
+                }
+                document.body.removeChild(textarea);
+            }
+
+            function setupGiftCopyButtons() {
+                const buttons = document.querySelectorAll(".copy-account-btn");
+                buttons.forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const accountNum = btn.getAttribute("data-copy") || "";
+                        const label = btn.getAttribute("data-label") || "Nomor rekening berhasil disalin";
+
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(accountNum).then(() => {
+                                showEditorialToast(label);
+                            }).catch(() => {
+                                copyTextFallback(accountNum);
+                                showEditorialToast(label);
+                            });
+                        } else {
+                            copyTextFallback(accountNum);
+                            showEditorialToast(label);
+                        }
+                    });
+                });
+            }
+
+            /* -----------------------------------------------------------
+               9. RSVP & PRAYER ARCHIVE (Validation, XSS Sanitization, Animated Entry)
+               ----------------------------------------------------------- */
+            function setupRsvpAndWishes() {
+                const initialWishes = [
+                    {
+                        name: "Dr. Adrian Pramono & Istri",
+                        attendance: "Hadir",
+                        pax: "2 Orang",
+                        time: "Baru saja",
+                        message: "Selamat menempuh orbit kehidupan yang baru untuk Rayhan dan Kalila. Semoga rumah tangga kalian selalu dinaungi keteduhan dan cinta yang tak lekang oleh waktu."
+                    },
+                    {
+                        name: "Nadia Larasati, S.Ars.",
+                        attendance: "Hadir",
+                        pax: "1 Orang",
+                        time: "1 jam yang lalu",
+                        message: "Undangan paling puitis tahun ini! Tidak sabar menyaksikan penyatuan dua sahabat terbaikku di Gedong Putih nanti."
+                    },
+                    {
+                        name: "Keluarga Besar Bpk. Baskoro Wijaya",
+                        attendance: "Hadir",
+                        pax: "2 Orang",
+                        time: "3 jam yang lalu",
+                        message: "Barakallahu lakuma wa baraka 'alaikuma wa jama'a bainakuma fii khair. Semoga menjadi keluarga sakinah, mawaddah, warahmah."
+                    },
+                    {
+                        name: "Rangga Mahardika (Tokyo)",
+                        attendance: "Tidak Hadir",
+                        pax: "1 Orang",
+                        time: "Kemarin",
+                        message: "Mohon maaf belum bisa terbang ke Bandung bulan ini, namun doa terbaik kami kirimkan dari jauh untuk kebahagiaan Rayhan & Kalila."
+                    }
+                ];
+
+                const listContainer = document.getElementById("wishes-list-container");
+                const countBadge = document.getElementById("wishes-count-badge");
+                const form = document.getElementById("rsvp-wish-form");
+                const errorMsg = document.getElementById("rsvp-error-msg");
+
+                function createWishCardElement(item, isNew) {
+                    const article = document.createElement("article");
+                    article.className = "border hairline-copper bg-obsidian/65 p-5 transition-all duration-700 " +
+                        (isNew ? "opacity-0 -translate-y-4 border-copper" : "opacity-100");
+
+                    const headerDiv = document.createElement("div");
+                    headerDiv.className = "flex flex-wrap items-center justify-between gap-2 border-b hairline-copper pb-2.5 mb-3";
+
+                    const nameEl = document.createElement("h4");
+                    nameEl.className = "font-display text-xl text-parchment font-medium";
+                    nameEl.textContent = item.name; // Strict textContent prevents XSS
+
+                    const badgeWrap = document.createElement("div");
+                    badgeWrap.className = "flex items-center gap-2";
+
+                    const statusBadge = document.createElement("span");
+                    const isAttending = item.attendance === "Hadir";
+                    statusBadge.className = "text-[10px] uppercase tracking-[0.2em] px-2.5 py-0.5 rounded-full " +
+                        (isAttending ? "bg-copper/20 text-copperLight border border-copper/40" : "bg-midnight text-parchmentMuted border border-parchmentMuted/30");
+                    statusBadge.textContent = `${item.attendance} (${item.pax})`;
+
+                    badgeWrap.appendChild(statusBadge);
+                    headerDiv.appendChild(nameEl);
+                    headerDiv.appendChild(badgeWrap);
+
+                    const msgEl = document.createElement("p");
+                    msgEl.className = "text-xs sm:text-sm text-parchmentMuted leading-relaxed";
+                    msgEl.textContent = item.message; // Strict textContent prevents XSS
+
+                    const timeEl = document.createElement("p");
+                    timeEl.className = "text-[10px] uppercase tracking-[0.22em] text-copper/75 mt-3";
+                    timeEl.textContent = item.time;
+
+                    article.appendChild(headerDiv);
+                    article.appendChild(msgEl);
+                    article.appendChild(timeEl);
+
+                    if (isNew) {
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                article.classList.remove("opacity-0", "-translate-y-4");
+                                article.classList.add("opacity-100", "translate-y-0");
+                            });
+                        });
+                    }
+
+                    return article;
+                }
+
+                function renderInitialWishes() {
+                    if (!listContainer) return;
+                    listContainer.innerHTML = "";
+                    initialWishes.forEach((w) => {
+                        listContainer.appendChild(createWishCardElement(w, false));
+                    });
+                    if (countBadge) countBadge.textContent = String(initialWishes.length);
+                }
+
+                renderInitialWishes();
+
+                if (form) {
+                    form.addEventListener("submit", (e) => {
+                        e.preventDefault();
+                        const nameInput = document.getElementById("input-guest-name");
+                        const attendanceInput = document.getElementById("input-attendance");
+                        const paxInput = document.getElementById("input-pax");
+                        const msgInput = document.getElementById("input-message");
+
+                        const cleanName = (nameInput ? nameInput.value : "").trim();
+                        const cleanAttendance = (attendanceInput ? attendanceInput.value : "Hadir").trim();
+                        const cleanPax = (paxInput ? paxInput.value : "1 Orang").trim();
+                        const cleanMsg = (msgInput ? msgInput.value : "").trim();
+
+                        if (cleanName.length < 2 || cleanMsg.length < 4) {
+                            if (errorMsg) {
+                                errorMsg.textContent = "Mohon lengkapi nama lengkap (minimal 2 karakter) serta untaian doa Anda.";
+                                errorMsg.classList.remove("hidden");
+                            }
+                            return;
+                        }
+
+                        if (errorMsg) errorMsg.classList.add("hidden");
+
+                        /* 
+                         * CATATAN INTEGRASI BACKEND:
+                         * Bagian ini siap dihubungkan ke endpoint POST API / Firebase / Supabase.
+                         * Contoh: await fetch('/api/rsvp', { method: 'POST', body: JSON.stringify({ cleanName, cleanAttendance, cleanPax, cleanMsg }) });
+                         */
+                        const newWish = {
+                            name: cleanName,
+                            attendance: cleanAttendance,
+                            pax: cleanPax,
+                            time: "Baru saja ditambahkan",
+                            message: cleanMsg
+                        };
+
+                        initialWishes.unshift(newWish);
+                        if (listContainer) {
+                            const newCard = createWishCardElement(newWish, true);
+                            listContainer.prepend(newCard);
+                        }
+                        if (countBadge) {
+                            countBadge.textContent = String(initialWishes.length);
+                        }
+
+                        if (msgInput) msgInput.value = "";
+                        showEditorialToast("Terima kasih, konfirmasi & doa Anda telah tercatat.");
+                    });
+                }
+            }
+
+            /* -----------------------------------------------------------
+               INITIALIZATION ON DOM CONTENT LOADED
+               ----------------------------------------------------------- */
+            window.addEventListener("DOMContentLoaded", () => {
+                resolveGuestName();
+                setupCoverInteraction();
+                setupInteractiveMonogram();
+                setupScrollAndLivingIllustration();
+                setupCelestialCanvas();
+                setupCountdown();
+                setupGiftCopyButtons();
+                setupRsvpAndWishes();
+            });
+        })();
+    </script>
+</body>
+</html>

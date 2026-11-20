@@ -8,3 +8,9 @@ test-results/
 *.log
 .env*
 !.env.example
+.venv*
+storage/
+*.mp4
+*.webm
+*.mov
+!public/videos/*.mp4

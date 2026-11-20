@@ -27,6 +27,16 @@ import { PopKuningTemplate } from './templates/PopKuningTemplate';
 import { PorselenBiruTemplate } from './templates/PorselenBiruTemplate';
 import { SenjaKinantiTemplate } from './templates/SenjaKinantiTemplate';
 import { KratonHeritageTemplate } from './templates/KratonHeritageTemplate';
+import { StandardEssentialTemplate, StandardBotanikaTemplate, StandardKalatidhaTemplate } from './templates/standard/StandardEssentialTemplate';
+import { RoyalClassicTemplate } from './templates/standard/RoyalClassicTemplate';
+import { JurnalPesisirTemplate } from './templates/standard/JurnalPesisirTemplate';
+import { LangitPorselenTemplate } from './templates/standard/LangitPorselenTemplate';
+import { LEclipseDamourTemplate } from './templates/standard/LEclipseDamourTemplate';
+import { SimpulSutraTemplate } from './templates/standard/SimpulSutraTemplate';
+import { SerenadeCameliaTemplate } from './templates/standard/SerenadeCameliaTemplate';
+import { GrandPelaminanTemplate } from './templates/standard/GrandPelaminanTemplate';
+import { TimelessBotanicalTemplate } from './templates/standard/TimelessBotanicalTemplate';
+import { VoilierDeSoieTemplate } from './templates/standard/VoilierDeSoieTemplate';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminLoginView } from './components/admin/AdminLoginView';
 import { ClientPortal } from './components/portal/ClientPortal';
@@ -36,6 +46,7 @@ import { getSubdomain } from './utils/subdomainUtils';
 import { ClientInvitationData } from './types/clientInvitation';
 import { InvitationItem } from './types';
 import { TEMPLATES } from './data/catalog';
+import { STANDARD_TEMPLATES } from './data/standardCatalog';
 
 type DemoView =
   | 'demo-editorial'
@@ -51,13 +62,36 @@ type DemoView =
   | 'demo-pop-kuning'
   | 'demo-porselen-biru'
   | 'demo-senja-kinanti'
-  | 'demo-kraton-heritage';
+  | 'demo-kraton-heritage'
+  | 'demo-standar-essential'
+  | 'demo-standar-botanika'
+  | 'demo-standar-kalatidha'
+  | 'demo-standar-royal-classic'
+  | 'demo-standar-jurnal-pesisir'
+  | 'demo-standar-langit-porselen'
+  | 'demo-standar-eclipse-amour'
+  | 'demo-standar-simpul-sutra'
+  | 'demo-standar-serenade-camelia'
+  | 'demo-standar-grand-pelaminan'
+  | 'demo-standar-timeless-botanical'
+  | 'demo-standar-voilier-de-soie';
 
 type AppView = 'landing' | 'admin' | 'portal' | 'order-form' | DemoView;
 
 function resolveDemoViewFromId(key?: string | null): DemoView {
   if (!key) return 'demo-editorial';
   const normalized = key.toLowerCase();
+  if (normalized === 'standar-botanika') return 'demo-standar-botanika';
+  if (normalized === 'standar-kalatidha') return 'demo-standar-kalatidha';
+  if (normalized === 'standar-royal-classic') return 'demo-standar-royal-classic';
+  if (normalized === 'standar-jurnal-pesisir') return 'demo-standar-jurnal-pesisir';
+  if (normalized === 'standar-langit-porselen') return 'demo-standar-langit-porselen';
+  if (normalized === 'standar-eclipse-amour') return 'demo-standar-eclipse-amour';
+  if (normalized === 'standar-simpul-sutra') return 'demo-standar-simpul-sutra';
+  if (normalized === 'standar-serenade-camelia') return 'demo-standar-serenade-camelia';
+  if (normalized === 'standar-grand-pelaminan') return 'demo-standar-grand-pelaminan';
+  if (normalized === 'standar-timeless-botanical') return 'demo-standar-timeless-botanical';
+  if (normalized === 'standar-voilier-de-soie') return 'demo-standar-voilier-de-soie';
   if (normalized === 'malam-zamrud') return 'demo-malam-zamrud';
   if (normalized === 'setangkai' || normalized === 'damar-alya' || normalized === 'sage') {
     return 'demo-damar-alya';
@@ -125,6 +159,15 @@ function resolveDemoViewFromId(key?: string | null): DemoView {
     normalized === 'pradana'
   ) {
     return 'demo-kraton-heritage';
+  }
+  if (
+    normalized === 'standar-sahaja' ||
+    normalized === 'standar-botanika' ||
+    normalized === 'standar-kalatidha' ||
+    normalized.startsWith('standar') ||
+    normalized === 'sahaja'
+  ) {
+    return 'demo-standar-essential';
   }
   return 'demo-editorial';
 }
@@ -226,6 +269,78 @@ const DEMO_VIEW_CONFIG: Record<
     querySlug: 'kraton-heritage',
     Component: KratonHeritageTemplate,
   },
+  'demo-standar-essential': {
+    catalogId: 'standar-sahaja',
+    fallbackIdx: 0,
+    querySlug: 'standar-sahaja',
+    Component: StandardEssentialTemplate,
+  },
+  'demo-standar-botanika': {
+    catalogId: 'standar-botanika',
+    fallbackIdx: 0,
+    querySlug: 'standar-botanika',
+    Component: StandardBotanikaTemplate,
+  },
+  'demo-standar-kalatidha': {
+    catalogId: 'standar-kalatidha',
+    fallbackIdx: 0,
+    querySlug: 'standar-kalatidha',
+    Component: StandardKalatidhaTemplate,
+  },
+  'demo-standar-royal-classic': {
+    catalogId: 'standar-royal-classic',
+    fallbackIdx: 0,
+    querySlug: 'standar-royal-classic',
+    Component: RoyalClassicTemplate,
+  },
+  'demo-standar-jurnal-pesisir': {
+    catalogId: 'standar-jurnal-pesisir',
+    fallbackIdx: 0,
+    querySlug: 'standar-jurnal-pesisir',
+    Component: JurnalPesisirTemplate,
+  },
+  'demo-standar-langit-porselen': {
+    catalogId: 'standar-langit-porselen',
+    fallbackIdx: 0,
+    querySlug: 'standar-langit-porselen',
+    Component: LangitPorselenTemplate,
+  },
+  'demo-standar-eclipse-amour': {
+    catalogId: 'standar-eclipse-amour',
+    fallbackIdx: 0,
+    querySlug: 'standar-eclipse-amour',
+    Component: LEclipseDamourTemplate,
+  },
+  'demo-standar-simpul-sutra': {
+    catalogId: 'standar-simpul-sutra',
+    fallbackIdx: 0,
+    querySlug: 'standar-simpul-sutra',
+    Component: SimpulSutraTemplate,
+  },
+  'demo-standar-serenade-camelia': {
+    catalogId: 'standar-serenade-camelia',
+    fallbackIdx: 0,
+    querySlug: 'standar-serenade-camelia',
+    Component: SerenadeCameliaTemplate,
+  },
+  'demo-standar-grand-pelaminan': {
+    catalogId: 'standar-grand-pelaminan',
+    fallbackIdx: 0,
+    querySlug: 'standar-grand-pelaminan',
+    Component: GrandPelaminanTemplate,
+  },
+  'demo-standar-timeless-botanical': {
+    catalogId: 'standar-timeless-botanical',
+    fallbackIdx: 0,
+    querySlug: 'standar-timeless-botanical',
+    Component: TimelessBotanicalTemplate,
+  },
+  'demo-standar-voilier-de-soie': {
+    catalogId: 'standar-voilier-de-soie',
+    fallbackIdx: 0,
+    querySlug: 'standar-voilier-de-soie',
+    Component: VoilierDeSoieTemplate,
+  },
 };
 
 export default function App() {
@@ -276,8 +391,10 @@ export default function App() {
     }
 
     if (orderParam || viewParam === 'order') {
-      const selectedOrderTemplate = TEMPLATES.find((item) => item.id === orderParam);
-      setSelectedTemplateForOrder(selectedOrderTemplate || TEMPLATES[0]);
+      const selectedOrderTemplate =
+        STANDARD_TEMPLATES.find((item) => item.id === orderParam) ||
+        TEMPLATES.find((item) => item.id === orderParam);
+      setSelectedTemplateForOrder(selectedOrderTemplate || STANDARD_TEMPLATES[0] || TEMPLATES[0]);
       setClientPreviewData(null);
       setIsAdminPreviewMode(false);
       setCurrentView('order-form');
@@ -489,7 +606,9 @@ export default function App() {
   if (currentView !== 'landing') {
     const config = DEMO_VIEW_CONFIG[currentView];
     const activeCatalogItem =
-      TEMPLATES.find((t) => t.id === config.catalogId) || TEMPLATES[config.fallbackIdx];
+      TEMPLATES.find((t) => t.id === config.catalogId) ||
+      STANDARD_TEMPLATES.find((t) => t.id === config.catalogId) ||
+      TEMPLATES[config.fallbackIdx];
     const ActiveDemoComponent = config.Component;
 
     return (
@@ -617,7 +736,7 @@ export default function App() {
       {previewTemplate && (
         <MobilePreviewModal
           item={previewTemplate}
-          allItems={TEMPLATES}
+          allItems={[...STANDARD_TEMPLATES, ...TEMPLATES]}
           onClose={() => setPreviewTemplate(null)}
           onOrderViaWhatsApp={handleOrderFromCatalog}
           onSelectAnotherItem={setPreviewTemplate}

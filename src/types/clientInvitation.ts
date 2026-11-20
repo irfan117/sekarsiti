@@ -12,7 +12,21 @@ export type TemplateId =
   | 'pop-kuning'
   | 'porselen-biru'
   | 'senja-kinanti'
-  | 'kraton-heritage';
+  | 'kraton-heritage'
+  | 'standar-royal-classic'
+  | 'standar-sahaja'
+  | 'standar-botanika'
+  | 'standar-kalatidha'
+  | 'standar-jurnal-pesisir'
+  | 'standar-langit-porselen'
+  | 'standar-eclipse-amour'
+  | 'standar-simpul-sutra'
+  | 'standar-serenade-camelia'
+  | 'standar-grand-pelaminan'
+  | 'standar-timeless-botanical'
+  | 'standar-voilier-de-soie';
+
+export type StandardTemplateId = Extract<TemplateId, `standar-${string}`>;
 
 export type OrderStatus = 'pending' | 'in_progress' | 'review' | 'published';
 
@@ -135,4 +149,9 @@ export interface ClientInvitationData {
   referralCode?: string; // Kode referral partner e.g. "DINA20"
   referralCommission?: number; // Nilai komisi referral (IDR)
   referralPaidAt?: string; // Tanggal komisi dibayarkan (ISO string)
+
+  // Paket & Mode Tampilan
+  packageTier?: 'essential' | 'editorial' | 'custom';
+  designMode?: 'with_photos' | 'typography_pure';
+  paymentStatus?: 'unpaid' | 'pending' | 'settlement' | 'expired' | 'failed';
 }

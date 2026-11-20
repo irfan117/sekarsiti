@@ -1,4 +1,5 @@
-import { TemplateId } from '../types/clientInvitation';
+import { StandardTemplateId, TemplateId } from '../types/clientInvitation';
+import { STANDARD_TEMPLATES } from '../data/standardCatalog';
 
 export interface AssetPlacementReport {
   slotKey: string;
@@ -133,7 +134,7 @@ export function extractAllMediaUrlsFromText(text: string): string[] {
  * Preset fallback kuratorial beresolusi tinggi Sekarsiti per template
  * Digunakan agar undangan tidak pernah compang-camping atau berlubang jika klien hanya mengunggah sedikit foto.
  */
-export const TEMPLATE_FALLBACK_ASSETS: Record<TemplateId, {
+type TemplateFallbackAssets = {
   heroImage: string;
   heroVideo?: string;
   spotlightImage?: string;
@@ -142,7 +143,18 @@ export const TEMPLATE_FALLBACK_ASSETS: Record<TemplateId, {
   galleryImages: string[];
   filmstripImages?: string[];
   waxSealEmblem?: string;
-}> = {
+};
+
+const standardTemplateFallbackAssets = Object.fromEntries(
+  STANDARD_TEMPLATES.map((template) => [template.id, {
+    heroImage: template.image,
+    bridePortrait: '/images/wedding_bride_portrait_1790833939171.jpg',
+    groomPortrait: '/images/editorial_groom_portrait_1790915490996.jpg',
+    galleryImages: [template.image, '/images/wedding_vows_bouquet_1790901516667.jpg'],
+  }])
+) as Record<StandardTemplateId, TemplateFallbackAssets>;
+
+export const TEMPLATE_FALLBACK_ASSETS: Record<TemplateId, TemplateFallbackAssets> = {
   'ruang-rasa': {
     heroImage: '/images/editorial_couple_portrait_1790838636662.jpg',
     bridePortrait: '/images/wedding_bride_veil_1790901501919.jpg',
@@ -303,7 +315,8 @@ export const TEMPLATE_FALLBACK_ASSETS: Record<TemplateId, {
       'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=700&q=70',
       'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=700&q=70'
     ]
-  }
+  },
+  ...standardTemplateFallbackAssets,
 };
 
 /**
