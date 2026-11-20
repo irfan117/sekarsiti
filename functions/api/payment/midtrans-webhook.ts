@@ -2,6 +2,13 @@ interface Env {
   MIDTRANS_SERVER_KEY?: string;
 }
 
+type PagesFunction<T = Record<string, any>> = (context: {
+  request: Request;
+  env: T;
+  params?: Record<string, string | string[]>;
+  next?: () => Promise<Response>;
+}) => Promise<Response> | Response;
+
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',

@@ -27,7 +27,6 @@ import { PopKuningTemplate } from './templates/PopKuningTemplate';
 import { PorselenBiruTemplate } from './templates/PorselenBiruTemplate';
 import { SenjaKinantiTemplate } from './templates/SenjaKinantiTemplate';
 import { KratonHeritageTemplate } from './templates/KratonHeritageTemplate';
-import { StandardEssentialTemplate, StandardBotanikaTemplate, StandardKalatidhaTemplate } from './templates/standard/StandardEssentialTemplate';
 import { RoyalClassicTemplate } from './templates/standard/RoyalClassicTemplate';
 import { JurnalPesisirTemplate } from './templates/standard/JurnalPesisirTemplate';
 import { LangitPorselenTemplate } from './templates/standard/LangitPorselenTemplate';
@@ -63,9 +62,6 @@ type DemoView =
   | 'demo-porselen-biru'
   | 'demo-senja-kinanti'
   | 'demo-kraton-heritage'
-  | 'demo-standar-essential'
-  | 'demo-standar-botanika'
-  | 'demo-standar-kalatidha'
   | 'demo-standar-royal-classic'
   | 'demo-standar-jurnal-pesisir'
   | 'demo-standar-langit-porselen'
@@ -81,8 +77,6 @@ type AppView = 'landing' | 'admin' | 'portal' | 'order-form' | DemoView;
 function resolveDemoViewFromId(key?: string | null): DemoView {
   if (!key) return 'demo-editorial';
   const normalized = key.toLowerCase();
-  if (normalized === 'standar-botanika') return 'demo-standar-botanika';
-  if (normalized === 'standar-kalatidha') return 'demo-standar-kalatidha';
   if (normalized === 'standar-royal-classic') return 'demo-standar-royal-classic';
   if (normalized === 'standar-jurnal-pesisir') return 'demo-standar-jurnal-pesisir';
   if (normalized === 'standar-langit-porselen') return 'demo-standar-langit-porselen';
@@ -161,13 +155,9 @@ function resolveDemoViewFromId(key?: string | null): DemoView {
     return 'demo-kraton-heritage';
   }
   if (
-    normalized === 'standar-sahaja' ||
-    normalized === 'standar-botanika' ||
-    normalized === 'standar-kalatidha' ||
-    normalized.startsWith('standar') ||
-    normalized === 'sahaja'
+    normalized.startsWith('standar')
   ) {
-    return 'demo-standar-essential';
+    return 'demo-standar-royal-classic';
   }
   return 'demo-editorial';
 }
@@ -268,24 +258,6 @@ const DEMO_VIEW_CONFIG: Record<
     fallbackIdx: 13,
     querySlug: 'kraton-heritage',
     Component: KratonHeritageTemplate,
-  },
-  'demo-standar-essential': {
-    catalogId: 'standar-sahaja',
-    fallbackIdx: 0,
-    querySlug: 'standar-sahaja',
-    Component: StandardEssentialTemplate,
-  },
-  'demo-standar-botanika': {
-    catalogId: 'standar-botanika',
-    fallbackIdx: 0,
-    querySlug: 'standar-botanika',
-    Component: StandardBotanikaTemplate,
-  },
-  'demo-standar-kalatidha': {
-    catalogId: 'standar-kalatidha',
-    fallbackIdx: 0,
-    querySlug: 'standar-kalatidha',
-    Component: StandardKalatidhaTemplate,
   },
   'demo-standar-royal-classic': {
     catalogId: 'standar-royal-classic',

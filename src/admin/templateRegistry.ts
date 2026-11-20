@@ -50,7 +50,7 @@ const standardTemplateRegistry = Object.fromEntries(
       hasStoryChapters: false,
       hasWaxSeal: false,
       mediaSlots: [
-        ...(id === 'standar-sahaja' || id === 'standar-botanika' || id === 'standar-kalatidha' || id === 'standar-grand-pelaminan' || id === 'standar-serenade-camelia' || id === 'standar-timeless-botanical' || id === 'standar-voilier-de-soie' ? [
+        ...(id === 'standar-grand-pelaminan' || id === 'standar-serenade-camelia' || id === 'standar-timeless-botanical' || id === 'standar-voilier-de-soie' ? [
         imageSlot('heroImage', 'Foto sampul dan pembuka', 'Foto utama untuk sampul atau bagian pembuka template.', '16:9 atau 4:5'),
         imageSlot('bridePortrait', 'Potret utama pasangan', 'Foto potret pasangan yang ditampilkan pada bagian profil kedua mempelai.', '3:4'),
         imageSlot('galleryImages', 'Galeri momen', 'Koleksi foto untuk bagian galeri template.', 'Bebas', true),
