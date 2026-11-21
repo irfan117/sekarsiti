@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, MessageCircle, Heart, Calendar, MapPin, User } from 'lucide-react';
+import { X, MessageCircle, Heart, Calendar, MapPin, User, Mail } from 'lucide-react';
 import { InvitationItem } from '../types';
 import { TEMPLATES } from '../data/catalog';
 import { STANDARD_TEMPLATES } from '../data/standardCatalog';
 import { AdminStore } from '../admin/adminStore';
 import { TemplateId } from '../types/clientInvitation';
+import { useAuth } from '../context/AuthContext';
 
 const ORDERABLE_TEMPLATES = [...STANDARD_TEMPLATES, ...TEMPLATES];
 
@@ -21,16 +22,24 @@ export const WhatsAppOrderModal: React.FC<WhatsAppOrderModalProps> = ({
 }) => {
   // Nomor WhatsApp Resmi Pemesanan Sekarsiti Studio
   const adminPhone = '6283850714456';
+  const { user } = useAuth();
 
   const [selectedTemplateId, setSelectedTemplateId] = useState(ORDERABLE_TEMPLATES[0].id);
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
   const [brideName, setBrideName] = useState('');
   const [groomName, setGroomName] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [city, setCity] = useState('');
   const [notes, setNotes] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (user?.email && !clientEmail) {
+      setClientEmail(user.email);
+    }
+  }, [user, clientEmail]);
 
   useEffect(() => {
     if (preselectedItem) {
@@ -65,6 +74,11 @@ export const WhatsAppOrderModal: React.FC<WhatsAppOrderModalProps> = ({
       return;
     }
 
+    if (!clientEmail.trim() || !clientEmail.includes('@') || !clientEmail.includes('.')) {
+      setErrorMessage('Mohon cantumkan alamat email yang valid untuk sinkronisasi akun Portal Mempelai.');
+      return;
+    }
+
     setErrorMessage('');
 
     // Format tanggal jika diisi
@@ -94,6 +108,7 @@ export const WhatsAppOrderModal: React.FC<WhatsAppOrderModalProps> = ({
     const newOrder = AdminStore.create({
       clientName: clientName.trim(),
       clientPhone: clientPhone.trim(),
+      clientEmail: clientEmail.trim().toLowerCase(),
       templateId: selectedTemplate.id as TemplateId,
       status: 'pending',
       brideName: brideName.trim() || 'Mempelai Wanita',
@@ -110,6 +125,7 @@ export const WhatsAppOrderModal: React.FC<WhatsAppOrderModalProps> = ({
 • Desain Dipilih: ${selectedTemplate.title} (${formattedPrice})
 • Nama Pemesan: ${clientName.trim()}
 • WhatsApp: ${clientPhone.trim()}
+• Email Akun: ${clientEmail.trim().toLowerCase()}
 • Mempelai: ${coupleSummary}
 • Rencana Tanggal: ${formattedDateText || '-'}
 • Lokasi / Kota: ${city.trim() || '-'}
@@ -177,36 +193,58 @@ Mohon informasi nomor rekening untuk DP dan aktivasi Portal Mempelai. Terima kas
           </div>
 
           {/* Kontak Pemesan */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-[#414A35] mb-1">
-                Nama Pemesan <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <User className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                  Nama Pemesan <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <User className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Adhitya / Kirana"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    className="w-full text-xs sm:text-sm pl-8 pr-3 py-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                  Nomor WhatsApp <span className="text-red-500">*</span>
+                </label>
                 <input
-                  type="text"
+                  type="tel"
                   required
-                  placeholder="Contoh: Adhitya / Kirana"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  className="w-full text-xs sm:text-sm pl-8 pr-3 py-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
+                  placeholder="081234567890"
+                  value={clientPhone}
+                  onChange={(e) => setClientPhone(e.target.value)}
+                  className="w-full text-xs sm:text-sm p-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-[#414A35] mb-1">
-                Nomor WhatsApp <span className="text-red-500">*</span>
+                Email Akun Portal Mempelai <span className="text-red-500">*</span>
               </label>
-              <input
-                type="tel"
-                required
-                placeholder="081234567890"
-                value={clientPhone}
-                onChange={(e) => setClientPhone(e.target.value)}
-                className="w-full text-xs sm:text-sm p-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
-              />
+              <div className="relative">
+                <Mail className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
+                <input
+                  type="email"
+                  required
+                  placeholder="email.anda@gmail.com"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  className="w-full text-xs sm:text-sm pl-8 pr-3 py-2 rounded-lg border border-[#D9D3C7] bg-white text-[#2C2E28] focus:outline-none focus:border-[#414A35]"
+                />
+              </div>
+              <p className="text-[10px] text-stone-500 mt-1">
+                Gunakan email ini saat masuk ke Portal Mempelai untuk mengelola isi undangan, RSVP, dan buku tamu.
+              </p>
             </div>
           </div>
 
