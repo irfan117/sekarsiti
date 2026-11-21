@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { requestRateLimitPermit } from '../utils/requestRateLimit';
 import { AdminStore } from '../admin/adminStore';
+import { setPortalAuthEmail } from '../utils/portalAuth';
 
 interface AuthContextType {
   user: User | null;
@@ -91,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Verifikasi peran setiap kali akun berganti
   useEffect(() => {
     let active = true;
+    setPortalAuthEmail(user?.email || null);
     if (!user) {
       setIsAdmin(false);
       AdminStore.setAdminRole(false);
@@ -154,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSession(null);
     setIsAdmin(false);
     AdminStore.setAdminRole(false);
+    setPortalAuthEmail(null);
   };
 
   return (

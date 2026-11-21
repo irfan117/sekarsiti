@@ -199,11 +199,18 @@ export function resetPortalFailedAttempts(code: string): void {
   }
 }
 
+let inMemoryAuthEmail: string | null = null;
+
+export function setPortalAuthEmail(email: string | null): void {
+  inMemoryAuthEmail = email ? email.trim().toLowerCase() : null;
+}
+
 /**
- * Ambil email akun Supabase Auth yang sedang login secara sinkron (dibaca dari token sesi Supabase).
+ * Ambil email akun Supabase Auth yang sedang login secara sinkron (dibaca dari memori atau token sesi Supabase).
  * Dipakai untuk memeriksa kepemilikan undangan berdasarkan kolom client_email (tanpa kolom tabel baru).
  */
 export function getSupabaseSessionEmailSync(): string | null {
+  if (inMemoryAuthEmail) return inMemoryAuthEmail;
   if (typeof window === 'undefined') return null;
   try {
     for (let i = 0; i < localStorage.length; i++) {
@@ -213,7 +220,10 @@ export function getSupabaseSessionEmailSync(): string | null {
         if (!raw) continue;
         const parsed = JSON.parse(raw);
         const email = parsed?.user?.email || parsed?.currentSession?.user?.email;
-        if (email) return String(email).trim().toLowerCase();
+        if (email) {
+          inMemoryAuthEmail = String(email).trim().toLowerCase();
+          return inMemoryAuthEmail;
+        }
       }
     }
   } catch {}
