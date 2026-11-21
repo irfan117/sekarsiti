@@ -7,6 +7,7 @@ import { ipKeyGenerator, rateLimit } from 'express-rate-limit';
 import { handleCreateTransaction } from './api/payment/create-transaction';
 import { handleMidtransWebhook } from './api/payment/midtrans-webhook';
 import { handleCheckStatus } from './api/payment/check-status';
+import { handleDeleteCloudinaryAsset } from './api/cloudinary/delete';
 
 dotenv.config();
 
@@ -77,6 +78,9 @@ async function startServer() {
   app.post('/api/payment/midtrans-webhook', handleMidtransWebhook);
   app.get('/api/payment/check-status', limits.paymentCheck, handleCheckStatus);
   app.post('/api/payment/check-status', limits.paymentCheck, handleCheckStatus);
+
+  // Cloudinary Asset Management Endpoint
+  app.post('/api/cloudinary/delete', handleDeleteCloudinaryAsset);
 
   // Setup Vite dev server in development or serve static in production
   if (process.env.NODE_ENV === 'production') {
