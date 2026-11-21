@@ -1,5 +1,10 @@
 interface Env {
   MIDTRANS_SERVER_KEY?: string;
+  VITE_SUPABASE_URL?: string;
+  SUPABASE_URL?: string;
+  VITE_SUPABASE_ANON_KEY?: string;
+  SUPABASE_ANON_KEY?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
 }
 
 type PagesFunction<T = Record<string, any>> = (context: {
@@ -72,6 +77,36 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     if (isPaid) {
       console.log(`[Midtrans Webhook Edge] Order ${order_id} BERHASIL DIBAYAR!`);
+
+      // Update langsung status di database Supabase secara server-to-server
+      const supabaseUrl = env.SUPABASE_URL || env.VITE_SUPABASE_URL;
+      const supabaseKey =
+        env.SUPABASE_SERVICE_ROLE_KEY ||
+        env.SUPABASE_ANON_KEY ||
+        env.VITE_SUPABASE_ANON_KEY;
+
+      if (supabaseUrl && supabaseKey) {
+        try {
+          const patchUrl = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/invitations?id=eq.${encodeURIComponent(order_id)}`;
+          const dbResponse = await fetch(patchUrl, {
+            method: 'PATCH',
+            headers: {
+              apikey: supabaseKey,
+              Authorization: `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({
+              status: 'published',
+              payment_status: 'settlement',
+              updated_at: new Date().toISOString(),
+            }),
+          });
+          console.log(`[Midtrans Webhook Edge] Supabase DB patch response code: ${dbResponse.status}`);
+        } catch (dbErr) {
+          console.error('[Midtrans Webhook Edge] Gagal sinkronisasi status ke Supabase:', dbErr);
+        }
+      }
     }
 
     return new Response(JSON.stringify({ status: 'OK', received: true }), {

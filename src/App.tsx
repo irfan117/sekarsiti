@@ -590,6 +590,7 @@ export default function App() {
       <OrderDataFormPage
         initialTemplate={selectedTemplateForOrder}
         onBackToLanding={handleBackToLanding}
+        onOpenClientPortal={handleOpenClientPortal}
       />
     );
   }

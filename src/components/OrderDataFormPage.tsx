@@ -42,7 +42,7 @@ import {
 } from '../services/musicService';
 import { triggerMidtransCheckout, isMidtransConfigured } from '../services/midtransService';
 import { safeCopyToClipboard } from '../utils/clipboardUtils';
-import { useAuth } from '../context/AuthContext';
+import { savePortalSession, getPortalSession } from '../utils/portalAuth';
 
 // Import all 9 Standard Template components for live interactive preview
 import { RoyalClassicTemplate } from '../templates/standard/RoyalClassicTemplate';
@@ -58,6 +58,7 @@ import { VoilierDeSoieTemplate } from '../templates/standard/VoilierDeSoieTempla
 interface OrderDataFormPageProps {
   initialTemplate?: InvitationItem | null;
   onBackToLanding: () => void;
+  onOpenClientPortal?: (invitation?: ClientInvitationData) => void;
 }
 
 const ADMIN_PHONE = '6283850714456';
@@ -97,15 +98,17 @@ function buildSlug(brideName: string, groomName: string): string {
 export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   initialTemplate,
   onBackToLanding,
+  onOpenClientPortal,
 }) => {
-  // Auth state
-  const { user, signIn, signUp, signOut } = useAuth();
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authName, setAuthName] = useState('');
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
+  // Sesi Portal Mempelai yang sudah aktif di perangkat ini (jika ada)
+  const [activePortalSession, setActivePortalSession] = useState<{ code: string; pin: string; clientId: string } | null>(null);
+
+  useEffect(() => {
+    const session = getPortalSession();
+    if (session && session.code && session.pin) {
+      setActivePortalSession(session);
+    }
+  }, []);
 
   // Default to a standard template
   const defaultTemplate = useMemo(() => {
@@ -118,10 +121,12 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   const [templateId, setTemplateId] = useState<string>(defaultTemplate.id);
   const [designMode, setDesignMode] = useState<'with_photos' | 'typography_pure'>('with_photos');
 
-  // Data Pemesan & Mempelai
+  // Data Pemesan & Kredensial Portal Mempelai
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
+  const [portalCustomSlug, setPortalCustomSlug] = useState('');
+  const [portalPin, setPortalPin] = useState(() => String(Math.floor(1000 + Math.random() * 9000)));
   const [referralCode, setReferralCode] = useState(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
@@ -183,13 +188,6 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   const [isPaidSettled, setIsPaidSettled] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // Sync logged in email
-  useEffect(() => {
-    if (user?.email && !clientEmail) {
-      setClientEmail(user.email);
-    }
-  }, [user, clientEmail]);
-
   const selectedTemplate = useMemo(
     () => ORDERABLE_TEMPLATES.find((item) => item.id === templateId) || ORDERABLE_TEMPLATES[0],
     [templateId]
@@ -200,32 +198,7 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     [templateId]
   );
 
-  const finalPrice = 49000;
   const formattedPrice = 'Rp49.000';
-
-  // Auth Submit Handler
-  const handleAuthSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError(null);
-    setAuthLoading(true);
-
-    try {
-      if (authMode === 'login') {
-        const { error } = await signIn(authEmail.trim(), authPassword);
-        if (error) throw error;
-      } else {
-        if (!authName.trim()) {
-          throw new Error('Mohon isi nama lengkap calon pengantin.');
-        }
-        const { error } = await signUp(authEmail.trim(), authPassword, authName.trim());
-        if (error) throw error;
-      }
-    } catch (err: any) {
-      setAuthError(err?.message || 'Otentikasi gagal. Silakan periksa kembali email dan kata sandi Anda.');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
 
   // Upload Foto Prewedding langsung ke Cloudinary
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -410,6 +383,10 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     const eventDateFormatted = formatEventDate(eventDate);
     const countdownIsoDate = eventDate ? `${eventDate}T08:00:00` : `${new Date().toISOString().slice(0, 10)}T08:00:00`;
 
+    const defaultSlug = buildSlug(brideName, groomName);
+    const effectiveSlug = (portalCustomSlug.trim() || defaultSlug) || `undangan-${Date.now().toString().slice(-6)}`;
+    const cleanPin = (portalPin.trim() || '1234').slice(0, 6);
+
     const rawMediaCandidate = {
       heroImage: uploadedPhotos[0] || '',
       bridePortrait: uploadedPhotos[1] || '',
@@ -439,7 +416,7 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
       id: `draft-${Date.now()}`,
       clientName: displayClientName,
       clientPhone: clientPhone.trim(),
-      clientEmail: user?.email || clientEmail.trim(),
+      clientEmail: clientEmail.trim(),
       templateId: templateId as TemplateId,
       status: 'published', // set published agar seluruh fitur template tampil di live preview
       createdAt: new Date().toISOString(),
@@ -449,7 +426,9 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
       packageTier: 'standar',
       designMode,
       paymentStatus: 'unpaid',
-      slug: buildSlug(brideName, groomName),
+      slug: effectiveSlug,
+      accessCode: effectiveSlug,
+      pinCode: cleanPin,
       brideName: brideName.trim(),
       brideFullName: brideFullName.trim() || brideName.trim(),
       brideParents: brideParents.trim(),
@@ -499,13 +478,15 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
           orderId: newOrder.id,
           grossAmount: 49000,
           clientName: newOrder.clientName,
-          clientEmail: newOrder.clientEmail || user?.email || undefined,
+          clientEmail: newOrder.clientEmail || undefined,
           clientPhone: newOrder.clientPhone || undefined,
           templateTitle: `Seri Standar - ${selectedTemplate.title}`,
         },
         {
           onSuccess: (_result) => {
             const paidOrder = AdminStore.markAsPaidAndPublished(newOrder.id);
+            // Simpan sesi portal mempelai seketika ke localStorage
+            savePortalSession(paidOrder.accessCode || paidOrder.slug, paidOrder.pinCode || '7429', paidOrder.id);
             setSubmittedOrder(paidOrder);
             setIsPaidSettled(true);
             setIsPreviewOpen(false);
@@ -535,161 +516,7 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   // Selected Template Component for Live Preview
   const SelectedTemplateComponent = STANDARD_COMPONENTS_MAP[templateId] || RoyalClassicTemplate;
 
-  // 1. GERBANG LOGIN / OTENTIKASI JIKA BELUM LOGIN
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#FAF9F6] text-[#2C2E28] flex flex-col justify-between selection:bg-[#E8E5DF]">
-        <header className="border-b border-[#EBE6DD] bg-white/90 backdrop-blur-md sticky top-0 z-40">
-          <div className="max-w-4xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={onBackToLanding}
-              className="inline-flex items-center gap-2 text-xs font-semibold text-[#414A35] hover:text-[#2C2E28] cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Kembali ke Beranda</span>
-            </button>
-            <span className="font-['Fraunces',serif] text-base text-[#414A35] font-semibold">sekarsiti</span>
-          </div>
-        </header>
-
-        <main className="max-w-md mx-auto w-full px-5 py-12 flex-1 flex flex-col justify-center">
-          <div className="bg-white border border-[#EBE6DD] rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-            <div className="text-center space-y-2">
-              <div className="inline-flex p-3 rounded-2xl bg-[#FAF8F3] border border-[#EBE6DD] text-[#414A35] mb-1">
-                <Lock className="w-6 h-6 text-[#C5A880]" />
-              </div>
-              <h1 className="text-2xl font-serif font-normal text-[#2C2E28]">
-                {authMode === 'login' ? 'Masuk ke Akun Mempelai' : 'Daftar Akun Mempelai'}
-              </h1>
-              <p className="text-xs text-stone-600 leading-relaxed max-w-xs mx-auto">
-                Untuk menjaga keamanan data pernikahan Anda dan mencegah pengiriman data spam, silakan masuk atau daftarkan akun terlebih dahulu sebelum mengisi formulir.
-              </p>
-            </div>
-
-            {/* Tab Toggle */}
-            <div className="flex p-1 bg-stone-100 rounded-xl text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMode('login');
-                  setAuthError(null);
-                }}
-                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
-                  authMode === 'login'
-                    ? 'bg-white text-[#2C2E28] shadow-xs'
-                    : 'text-stone-500 hover:text-stone-800'
-                }`}
-              >
-                Masuk (Login)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMode('register');
-                  setAuthError(null);
-                }}
-                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
-                  authMode === 'register'
-                    ? 'bg-white text-[#2C2E28] shadow-xs'
-                    : 'text-stone-500 hover:text-stone-800'
-                }`}
-              >
-                Daftar Akun Baru
-              </button>
-            </div>
-
-            {authError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs">
-                {authError}
-              </div>
-            )}
-
-            <form onSubmit={handleAuthSubmit} className="space-y-4 text-left">
-              {authMode === 'register' && (
-                <div>
-                  <label className="block text-xs font-semibold text-[#414A35] mb-1">
-                    Nama Lengkap Calon Pengantin <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <UserIcon className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
-                    <input
-                      type="text"
-                      required
-                      value={authName}
-                      onChange={(e) => setAuthName(e.target.value)}
-                      placeholder="Contoh: Kirana & Adhitya"
-                      className="w-full text-xs pl-9 p-2.5 rounded-xl border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-semibold text-[#414A35] mb-1">
-                  Alamat Email Aktif <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
-                  <input
-                    type="email"
-                    required
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    placeholder="nama@gmail.com"
-                    className="w-full text-xs pl-9 p-2.5 rounded-xl border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#414A35] mb-1">
-                  Kata Sandi <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={authPassword}
-                    onChange={(e) => setAuthPassword(e.target.value)}
-                    placeholder="Minimal 6 karakter"
-                    className="w-full text-xs pl-9 p-2.5 rounded-xl border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={authLoading}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-[#414A35] hover:bg-[#343B2A] text-white rounded-xl text-xs font-semibold shadow-md transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-              >
-                {authLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Memproses...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>{authMode === 'login' ? 'Masuk & Lanjutkan Pemesanan' : 'Daftar & Lanjutkan Pemesanan'}</span>
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="pt-2 text-center">
-              <span className="text-[11px] text-stone-500">
-                Data Anda terlindungi &middot; Bebas spam 100%
-              </span>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  // 2. TAMPILAN FULLSCREEN LIVE PREVIEW (SEBELUM BAYAR)
+  // 1. TAMPILAN FULLSCREEN LIVE PREVIEW (SEBELUM BAYAR)
   if (isPreviewOpen && previewData) {
     return (
       <div className="fixed inset-0 z-[100] bg-[#FAF9F6] flex flex-col h-screen w-screen overflow-hidden">
@@ -775,16 +602,29 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
               <span className="text-xs uppercase tracking-widest font-semibold text-[#7A8B74] block">
                 Formulir Pemesanan Mandiri &middot; Seri Standar Rp49.000
               </span>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Akun Mempelai: <strong>{user?.email}</strong></span>
-                <button
-                  type="button"
-                  onClick={() => signOut()}
-                  className="text-stone-500 hover:text-stone-900 underline ml-1 cursor-pointer"
-                >
-                  Keluar
-                </button>
+              <div className="flex items-center gap-2">
+                {activePortalSession ? (
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span>Sesi Portal: <strong className="font-mono">{activePortalSession.code}</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => onOpenClientPortal ? onOpenClientPortal() : (window.location.href = `/?portal=${encodeURIComponent(activePortalSession.code)}&pin=${encodeURIComponent(activePortalSession.pin)}`)}
+                      className="text-[#414A35] font-bold underline ml-1 cursor-pointer hover:text-black"
+                    >
+                      Buka Portal Mempelai →
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onOpenClientPortal ? onOpenClientPortal() : (window.location.href = '/?view=portal')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-[11px] text-amber-900 font-semibold transition-colors cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+                    <span>Sudah punya undangan? Masuk Portal Mempelai</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -860,13 +700,20 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
                       <strong className="font-mono">{submittedOrder.pinCode}</strong>
                     </p>
                   </div>
-                  <a
-                    href={`/?portal=${encodeURIComponent(submittedOrder.accessCode || submittedOrder.slug)}&pin=${encodeURIComponent(submittedOrder.pinCode || '')}`}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-stone-900 hover:bg-black text-[#F7F5EF] rounded-lg text-xs font-semibold transition-colors shadow-xs"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onOpenClientPortal) {
+                        onOpenClientPortal(submittedOrder);
+                      } else {
+                        window.location.href = `/?portal=${encodeURIComponent(submittedOrder.accessCode || submittedOrder.slug)}&pin=${encodeURIComponent(submittedOrder.pinCode || '')}`;
+                      }
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-stone-900 hover:bg-black text-[#F7F5EF] rounded-lg text-xs font-semibold transition-colors shadow-xs cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-                    <span>Masuk ke Portal Mempelai</span>
-                  </a>
+                    <span>Masuk ke Portal Mempelai Sekarang →</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -975,24 +822,24 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
               </div>
             </div>
 
-            {/* STEP 2: DATA KONTAK & PEMESAN */}
-            <div className="bg-white border border-[#EBE6DD] rounded-2xl p-5 sm:p-7 shadow-xs space-y-4">
+            {/* STEP 2: DATA PEMESAN & KREDENSIAL PORTAL MEMPELAI */}
+            <div className="bg-white border border-[#EBE6DD] rounded-2xl p-5 sm:p-7 shadow-xs space-y-5">
               <div className="flex items-center gap-2 border-b border-[#F2EFE8] pb-3">
                 <Heart className="w-4 h-4 text-[#C5A880]" />
-                <h2 className="text-sm font-bold text-[#2C2E28]">2. Data Kontak Pemesan</h2>
+                <h2 className="text-sm font-bold text-[#2C2E28]">2. Data Pemesan &amp; Kredensial Portal Mempelai</h2>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-[#414A35] mb-1">
-                    Nama Pemesan / Penghubung <span className="text-red-500">*</span>
+                    Nama Pemesan / Kedua Mempelai <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
-                    placeholder="Contoh: Kirana"
+                    placeholder="Contoh: Kirana & Adhitya"
                     className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
                   />
                 </div>
@@ -1009,22 +856,82 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
                     placeholder="Contoh: 081234567890"
                     className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
                   />
+                  <p className="text-[10px] text-stone-400 mt-1">Digunakan untuk konfirmasi pesanan &amp; pemulihan akses.</p>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-[#414A35] mb-1">
-                    Alamat Email (Terkunci ke Akun)
+                    Alamat Email (Opsional)
                   </label>
                   <input
                     type="email"
-                    readOnly
-                    value={user?.email || clientEmail}
-                    className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-stone-50 font-mono text-stone-700 cursor-not-allowed"
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                    placeholder="nama@gmail.com"
+                    className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
                   />
+                  <p className="text-[10px] text-stone-400 mt-1">Untuk bukti pembayaran resmi Midtrans.</p>
+                </div>
+              </div>
+
+              {/* Bagian Kredensial Portal Mempelai (Slug & PIN 4-digit) */}
+              <div className="p-4 bg-[#FAF8F5] border border-[#EBE6DD] rounded-xl space-y-3">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-[#C5A880]" />
+                  <span className="text-xs font-bold text-[#414A35] uppercase tracking-wider">
+                    Kunci Akses Portal Mempelai Anda
+                  </span>
+                </div>
+                <p className="text-[11px] text-stone-600 leading-relaxed">
+                  Informasi di bawah ini adalah tautan publik undangan dan PIN rahasia untuk masuk ke <strong>Portal Mempelai</strong> Anda kapan saja (untuk mengedit data, mengganti foto/musik, mengelola buku tamu, dan RSVP).
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                      Tautan Publik Undangan (Kode Akses)
+                    </label>
+                    <div className="flex items-center">
+                      <span className="text-[11px] text-stone-400 bg-stone-100 border border-r-0 border-stone-200 px-2 py-2 rounded-l-lg font-mono">
+                        ssiti.tech/?client=
+                      </span>
+                      <input
+                        type="text"
+                        value={portalCustomSlug}
+                        onChange={(e) => setPortalCustomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                        placeholder={buildSlug(brideName, groomName) || 'nama-mempelai'}
+                        className="w-full text-xs p-2 rounded-r-lg border border-stone-200 bg-white font-mono focus:outline-none focus:border-[#414A35]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-semibold text-stone-700">
+                        PIN Sandi Portal (4 Digit) <span className="text-red-500">*</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setPortalPin(String(Math.floor(1000 + Math.random() * 9000)))}
+                        className="text-[10px] text-[#8C6D3F] hover:underline font-medium cursor-pointer"
+                      >
+                        Acak PIN Baru ⟳
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={portalPin}
+                      onChange={(e) => setPortalPin(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="4 Digit PIN (contoh: 7429)"
+                      className="w-full text-xs p-2 rounded-lg border border-stone-200 bg-white font-mono tracking-widest text-center focus:outline-none focus:border-[#414A35]"
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                <div className="pt-1">
+                  <label className="block text-[11px] font-semibold text-stone-600 mb-1">
                     Kode Referral / Partner Reseller (Opsional)
                   </label>
                   <input
@@ -1032,11 +939,11 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
                     value={referralCode}
                     onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                     placeholder="Contoh: DINA20 (Kosongkan jika tidak ada)"
-                    className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white font-mono uppercase focus:outline-none focus:border-[#414A35]"
+                    className="w-full text-xs p-2 rounded-lg border border-[#EBE6DD] bg-white font-mono uppercase focus:outline-none focus:border-[#414A35]"
                   />
                   {referralCode && (
                     <p className="text-[10px] text-emerald-700 mt-1 font-medium">
-                      ✓ Pesanan ini akan tercatat dengan kode referral: <strong>{referralCode}</strong>
+                      ✓ Pesanan ini tercatat dengan referral: <strong>{referralCode}</strong>
                     </p>
                   )}
                 </div>

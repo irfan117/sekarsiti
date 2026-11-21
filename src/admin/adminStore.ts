@@ -482,6 +482,43 @@ export class AdminStore {
     }) || null;
   }
 
+  static async lookupByContactAsync(contact: string): Promise<Array<{ slug: string; clientName: string; pinCode: string }>> {
+    if (!contact) return [];
+    const clean = contact.trim().toLowerCase();
+    if (!clean) return [];
+
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('invitations')
+          .select('slug, client_name, pin_code, client_phone, client_email')
+          .or(`client_phone.ilike.%${clean}%,client_email.ilike.%${clean}%`);
+
+        if (!error && data && data.length > 0) {
+          return data.map(item => ({
+            slug: item.slug,
+            clientName: item.client_name,
+            pinCode: item.pin_code
+          }));
+        }
+      } catch (err) {
+        console.warn('Lookup by contact error:', err);
+      }
+    }
+
+    const orders = this.getStore();
+    return orders
+      .filter(o =>
+        (o.clientPhone && o.clientPhone.toLowerCase().includes(clean)) ||
+        (o.clientEmail && o.clientEmail.toLowerCase().includes(clean))
+      )
+      .map(o => ({
+        slug: o.slug,
+        clientName: o.clientName,
+        pinCode: o.pinCode || '7429'
+      }));
+  }
+
   static addGuestLink(
     invitationId: string,
     guestData: { guestName: string; category?: string; phone?: string }
