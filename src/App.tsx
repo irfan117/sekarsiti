@@ -316,13 +316,10 @@ const DEMO_VIEW_CONFIG: Record<
 };
 
 export default function App() {
-  const { user } = useAuth();
+  const { user, isAdmin, roleLoading } = useAuth();
   const [currentView, setCurrentView] = useState<AppView>('landing');
   const [clientPreviewData, setClientPreviewData] = useState<ClientInvitationData | null>(null);
   const [isAdminPreviewMode, setIsAdminPreviewMode] = useState(false);
-
-  const [portalInitialCode, setPortalInitialCode] = useState('');
-  const [portalInitialPin, setPortalInitialPin] = useState('');
 
   const [previewTemplate, setPreviewTemplate] = useState<InvitationItem | null>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -354,8 +351,6 @@ export default function App() {
     const orderParam = params.get('order');
 
     if (portalParam || viewParam === 'portal') {
-      setPortalInitialCode(portalParam || '');
-      setPortalInitialPin(pinParam || '');
       setClientPreviewData(null);
       setIsAdminPreviewMode(false);
       setCurrentView('portal');
@@ -496,18 +491,8 @@ export default function App() {
     window.history.pushState({}, '', '/?admin=true');
   };
 
-  const handleOpenClientPortal = (invitation?: ClientInvitationData) => {
-    if (invitation) {
-      const code = invitation.accessCode || invitation.slug || invitation.id;
-      const pin = invitation.pinCode || '7429';
-      setPortalInitialCode(code);
-      setPortalInitialPin(pin);
-      window.history.pushState({}, '', `/?portal=${encodeURIComponent(code)}&pin=${encodeURIComponent(pin)}`);
-    } else {
-      setPortalInitialCode('');
-      setPortalInitialPin('');
-      window.history.pushState({}, '', '/?view=portal');
-    }
+  const handleOpenClientPortal = (_invitation?: ClientInvitationData) => {
+    window.history.pushState({}, '', '/?view=portal');
     setCurrentView('portal');
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
@@ -554,8 +539,6 @@ export default function App() {
   if (currentView === 'portal') {
     return (
       <ClientPortal
-        initialCode={portalInitialCode}
-        initialPin={portalInitialPin}
         onBackToHome={handleBackToLanding}
         onOpenInvitation={(inv) => handlePreviewClientInvitation(inv, 'portal')}
       />
@@ -563,16 +546,50 @@ export default function App() {
   }
 
   if (currentView === 'admin') {
-    // Cek otentikasi admin: Harus login via Supabase Auth (atau mock admin dev)
+    // Cek otentikasi admin: login Supabase Auth + peran admin terverifikasi (mempelai juga login via Supabase)
     const isMockAdmin = import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_ADMIN === 'true' &&
       typeof window !== 'undefined' && localStorage.getItem('sekarsiti_mock_admin_session') === 'true';
-    const isAuthenticatedAdmin = Boolean(user || isMockAdmin);
 
-    if (!isAuthenticatedAdmin) {
+    if (!user && !isMockAdmin) {
       return (
         <AdminLoginView
           onBackToLanding={handleBackToLanding}
         />
+      );
+    }
+
+    if (!isMockAdmin && roleLoading) {
+      return (
+        <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center p-6 text-[#181816]">
+          <div className="w-10 h-10 rounded-full border-2 border-[#C6A679]/30 border-t-[#C6A679] animate-spin mb-4" />
+          <p className="font-serif text-lg">Memverifikasi akses studio...</p>
+        </div>
+      );
+    }
+
+    if (!isMockAdmin && !isAdmin) {
+      return (
+        <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center p-6 text-center text-[#181816] gap-3">
+          <p className="font-serif text-2xl">Akses Studio Ditolak</p>
+          <p className="text-sm text-stone-600 max-w-sm">
+            Akun <strong>{user?.email}</strong> adalah akun mempelai, bukan admin studio.
+            Kelola undangan Anda melalui Portal Mempelai.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleOpenClientPortal()}
+              className="px-4 py-2 rounded-lg bg-[#414A35] text-white text-xs font-semibold cursor-pointer"
+            >
+              Buka Portal Mempelai
+            </button>
+            <button
+              onClick={handleBackToLanding}
+              className="px-4 py-2 rounded-lg border border-stone-300 text-xs font-semibold cursor-pointer"
+            >
+              Beranda
+            </button>
+          </div>
+        </div>
       );
     }
 

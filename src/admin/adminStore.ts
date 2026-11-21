@@ -10,7 +10,7 @@ import {
 import { buildInvitationUrl } from '../utils/subdomainUtils';
 import { sanitizeAudioUrl } from '../utils/audioUrl';
 import { readPersistedJson, writePersistedJson } from '../utils/persistedStore';
-import { getPortalSession, isAuthorizedPortalSession } from '../utils/portalAuth';
+import { getPortalSession, isAuthorizedPortalSession, isAuthorizedAccountOwner, getSupabaseSessionEmailSync } from '../utils/portalAuth';
 import { ReferralStore } from './referralStore';
 
 const ADMIN_ORDERS_STORAGE_KEY = 'sekarsiti_admin_orders_v1';
@@ -56,6 +56,18 @@ export class AdminStore {
   /**
    * Cek status otentikasi admin secara sinkron untuk memvalidasi aksi mutasi & proteksi kredensial
    */
+  // Peran akun aktif, diisi oleh AuthContext setelah memverifikasi role (allowlist / tabel profiles).
+  private static adminRoleVerified = false;
+
+  static setAdminRole(isAdmin: boolean): void {
+    const changed = this.adminRoleVerified !== isAdmin;
+    this.adminRoleVerified = isAdmin;
+    if (changed && isAdmin) {
+      // Muat ulang data lengkap (tanpa masking) setelah peran admin terverifikasi
+      this.initFromSupabase(true).catch(() => {});
+    }
+  }
+
   static isAdminAuthenticatedSync(): boolean {
     if (typeof window === 'undefined') return false;
     const isMock =
@@ -63,17 +75,18 @@ export class AdminStore {
       import.meta.env.VITE_ENABLE_MOCK_ADMIN === 'true' &&
       localStorage.getItem('sekarsiti_mock_admin_session') === 'true';
     if (isMock) return true;
+    // PENTING: login Supabase saja TIDAK otomatis admin (mempelai juga login via Supabase Auth)
+    return this.adminRoleVerified;
+  }
 
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
-          const raw = localStorage.getItem(key);
-          if (raw && raw.includes('access_token')) return true;
-        }
-      }
-    } catch {}
-    return false;
+  /**
+   * Pemilik undangan: akun Supabase dengan email = client_email, atau sesi PIN lama (kompatibilitas klien lama).
+   */
+  static isOwnerSync(target: ClientInvitationData): boolean {
+    return (
+      isAuthorizedAccountOwner(target.clientEmail) ||
+      isAuthorizedPortalSession(target.id, target.slug, target.accessCode)
+    );
   }
 
   // Load awal dari Supabase
@@ -92,14 +105,16 @@ export class AdminStore {
         if (!error && data) {
           const isAdmin = this.isAdminAuthenticatedSync();
           const portalSession = getPortalSession();
+          const sessionEmail = getSupabaseSessionEmailSync();
 
           if (data.length > 0) {
             const mapped = data.map((item: any) => {
               const isOwner =
-                portalSession &&
+                (sessionEmail && (item.client_email || '').trim().toLowerCase() === sessionEmail) ||
+                (portalSession &&
                 (portalSession.clientId === item.id ||
                   (item.slug && portalSession.code.toLowerCase() === item.slug.toLowerCase()) ||
-                  (item.access_code && portalSession.code.toLowerCase() === item.access_code.toLowerCase()));
+                  (item.access_code && portalSession.code.toLowerCase() === item.access_code.toLowerCase())));
 
               return {
                 id: item.id,
@@ -261,6 +276,20 @@ export class AdminStore {
     return this.getStore();
   }
 
+  /**
+   * Daftar undangan milik akun Supabase yang sedang login.
+   * Relasi akun ↔ undangan memakai kolom client_email yang sudah ada (tanpa kolom baru).
+   * Berlaku sama untuk Seri Standar (dibuat otomatis dari form) & Editorial (dibuat admin dengan email klien).
+   */
+  static async getOwnedInvitationsAsync(email: string): Promise<ClientInvitationData[]> {
+    const clean = (email || '').trim().toLowerCase();
+    if (!clean) return [];
+    await this.initFromSupabase(true).catch(() => memoryOrders);
+    return this.getStore().filter(
+      (o) => (o.clientEmail || '').trim().toLowerCase() === clean
+    );
+  }
+
   static getById(id: string): ClientInvitationData | undefined {
     if (!id) return undefined;
     const clean = id.trim().toLowerCase();
@@ -274,7 +303,7 @@ export class AdminStore {
 
     // IDOR Protection: Sembunyikan PIN dan kontak pribadi untuk pengunjung umum
     const isAdmin = this.isAdminAuthenticatedSync();
-    const isOwner = isAuthorizedPortalSession(found.id, found.slug, found.accessCode);
+    const isOwner = this.isOwnerSync(found);
 
     if (!isAdmin && !isOwner) {
       return {
@@ -482,43 +511,6 @@ export class AdminStore {
     }) || null;
   }
 
-  static async lookupByContactAsync(contact: string): Promise<Array<{ slug: string; clientName: string; pinCode: string }>> {
-    if (!contact) return [];
-    const clean = contact.trim().toLowerCase();
-    if (!clean) return [];
-
-    if (isSupabaseConfigured) {
-      try {
-        const { data, error } = await supabase
-          .from('invitations')
-          .select('slug, client_name, pin_code, client_phone, client_email')
-          .or(`client_phone.ilike.%${clean}%,client_email.ilike.%${clean}%`);
-
-        if (!error && data && data.length > 0) {
-          return data.map(item => ({
-            slug: item.slug,
-            clientName: item.client_name,
-            pinCode: item.pin_code
-          }));
-        }
-      } catch (err) {
-        console.warn('Lookup by contact error:', err);
-      }
-    }
-
-    const orders = this.getStore();
-    return orders
-      .filter(o =>
-        (o.clientPhone && o.clientPhone.toLowerCase().includes(clean)) ||
-        (o.clientEmail && o.clientEmail.toLowerCase().includes(clean))
-      )
-      .map(o => ({
-        slug: o.slug,
-        clientName: o.clientName,
-        pinCode: o.pinCode || '7429'
-      }));
-  }
-
   static addGuestLink(
     invitationId: string,
     guestData: { guestName: string; category?: string; phone?: string }
@@ -530,7 +522,7 @@ export class AdminStore {
     // IDOR Protection: Hanya admin atau pemilik portal yang sah
     const target = orders[index];
     const isAdmin = this.isAdminAuthenticatedSync();
-    const isOwner = isAuthorizedPortalSession(target.id, target.slug, target.accessCode);
+    const isOwner = this.isOwnerSync(target);
     if (!isAdmin && !isOwner) {
       console.error(`[IDOR Blocked] Akses ditolak: Upaya menambah tamu pada "${invitationId}" tanpa izin.`);
       return { success: false, link: null };
@@ -568,7 +560,7 @@ export class AdminStore {
     // IDOR Protection: Hanya admin atau pemilik portal yang sah
     const target = orders[index];
     const isAdmin = this.isAdminAuthenticatedSync();
-    const isOwner = isAuthorizedPortalSession(target.id, target.slug, target.accessCode);
+    const isOwner = this.isOwnerSync(target);
     if (!isAdmin && !isOwner) {
       console.error(`[IDOR Blocked] Akses ditolak: Upaya impor batch tamu pada "${invitationId}" tanpa izin.`);
       return { success: false, addedCount: 0 };
@@ -608,7 +600,7 @@ export class AdminStore {
     // IDOR Protection
     const target = orders[index];
     const isAdmin = this.isAdminAuthenticatedSync();
-    const isOwner = isAuthorizedPortalSession(target.id, target.slug, target.accessCode);
+    const isOwner = this.isOwnerSync(target);
     if (!isAdmin && !isOwner) {
       console.error(`[IDOR Blocked] Akses ditolak: Ubah status kirim tamu pada "${invitationId}"`);
       return;
@@ -632,7 +624,7 @@ export class AdminStore {
     // IDOR Protection
     const target = orders[index];
     const isAdmin = this.isAdminAuthenticatedSync();
-    const isOwner = isAuthorizedPortalSession(target.id, target.slug, target.accessCode);
+    const isOwner = this.isOwnerSync(target);
     if (!isAdmin && !isOwner) {
       console.error(`[IDOR Blocked] Akses ditolak: Hapus tamu pada "${invitationId}"`);
       return;
@@ -709,7 +701,7 @@ export class AdminStore {
     // IDOR Protection: Cegah manipulasi data pesanan oleh pihak tak berwenang
     const targetOrder = orders[index];
     const isAdmin = this.isAdminAuthenticatedSync();
-    const isOwner = isAuthorizedPortalSession(targetOrder.id, targetOrder.slug, targetOrder.accessCode);
+    const isOwner = this.isOwnerSync(targetOrder);
 
     if (!isAdmin && !isOwner) {
       console.error(`[IDOR Blocked] Akses ditolak: Upaya pengubahan order "${id}" oleh sesi tidak sah.`);

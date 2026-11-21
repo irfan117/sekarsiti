@@ -194,6 +194,50 @@ export const PortalDataFormTab: React.FC<PortalDataFormTabProps> = ({
           </div>
         </div>
 
+        {/* Pilihan Mode Visual khusus Seri Standar (Dengan Foto vs Tipografi Murni) */}
+        {formData.templateId.startsWith('standar-') && (
+          <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+            <label className="block text-xs font-bold text-[#414A35] uppercase tracking-wider">
+              Mode Visual Undangan
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div
+                onClick={() => handleChange('designMode', 'with_photos')}
+                className={`p-3 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-2.5 ${
+                  formData.designMode !== 'typography_pure'
+                    ? 'border-[#414A35] bg-white shadow-xs'
+                    : 'border-stone-200 bg-white/60 hover:bg-white'
+                }`}
+              >
+                <ImageIcon className={`w-4 h-4 shrink-0 mt-0.5 ${formData.designMode !== 'typography_pure' ? 'text-[#414A35]' : 'text-stone-400'}`} />
+                <div>
+                  <p className="text-xs font-bold text-stone-900">Dengan Foto Prewedding</p>
+                  <p className="text-[10px] text-stone-500 leading-relaxed">
+                    Menampilkan foto cover, potret mempelai, dan galeri momen.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                onClick={() => handleChange('designMode', 'typography_pure')}
+                className={`p-3 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-2.5 ${
+                  formData.designMode === 'typography_pure'
+                    ? 'border-emerald-600 bg-emerald-50/60 shadow-xs'
+                    : 'border-stone-200 bg-white/60 hover:bg-white'
+                }`}
+              >
+                <Sparkles className={`w-4 h-4 shrink-0 mt-0.5 ${formData.designMode === 'typography_pure' ? 'text-emerald-700' : 'text-stone-400'}`} />
+                <div>
+                  <p className="text-xs font-bold text-stone-900">Mode Tipografi &amp; Ornamen Klasik</p>
+                  <p className="text-[10px] text-stone-500 leading-relaxed">
+                    Anggun tanpa foto prewedding. Fokus pada monogram inisial &amp; ornamen artistik.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <MediaUploadSection
           formData={formData}
           selectedTemplateId={formData.templateId}

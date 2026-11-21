@@ -198,3 +198,33 @@ export function resetPortalFailedAttempts(code: string): void {
     saveAttemptsStore(store);
   }
 }
+
+/**
+ * Ambil email akun Supabase Auth yang sedang login secara sinkron (dibaca dari token sesi Supabase).
+ * Dipakai untuk memeriksa kepemilikan undangan berdasarkan kolom client_email (tanpa kolom tabel baru).
+ */
+export function getSupabaseSessionEmailSync(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw);
+        const email = parsed?.user?.email || parsed?.currentSession?.user?.email;
+        if (email) return String(email).trim().toLowerCase();
+      }
+    }
+  } catch {}
+  return null;
+}
+
+/**
+ * Pemilik sah undangan = akun Supabase yang emailnya sama dengan client_email undangan.
+ */
+export function isAuthorizedAccountOwner(targetEmail?: string): boolean {
+  const sessionEmail = getSupabaseSessionEmailSync();
+  const clean = (targetEmail || '').trim().toLowerCase();
+  return Boolean(sessionEmail && clean && sessionEmail === clean);
+}
