@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { resolvePackagePrice } from '../../src/services/paymentConfig';
 
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY || '';
 const IS_PROD_ENV = process.env.VITE_MIDTRANS_IS_PRODUCTION;
@@ -12,12 +13,26 @@ const SNAP_API_ENDPOINT = IS_PRODUCTION
 
 export async function handleCreateTransaction(req: Request, res: Response) {
   try {
-    const { orderId, grossAmount, clientName, clientEmail, clientPhone, templateTitle } = req.body;
+    const { orderId, packageId, templateId, clientName, clientEmail, clientPhone } = req.body;
 
-    if (!orderId || !grossAmount) {
-      res.status(400).json({ error: 'orderId dan grossAmount wajib diisi.' });
+    const targetPackageId = packageId || templateId;
+
+    if (!orderId || !targetPackageId) {
+      res.status(400).json({ error: 'orderId dan packageId wajib diisi.' });
       return;
     }
+
+    // Single source of truth: Ambil harga resmi dari katalog server, bukan dari client
+    const pkg = resolvePackagePrice(targetPackageId);
+    if (!pkg) {
+      res.status(400).json({
+        error: `Identitas paket "${targetPackageId}" tidak valid atau tidak terdaftar.`,
+      });
+      return;
+    }
+
+    const finalAmount = pkg.officialPrice;
+    const templateTitle = pkg.title;
 
     if (!MIDTRANS_SERVER_KEY) {
       res.status(500).json({
@@ -27,10 +42,6 @@ export async function handleCreateTransaction(req: Request, res: Response) {
     }
 
     const authHeader = `Basic ${Buffer.from(`${MIDTRANS_SERVER_KEY}:`).toString('base64')}`;
-
-    const rawAmount = Math.round(Number(grossAmount || 49000));
-    // Proteksi anti-manipulasi harga client-side: Seri Standar minimal Rp49.000
-    const finalAmount = rawAmount < 49000 ? 49000 : rawAmount;
 
     const payload = {
       transaction_details: {
@@ -44,10 +55,10 @@ export async function handleCreateTransaction(req: Request, res: Response) {
       },
       item_details: [
         {
-          id: String(orderId).slice(0, 50),
-          price: Math.round(Number(grossAmount)),
+          id: String(pkg.id).slice(0, 50),
+          price: finalAmount,
           quantity: 1,
-          name: String(templateTitle || 'Undangan Digital Sekarsiti').slice(0, 50),
+          name: String(templateTitle).slice(0, 50),
           brand: 'Sekarsiti',
           category: 'Digital Invitation',
         },

@@ -208,6 +208,30 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     }
   }, [user, clientEmail]);
 
+  // Key penyimpanan sesi draf pending (Tahan Refresh & Multi-Tab Isolation)
+  const draftStorageKey = useMemo(() => {
+    const userIdentifier = user?.id || user?.email || 'guest';
+    return `sekarsiti_pending_order_${userIdentifier}_${templateId}`;
+  }, [user, templateId]);
+
+  // Pulihkan draf pending jika ada saat halaman dimuat atau direfresh
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const savedPending = sessionStorage.getItem(draftStorageKey);
+      if (savedPending) {
+        const parsed = JSON.parse(savedPending) as ClientInvitationData;
+        if (parsed && parsed.id && parsed.status === 'pending') {
+          setActiveDraftOrder(parsed);
+          setSubmittedOrder(parsed);
+          setIsPendingPayment(true);
+        }
+      }
+    } catch {
+      // Abaikan jika storage belum terisi
+    }
+  }, [draftStorageKey]);
+
   const selectedTemplate = useMemo(
     () => ORDERABLE_TEMPLATES.find((item) => item.id === templateId) || ORDERABLE_TEMPLATES[0],
     [templateId]
@@ -532,11 +556,12 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
       await triggerMidtransCheckout(
         {
           orderId: orderToPay.id,
-          grossAmount: 49000,
+          packageId: orderToPay.templateId,
+          templateId: orderToPay.templateId,
           clientName: orderToPay.clientName,
           clientEmail: orderToPay.clientEmail || user?.email || undefined,
           clientPhone: orderToPay.clientPhone || undefined,
-          templateTitle: `Seri Standar - ${selectedTemplate.title}`,
+          templateTitle: selectedTemplate.title,
         },
         {
           onSuccess: (_result) => {
@@ -546,6 +571,9 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
             setIsPendingPayment(false);
             setIsPreviewOpen(false);
             setIsProcessingPayment(false);
+            try {
+              sessionStorage.removeItem(draftStorageKey);
+            } catch {}
             window.scrollTo({ top: 0, behavior: 'instant' });
           },
           onPending: (_result) => {
@@ -554,6 +582,9 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
             setIsPaidSettled(false);
             setIsPreviewOpen(false);
             setIsProcessingPayment(false);
+            try {
+              sessionStorage.setItem(draftStorageKey, JSON.stringify(orderToPay));
+            } catch {}
             window.scrollTo({ top: 0, behavior: 'instant' });
           },
           onError: (err) => {
@@ -573,16 +604,20 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     }
   };
 
-  // Cek Status Pembayaran Manual (Reconciliation Fallback)
+  // Cek Status Pembayaran Manual (Reconciliation Fallback dengan Proteksi IDOR)
   const handleManualCheckPayment = async (orderId: string) => {
     setIsCheckingPaymentStatus(true);
     try {
-      const res = await checkMidtransStatus(orderId);
+      const emailToCheck = user?.email || submittedOrder?.clientEmail || '';
+      const res = await checkMidtransStatus(orderId, emailToCheck);
       if (res.isPaid) {
         const paidOrder = AdminStore.markAsPaidAndPublished(orderId);
         setSubmittedOrder(paidOrder);
         setIsPaidSettled(true);
         setIsPendingPayment(false);
+        try {
+          sessionStorage.removeItem(draftStorageKey);
+        } catch {}
         alert('Pembayaran telah berhasil terverifikasi di Midtrans! Undangan Anda resmi aktif.');
       } else {
         const statusText =

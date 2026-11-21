@@ -50,6 +50,14 @@ async function startServer() {
       keyGenerator: (req) => `${ipKeyGenerator(req.ip || 'unknown')}:${String(req.body?.scope || '').slice(0, 100)}`,
       message: { error: 'Terlalu banyak perubahan reservasi untuk undangan ini. Coba lagi dalam satu jam.' },
     }),
+    paymentCheck: rateLimit({
+      windowMs: 60 * 1000,
+      limit: 15,
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: (req) => `${ipKeyGenerator(req.ip || 'unknown')}:${String(req.query?.orderId || req.body?.orderId || '')}`,
+      message: { error: 'Terlalu banyak permintaan cek status. Silakan tunggu 1 menit sebelum mencoba kembali.' },
+    }),
   };
 
   app.post(['/api/security/rate-limit', '/api/security/rate-limit/:action'], (req, res, next) => {
@@ -67,8 +75,8 @@ async function startServer() {
   // Midtrans Payment Gateway Endpoints
   app.post('/api/payment/create-transaction', handleCreateTransaction);
   app.post('/api/payment/midtrans-webhook', handleMidtransWebhook);
-  app.get('/api/payment/check-status', handleCheckStatus);
-  app.post('/api/payment/check-status', handleCheckStatus);
+  app.get('/api/payment/check-status', limits.paymentCheck, handleCheckStatus);
+  app.post('/api/payment/check-status', limits.paymentCheck, handleCheckStatus);
 
   // Setup Vite dev server in development or serve static in production
   if (process.env.NODE_ENV === 'production') {

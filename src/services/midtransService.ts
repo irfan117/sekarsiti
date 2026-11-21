@@ -68,11 +68,13 @@ export function loadSnapScript(): Promise<boolean> {
 
 export interface MidtransTransactionParams {
   orderId: string;
-  grossAmount: number;
+  packageId?: string;
+  templateId?: string;
+  grossAmount?: number;
   clientName: string;
   clientEmail?: string;
   clientPhone?: string;
-  templateTitle: string;
+  templateTitle?: string;
 }
 
 export interface MidtransPaymentCallbacks {
@@ -139,10 +141,20 @@ export async function triggerMidtransCheckout(
  * Cek status pembayaran terkini langsung ke server Midtrans (reconciliation fallback)
  */
 export async function checkMidtransStatus(
-  orderId: string
+  orderId: string,
+  userEmail?: string
 ): Promise<{ isPaid: boolean; transactionStatus: string; error?: string }> {
   try {
-    const response = await fetch(`/api/payment/check-status?orderId=${encodeURIComponent(orderId)}`);
+    const url = new URL('/api/payment/check-status', window.location.origin);
+    url.searchParams.set('orderId', orderId);
+    if (userEmail) {
+      url.searchParams.set('userEmail', userEmail.trim().toLowerCase());
+    }
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (userEmail) {
+      headers['X-User-Email'] = userEmail.trim().toLowerCase();
+    }
+    const response = await fetch(url.toString(), { headers });
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
       return { isPaid: false, transactionStatus: 'unknown', error: errData.error || 'Gagal memeriksa status' };

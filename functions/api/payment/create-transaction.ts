@@ -1,3 +1,5 @@
+import { resolvePackagePrice } from '../../../src/services/paymentConfig';
+
 interface Env {
   MIDTRANS_SERVER_KEY?: string;
   VITE_MIDTRANS_IS_PRODUCTION?: string;
@@ -20,14 +22,31 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const { request, env } = context;
     const body: any = await request.json().catch(() => ({}));
-    const { orderId, grossAmount, clientName, clientEmail, clientPhone, templateTitle } = body;
+    const { orderId, packageId, templateId, clientName, clientEmail, clientPhone } = body;
 
-    if (!orderId || !grossAmount) {
-      return new Response(JSON.stringify({ error: 'orderId dan grossAmount wajib diisi.' }), {
+    const targetPackageId = packageId || templateId;
+
+    if (!orderId || !targetPackageId) {
+      return new Response(JSON.stringify({ error: 'orderId dan packageId wajib diisi.' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
+
+    // Single source of truth: Ambil harga resmi dari katalog server, bukan dari client
+    const pkg = resolvePackagePrice(targetPackageId);
+    if (!pkg) {
+      return new Response(
+        JSON.stringify({ error: `Identitas paket "${targetPackageId}" tidak valid atau tidak terdaftar.` }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        }
+      );
+    }
+
+    const finalAmount = pkg.officialPrice;
+    const templateTitle = pkg.title;
 
     const serverKey = env.MIDTRANS_SERVER_KEY;
     if (!serverKey) {
@@ -49,10 +68,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const authHeader = `Basic ${btoa(`${serverKey}:`)}`;
 
-    const rawAmount = Math.round(Number(grossAmount || 49000));
-    // Proteksi anti-manipulasi harga client-side: Seri Standar minimal Rp49.000
-    const finalAmount = rawAmount < 49000 ? 49000 : rawAmount;
-
     const payload = {
       transaction_details: {
         order_id: String(orderId),
@@ -65,10 +80,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       },
       item_details: [
         {
-          id: String(orderId).slice(0, 50),
-          price: Math.round(Number(grossAmount)),
+          id: String(pkg.id).slice(0, 50),
+          price: finalAmount,
           quantity: 1,
-          name: String(templateTitle || 'Undangan Digital Sekarsiti').slice(0, 50),
+          name: String(templateTitle).slice(0, 50),
           brand: 'Sekarsiti',
           category: 'Digital Invitation',
         },

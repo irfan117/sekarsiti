@@ -1,5 +1,8 @@
-import crypto from 'crypto';
 import type { Request, Response } from 'express';
+import {
+  verifyMidtransSignature,
+  executePaymentTransition,
+} from '../../src/services/paymentProcessor';
 
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY || '';
 
@@ -13,6 +16,8 @@ export async function handleMidtransWebhook(req: Request, res: Response) {
       signature_key,
       transaction_status,
       fraud_status,
+      payment_type,
+      transaction_time,
     } = notification;
 
     if (!order_id || !status_code || !gross_amount || !signature_key) {
@@ -20,77 +25,62 @@ export async function handleMidtransWebhook(req: Request, res: Response) {
       return;
     }
 
-    // Verifikasi Keaslian Notifikasi via SHA512 Signature
-    if (MIDTRANS_SERVER_KEY) {
-      const rawSignature = `${order_id}${status_code}${gross_amount}${MIDTRANS_SERVER_KEY}`;
-      const expectedSignature = crypto.createHash('sha512').update(rawSignature).digest('hex');
+    if (!MIDTRANS_SERVER_KEY) {
+      res.status(500).json({ error: 'MIDTRANS_SERVER_KEY belum dikonfigurasi di file .env server.' });
+      return;
+    }
 
-      if (signature_key !== expectedSignature) {
-        console.warn('[Midtrans Webhook] Invalid signature from IP:', req.ip);
-        res.status(403).json({ error: 'Signature key tidak valid.' });
-        return;
-      }
+    // 1. Verifikasi Keaslian Notifikasi via SHA-512 Signature
+    const isValidSignature = await verifyMidtransSignature(
+      order_id,
+      status_code,
+      gross_amount,
+      MIDTRANS_SERVER_KEY,
+      signature_key
+    );
+
+    if (!isValidSignature) {
+      console.warn('[Midtrans Webhook Node] Invalid signature from IP:', req.ip);
+      res.status(403).json({ error: 'Signature key tidak valid.' });
+      return;
     }
 
     console.log(
-      `[Midtrans Webhook] Order: ${order_id} | Status: ${transaction_status} | Fraud: ${fraud_status}`
+      `[Midtrans Webhook Node] Valid Signature | Order: ${order_id} | Status: ${transaction_status} | Fraud: ${fraud_status}`
     );
 
+    // 2. Eksekusi transisi status & pembaruan database terpadu
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
     const supabaseKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY ||
       process.env.SUPABASE_ANON_KEY ||
       process.env.VITE_SUPABASE_ANON_KEY;
 
-    let patchData: { status?: string; payment_status: string; updated_at: string } | null = null;
+    const transitionResult = await executePaymentTransition({
+      orderId: order_id,
+      transactionStatus: transaction_status,
+      fraudStatus: fraud_status,
+      grossAmount: gross_amount,
+      paymentType: payment_type,
+      transactionTime: transaction_time,
+      supabaseUrl,
+      supabaseKey,
+    });
 
-    if (
-      transaction_status === 'settlement' ||
-      (transaction_status === 'capture' && fraud_status === 'accept')
-    ) {
-      console.log(`[Midtrans Webhook] Order ${order_id} BERHASIL DIBAYAR! Mengaktifkan status published...`);
-      patchData = {
-        status: 'published',
-        payment_status: 'settlement',
-        updated_at: new Date().toISOString(),
-      };
-    } else if (transaction_status === 'pending') {
-      patchData = {
-        payment_status: 'pending',
-        updated_at: new Date().toISOString(),
-      };
-    } else if (transaction_status === 'expire') {
-      patchData = {
-        payment_status: 'expired',
-        updated_at: new Date().toISOString(),
-      };
-    } else if (transaction_status === 'cancel' || transaction_status === 'deny') {
-      patchData = {
-        payment_status: 'failed',
-        updated_at: new Date().toISOString(),
-      };
+    if (!transitionResult.success) {
+      console.error('[Midtrans Webhook Node] Transisi gagal:', transitionResult);
+      const httpCode = transitionResult.code === 'ORDER_NOT_FOUND' ? 404 : 400;
+      res.status(httpCode).json({ error: transitionResult.message });
+      return;
     }
 
-    if (patchData && supabaseUrl && supabaseKey) {
-      try {
-        const patchUrl = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/invitations?id=eq.${encodeURIComponent(order_id)}`;
-        const dbResponse = await fetch(patchUrl, {
-          method: 'PATCH',
-          headers: {
-            apikey: supabaseKey,
-            Authorization: `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json',
-            Prefer: 'return=minimal',
-          },
-          body: JSON.stringify(patchData),
-        });
-        console.log(`[Midtrans Webhook] Supabase DB patch response code: ${dbResponse.status}`);
-      } catch (dbErr) {
-        console.error('[Midtrans Webhook] Gagal sinkronisasi status ke Supabase:', dbErr);
-      }
-    }
-
-    res.status(200).json({ status: 'OK', received: true });
+    res.status(200).json({
+      status: 'OK',
+      received: true,
+      orderId: transitionResult.orderId,
+      paymentStatus: transitionResult.paymentStatus,
+      invitationStatus: transitionResult.invitationStatus,
+    });
   } catch (err: any) {
     console.error('[Midtrans Webhook Exception]:', err);
     res.status(500).json({ error: err.message || 'Gagal memproses notifikasi webhook.' });
