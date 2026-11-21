@@ -49,10 +49,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const authHeader = `Basic ${btoa(`${serverKey}:`)}`;
 
+    const rawAmount = Math.round(Number(grossAmount || 49000));
+    // Proteksi anti-manipulasi harga client-side: Seri Standar minimal Rp49.000
+    const finalAmount = rawAmount < 49000 ? 49000 : rawAmount;
+
     const payload = {
       transaction_details: {
         order_id: String(orderId),
-        gross_amount: Math.round(Number(grossAmount)),
+        gross_amount: finalAmount,
       },
       customer_details: {
         first_name: String(clientName || 'Calon Pengantin').slice(0, 50),

@@ -36,13 +36,58 @@ export async function handleMidtransWebhook(req: Request, res: Response) {
       `[Midtrans Webhook] Order: ${order_id} | Status: ${transaction_status} | Fraud: ${fraud_status}`
     );
 
-    const isPaid =
-      transaction_status === 'settlement' ||
-      (transaction_status === 'capture' && fraud_status === 'accept');
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const supabaseKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.VITE_SUPABASE_ANON_KEY;
 
-    if (isPaid) {
-      console.log(`[Midtrans Webhook] Order ${order_id} BERHASIL DIBAYAR! Mengaktifkan undangan...`);
-      // Optional: Hubungkan ke Supabase di sini jika SUPABASE_URL aktif
+    let patchData: { status?: string; payment_status: string; updated_at: string } | null = null;
+
+    if (
+      transaction_status === 'settlement' ||
+      (transaction_status === 'capture' && fraud_status === 'accept')
+    ) {
+      console.log(`[Midtrans Webhook] Order ${order_id} BERHASIL DIBAYAR! Mengaktifkan status published...`);
+      patchData = {
+        status: 'published',
+        payment_status: 'settlement',
+        updated_at: new Date().toISOString(),
+      };
+    } else if (transaction_status === 'pending') {
+      patchData = {
+        payment_status: 'pending',
+        updated_at: new Date().toISOString(),
+      };
+    } else if (transaction_status === 'expire') {
+      patchData = {
+        payment_status: 'expired',
+        updated_at: new Date().toISOString(),
+      };
+    } else if (transaction_status === 'cancel' || transaction_status === 'deny') {
+      patchData = {
+        payment_status: 'failed',
+        updated_at: new Date().toISOString(),
+      };
+    }
+
+    if (patchData && supabaseUrl && supabaseKey) {
+      try {
+        const patchUrl = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/invitations?id=eq.${encodeURIComponent(order_id)}`;
+        const dbResponse = await fetch(patchUrl, {
+          method: 'PATCH',
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify(patchData),
+        });
+        console.log(`[Midtrans Webhook] Supabase DB patch response code: ${dbResponse.status}`);
+      } catch (dbErr) {
+        console.error('[Midtrans Webhook] Gagal sinkronisasi status ke Supabase:', dbErr);
+      }
     }
 
     res.status(200).json({ status: 'OK', received: true });

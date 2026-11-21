@@ -40,7 +40,11 @@ import {
   MusicTrack,
   uploadMusicToCloudinary,
 } from '../services/musicService';
-import { triggerMidtransCheckout, isMidtransConfigured } from '../services/midtransService';
+import {
+  triggerMidtransCheckout,
+  isMidtransConfigured,
+  checkMidtransStatus,
+} from '../services/midtransService';
 import { safeCopyToClipboard } from '../utils/clipboardUtils';
 import { useAuth } from '../context/AuthContext';
 
@@ -190,8 +194,11 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
 
   // Status Submit & Pembayaran Gateway
   const [submittedOrder, setSubmittedOrder] = useState<ClientInvitationData | null>(null);
+  const [activeDraftOrder, setActiveDraftOrder] = useState<ClientInvitationData | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaidSettled, setIsPaidSettled] = useState(false);
+  const [isPendingPayment, setIsPendingPayment] = useState(false);
+  const [isCheckingPaymentStatus, setIsCheckingPaymentStatus] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // Sync logged in email
@@ -504,32 +511,50 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   const handleProceedToPayment = async (dataToPay: ClientInvitationData) => {
     setIsProcessingPayment(true);
 
-    const newOrder = AdminStore.create({
-      ...dataToPay,
-      status: 'pending',
-    });
+    let orderToPay: ClientInvitationData;
+    if (activeDraftOrder) {
+      orderToPay =
+        AdminStore.update(activeDraftOrder.id, {
+          ...dataToPay,
+          status: 'pending',
+          paymentStatus: 'pending',
+        }) || activeDraftOrder;
+    } else {
+      orderToPay = AdminStore.create({
+        ...dataToPay,
+        status: 'pending',
+        paymentStatus: 'pending',
+      });
+      setActiveDraftOrder(orderToPay);
+    }
 
     try {
       await triggerMidtransCheckout(
         {
-          orderId: newOrder.id,
+          orderId: orderToPay.id,
           grossAmount: 49000,
-          clientName: newOrder.clientName,
-          clientEmail: newOrder.clientEmail || user?.email || undefined,
-          clientPhone: newOrder.clientPhone || undefined,
+          clientName: orderToPay.clientName,
+          clientEmail: orderToPay.clientEmail || user?.email || undefined,
+          clientPhone: orderToPay.clientPhone || undefined,
           templateTitle: `Seri Standar - ${selectedTemplate.title}`,
         },
         {
           onSuccess: (_result) => {
-            const paidOrder = AdminStore.markAsPaidAndPublished(newOrder.id);
+            const paidOrder = AdminStore.markAsPaidAndPublished(orderToPay.id);
             setSubmittedOrder(paidOrder);
             setIsPaidSettled(true);
+            setIsPendingPayment(false);
             setIsPreviewOpen(false);
             setIsProcessingPayment(false);
             window.scrollTo({ top: 0, behavior: 'instant' });
           },
           onPending: (_result) => {
+            setSubmittedOrder(orderToPay);
+            setIsPendingPayment(true);
+            setIsPaidSettled(false);
+            setIsPreviewOpen(false);
             setIsProcessingPayment(false);
+            window.scrollTo({ top: 0, behavior: 'instant' });
           },
           onError: (err) => {
             console.error('Midtrans payment error:', err);
@@ -545,6 +570,33 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
       console.error('Midtrans checkout error:', err);
       setIsProcessingPayment(false);
       alert('Tidak dapat memproses gateway pembayaran: ' + (err.message || 'Coba lagi.'));
+    }
+  };
+
+  // Cek Status Pembayaran Manual (Reconciliation Fallback)
+  const handleManualCheckPayment = async (orderId: string) => {
+    setIsCheckingPaymentStatus(true);
+    try {
+      const res = await checkMidtransStatus(orderId);
+      if (res.isPaid) {
+        const paidOrder = AdminStore.markAsPaidAndPublished(orderId);
+        setSubmittedOrder(paidOrder);
+        setIsPaidSettled(true);
+        setIsPendingPayment(false);
+        alert('Pembayaran telah berhasil terverifikasi di Midtrans! Undangan Anda resmi aktif.');
+      } else {
+        const statusText =
+          res.transactionStatus === 'pending'
+            ? 'MENUNGGU PEMBAYARAN'
+            : res.transactionStatus.toUpperCase();
+        alert(
+          `Status pembayaran Midtrans saat ini: ${statusText}.\nJika Anda baru saja mentransfer, silakan tunggu 1-2 menit lalu klik tombol ini kembali.`
+        );
+      }
+    } catch (err: any) {
+      alert('Gagal mengecek status pembayaran: ' + (err.message || 'Coba lagi.'));
+    } finally {
+      setIsCheckingPaymentStatus(false);
     }
   };
 
@@ -824,8 +876,8 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
             </p>
           </div>
 
-          {/* Success & Celebration Banner */}
-          {submittedOrder && (
+          {/* Success / Pending Banner */}
+          {submittedOrder && isPaidSettled && (
             <div className="p-5 sm:p-6 rounded-2xl border space-y-4 shadow-sm bg-gradient-to-br from-emerald-50 via-teal-50/40 to-emerald-50 border-emerald-300 text-emerald-950">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
@@ -894,6 +946,52 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
                   >
                     <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
                     <span>Kelola di Portal Mempelai →</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {submittedOrder && isPendingPayment && !isPaidSettled && (
+            <div className="p-5 sm:p-6 rounded-2xl border space-y-4 shadow-sm bg-gradient-to-br from-amber-50 via-orange-50/30 to-amber-50 border-amber-300 text-amber-950">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                  ⏳
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-bold text-sm sm:text-base text-amber-900">
+                    Pesanan Tersimpan — Menunggu Pembayaran Midtrans
+                  </h3>
+                  <p className="text-xs text-stone-700 leading-relaxed">
+                    Data undangan ({submittedOrder.clientName}) telah tersimpan dengan aman (ID: <span className="font-mono font-semibold">{submittedOrder.id}</span>). Silakan selesaikan pembayaran tagihan Rp49.000 melalui Virtual Account / QRIS yang Anda pilih.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white/90 backdrop-blur-xs p-4 rounded-xl border border-stone-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <p className="text-stone-600 text-[11px] leading-relaxed">
+                  Sudah menyelesaikan transfer di m-Banking atau e-Wallet? Klik tombol di samping untuk memverifikasi status pembayaran Anda secara seketika.
+                </p>
+                <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                  <button
+                    type="button"
+                    disabled={isCheckingPaymentStatus}
+                    onClick={() => handleManualCheckPayment(submittedOrder.id)}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-xs cursor-pointer disabled:opacity-60"
+                  >
+                    {isCheckingPaymentStatus ? (
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
+                    <span>{isCheckingPaymentStatus ? 'Memeriksa...' : 'Cek Status Pembayaran'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openPortal(submittedOrder)}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-stone-900 hover:bg-black text-[#F7F5EF] rounded-lg text-xs font-semibold transition-colors shadow-xs cursor-pointer"
+                  >
+                    <span>Buka Portal Mempelai</span>
                   </button>
                 </div>
               </div>

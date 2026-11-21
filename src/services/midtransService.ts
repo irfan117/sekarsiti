@@ -134,3 +134,25 @@ export async function triggerMidtransCheckout(
     },
   });
 }
+
+/**
+ * Cek status pembayaran terkini langsung ke server Midtrans (reconciliation fallback)
+ */
+export async function checkMidtransStatus(
+  orderId: string
+): Promise<{ isPaid: boolean; transactionStatus: string; error?: string }> {
+  try {
+    const response = await fetch(`/api/payment/check-status?orderId=${encodeURIComponent(orderId)}`);
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      return { isPaid: false, transactionStatus: 'unknown', error: errData.error || 'Gagal memeriksa status' };
+    }
+    const data = await response.json();
+    return {
+      isPaid: Boolean(data.isPaid),
+      transactionStatus: data.transactionStatus || 'unknown',
+    };
+  } catch (err: any) {
+    return { isPaid: false, transactionStatus: 'unknown', error: err.message };
+  }
+}

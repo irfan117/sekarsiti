@@ -71,13 +71,36 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       `[Midtrans Webhook Edge] Order: ${order_id} | Status: ${transaction_status} | Fraud: ${fraud_status}`
     );
 
-    const isPaid =
+    let patchData: { status?: string; payment_status: string; updated_at: string } | null = null;
+
+    if (
       transaction_status === 'settlement' ||
-      (transaction_status === 'capture' && fraud_status === 'accept');
+      (transaction_status === 'capture' && fraud_status === 'accept')
+    ) {
+      console.log(`[Midtrans Webhook Edge] Order ${order_id} BERHASIL DIBAYAR! Mengaktifkan status published...`);
+      patchData = {
+        status: 'published',
+        payment_status: 'settlement',
+        updated_at: new Date().toISOString(),
+      };
+    } else if (transaction_status === 'pending') {
+      patchData = {
+        payment_status: 'pending',
+        updated_at: new Date().toISOString(),
+      };
+    } else if (transaction_status === 'expire') {
+      patchData = {
+        payment_status: 'expired',
+        updated_at: new Date().toISOString(),
+      };
+    } else if (transaction_status === 'cancel' || transaction_status === 'deny') {
+      patchData = {
+        payment_status: 'failed',
+        updated_at: new Date().toISOString(),
+      };
+    }
 
-    if (isPaid) {
-      console.log(`[Midtrans Webhook Edge] Order ${order_id} BERHASIL DIBAYAR!`);
-
+    if (patchData) {
       // Update langsung status di database Supabase secara server-to-server
       const supabaseUrl = env.SUPABASE_URL || env.VITE_SUPABASE_URL;
       const supabaseKey =
@@ -96,11 +119,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
               'Content-Type': 'application/json',
               Prefer: 'return=minimal',
             },
-            body: JSON.stringify({
-              status: 'published',
-              payment_status: 'settlement',
-              updated_at: new Date().toISOString(),
-            }),
+            body: JSON.stringify(patchData),
           });
           console.log(`[Midtrans Webhook Edge] Supabase DB patch response code: ${dbResponse.status}`);
         } catch (dbErr) {

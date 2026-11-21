@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { ipKeyGenerator, rateLimit } from 'express-rate-limit';
 import { handleCreateTransaction } from './api/payment/create-transaction';
 import { handleMidtransWebhook } from './api/payment/midtrans-webhook';
+import { handleCheckStatus } from './api/payment/check-status';
 
 dotenv.config();
 
@@ -66,6 +67,8 @@ async function startServer() {
   // Midtrans Payment Gateway Endpoints
   app.post('/api/payment/create-transaction', handleCreateTransaction);
   app.post('/api/payment/midtrans-webhook', handleMidtransWebhook);
+  app.get('/api/payment/check-status', handleCheckStatus);
+  app.post('/api/payment/check-status', handleCheckStatus);
 
   // Setup Vite dev server in development or serve static in production
   if (process.env.NODE_ENV === 'production') {
