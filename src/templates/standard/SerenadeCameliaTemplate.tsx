@@ -46,12 +46,14 @@ const FEEDBACK_SCRIPT = createStandardSourceFeedbackScript({
   entryMessageClass: 'text-sm',
 });
 
-export const SerenadeCameliaTemplate: React.FC<Props> = ({ onBackToLanding, customData }) => (
+export const SerenadeCameliaTemplate: React.FC<Props> = ({ onBackToLanding, onOrderViaWhatsApp, customData }) => (
   <StandardSourceTemplateFrame
     sourceHtml={sourceHtml}
     title={`Undangan ${customData?.brideName || 'Nadia'} & ${customData?.groomName || 'Arkan'} — Serenade Camelia`}
     invitation={customData}
     onBackToLanding={onBackToLanding}
+    onOrder={onOrderViaWhatsApp}
+    orderPrice={49000}
     dataScript={DATA_SCRIPT}
     feedbackScript={FEEDBACK_SCRIPT}
   />

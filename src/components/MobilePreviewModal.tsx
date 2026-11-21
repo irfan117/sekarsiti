@@ -9,9 +9,11 @@ import {
   Heart, 
   Send, 
   ExternalLink,
-  MessageCircle
+  MessageCircle,
+  Zap
 } from 'lucide-react';
 import { InvitationItem } from '../types';
+import { STANDARD_TEMPLATES } from '../data/standardCatalog';
 
 interface MobilePreviewModalProps {
   item: InvitationItem | null;
@@ -28,6 +30,7 @@ export const MobilePreviewModal: React.FC<MobilePreviewModalProps> = ({
   onOrderViaWhatsApp,
   onSelectAnotherItem,
 }) => {
+  const isStandard = Boolean(item && (item.id.startsWith('standar-') || STANDARD_TEMPLATES.some((t) => t.id === item.id)));
   const [isOpenInvitation, setIsOpenInvitation] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(true);
   const [guestName, setGuestName] = useState('Bpk. Hendra & Keluarga');
@@ -228,10 +231,19 @@ export const MobilePreviewModal: React.FC<MobilePreviewModalProps> = ({
 
             <button
               onClick={() => onOrderViaWhatsApp(item)}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#414A35] hover:bg-[#323929] text-[#F7F5EF] text-xs font-medium rounded-full transition-all active:scale-[0.98] cursor-pointer shadow-sm"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#414A35] hover:bg-[#2C2E28] text-[#F7F5EF] text-xs font-semibold rounded-full transition-all active:scale-[0.98] cursor-pointer shadow-sm"
             >
-              <MessageCircle className="w-4 h-4 text-[#FAF8F3]" />
-              <span>Pesan Desain Ini via WhatsApp</span>
+              {isStandard ? (
+                <>
+                  <Zap className="w-4 h-4 text-[#C6A679]" />
+                  <span>Pesan Instan (Aktivasi Otomatis &middot; Rp{item.price.toLocaleString('id-ID')})</span>
+                </>
+              ) : (
+                <>
+                  <MessageCircle className="w-4 h-4 text-[#FAF8F3]" />
+                  <span>Pesan Desain Ini via WhatsApp</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -545,8 +557,17 @@ export const MobilePreviewModal: React.FC<MobilePreviewModalProps> = ({
                 onClick={() => onOrderViaWhatsApp(item)}
                 className="flex items-center gap-1.5 py-1.5 px-3 bg-[#414A35] hover:bg-[#343B2A] text-[#F7F5EF] text-[11px] font-medium rounded-full transition-all cursor-pointer"
               >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span>Pilih Template Ini</span>
+                {isStandard ? (
+                  <>
+                    <Zap className="w-3.5 h-3.5 text-[#C6A679]" />
+                    <span>Pesan Instan</span>
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>Pilih Template Ini</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -556,9 +577,11 @@ export const MobilePreviewModal: React.FC<MobilePreviewModalProps> = ({
           <div className="mt-3 text-center md:hidden">
             <button
               onClick={() => onOrderViaWhatsApp(item)}
-              className="py-2 px-5 bg-[#414A35] text-[#F7F5EF] text-xs font-medium rounded-full shadow"
+              className="py-2 px-5 bg-[#414A35] text-[#F7F5EF] text-xs font-semibold rounded-full shadow"
             >
-              Pesan Template Ini via WhatsApp
+              {isStandard
+                ? `Pesan Instan (Aktivasi Otomatis · Rp${item.price.toLocaleString('id-ID')})`
+                : 'Pesan Template Ini via WhatsApp'}
             </button>
           </div>
 

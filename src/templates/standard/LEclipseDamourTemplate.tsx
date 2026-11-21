@@ -44,12 +44,14 @@ const FEEDBACK_SCRIPT = createStandardSourceFeedbackScript({
   entryMessageClass: 'text-sm',
 });
 
-export const LEclipseDamourTemplate: React.FC<Props> = ({ onBackToLanding, customData }) => (
+export const LEclipseDamourTemplate: React.FC<Props> = ({ onBackToLanding, onOrderViaWhatsApp, customData }) => (
   <StandardSourceTemplateFrame
     sourceHtml={sourceHtml}
     title={`Undangan ${customData?.brideName || 'Rayhan'} & ${customData?.groomName || 'Kalila'} — L'Éclipse d'Amour`}
     invitation={customData}
     onBackToLanding={onBackToLanding}
+    onOrder={onOrderViaWhatsApp}
+    orderPrice={49000}
     dataScript={DATA_SCRIPT}
     feedbackScript={FEEDBACK_SCRIPT}
   />

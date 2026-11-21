@@ -48,12 +48,14 @@ const FEEDBACK_SCRIPT = createStandardSourceFeedbackScript({
   entryMessageClass: 'text-[11px] leading-relaxed text-dawn-100/85 whitespace-pre-line',
 });
 
-export const SimpulSutraTemplate: React.FC<Props> = ({ onBackToLanding, customData }) => (
+export const SimpulSutraTemplate: React.FC<Props> = ({ onBackToLanding, onOrderViaWhatsApp, customData }) => (
   <StandardSourceTemplateFrame
     sourceHtml={sourceHtml}
     title={`Undangan ${customData?.brideName || 'Clarissa'} & ${customData?.groomName || 'Narendra'} — Simpul Sutra & Cahaya Fajar`}
     invitation={customData}
     onBackToLanding={onBackToLanding}
+    onOrder={onOrderViaWhatsApp}
+    orderPrice={49000}
     dataScript={DATA_SCRIPT}
     feedbackScript={FEEDBACK_SCRIPT}
   />

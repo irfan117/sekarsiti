@@ -200,7 +200,7 @@ if (publishedInvitation) {
 }
 `;
 
-export const RoyalClassicTemplate: React.FC<Props> = ({ onBackToLanding, customData }) => {
+export const RoyalClassicTemplate: React.FC<Props> = ({ onBackToLanding, onOrderViaWhatsApp, customData }) => {
   const sourceHtml = useMemo(() => {
     let html = royalClassicSource;
     if (customData?.countdownIsoDate) {
@@ -215,6 +215,8 @@ export const RoyalClassicTemplate: React.FC<Props> = ({ onBackToLanding, customD
       title={`Undangan ${customData?.brideName || 'Tari'} & ${customData?.groomName || 'Bima'} — Royal Classic Ivory`}
       invitation={customData}
       onBackToLanding={onBackToLanding}
+      onOrder={onOrderViaWhatsApp}
+      orderPrice={49000}
       dataScript={ROYAL_CLASSIC_DATA_SCRIPT}
       feedbackScript={ROYAL_CLASSIC_FEEDBACK_SCRIPT}
     />

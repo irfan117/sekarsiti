@@ -148,7 +148,7 @@ export interface ClientInvitationData {
   referralPaidAt?: string; // Tanggal komisi dibayarkan (ISO string)
 
   // Paket & Mode Tampilan
-  packageTier?: 'essential' | 'editorial' | 'custom';
+  packageTier?: 'standar' | 'essential' | 'editorial' | 'custom';
   designMode?: 'with_photos' | 'typography_pure';
   paymentStatus?: 'unpaid' | 'pending' | 'settlement' | 'expired' | 'failed';
 }

@@ -368,7 +368,7 @@ export class AdminStore {
       },
       accessCode: payload.accessCode || slug || id,
       pinCode: payload.pinCode || String(Math.floor(1000 + Math.random() * 9000)),
-      packageTier: payload.packageTier || 'essential',
+      packageTier: payload.packageTier || (payload.templateId?.startsWith('standar-') ? 'standar' : 'essential'),
       designMode: payload.designMode || 'with_photos',
       paymentStatus: payload.paymentStatus || 'unpaid',
       referralCode: payload.referralCode || '',

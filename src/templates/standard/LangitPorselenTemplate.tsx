@@ -44,12 +44,14 @@ const FEEDBACK_SCRIPT = createStandardSourceFeedbackScript({
   entryMessageClass: 'text-xs leading-relaxed text-shell-100/85',
 });
 
-export const LangitPorselenTemplate: React.FC<Props> = ({ onBackToLanding, customData }) => (
+export const LangitPorselenTemplate: React.FC<Props> = ({ onBackToLanding, onOrderViaWhatsApp, customData }) => (
   <StandardSourceTemplateFrame
     sourceHtml={sourceHtml}
     title={`Undangan ${customData?.brideName || 'Nadia'} & ${customData?.groomName || 'Raka'} — Langit Porselen & Mekar Poppy`}
     invitation={customData}
     onBackToLanding={onBackToLanding}
+    onOrder={onOrderViaWhatsApp}
+    orderPrice={49000}
     dataScript={DATA_SCRIPT}
     feedbackScript={FEEDBACK_SCRIPT}
   />

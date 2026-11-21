@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Zap } from 'lucide-react';
 import { ClientInvitationData } from '../../types/clientInvitation';
 import { AdminStore } from '../../admin/adminStore';
 
@@ -14,6 +14,8 @@ interface Props {
   title: string;
   invitation?: ClientInvitationData;
   onBackToLanding?: () => void;
+  onOrder?: () => void;
+  orderPrice?: number;
   dataScript?: string;
   feedbackScript?: string;
 }
@@ -306,6 +308,8 @@ export const StandardSourceTemplateFrame: React.FC<Props> = ({
   title,
   invitation,
   onBackToLanding,
+  onOrder,
+  orderPrice,
   dataScript,
   feedbackScript,
 }) => {
@@ -362,9 +366,19 @@ export const StandardSourceTemplateFrame: React.FC<Props> = ({
         <button
           type="button"
           onClick={onBackToLanding}
-          className="fixed left-4 top-4 z-[80] inline-flex items-center gap-2 rounded-full border border-[#B8895A]/40 bg-[#FAF6F0]/90 px-3 py-2 text-xs text-[#473831] shadow-sm backdrop-blur"
+          className="fixed left-4 top-4 z-[80] inline-flex items-center gap-2 rounded-full border border-[#B8895A]/40 bg-[#FAF6F0]/90 px-3.5 py-2 text-xs font-semibold text-[#473831] shadow-md backdrop-blur hover:bg-[#FAF6F0] transition-colors cursor-pointer"
         >
           <ArrowLeft size={14} /> Kembali
+        </button>
+      )}
+      {onOrder && !invitation && (
+        <button
+          type="button"
+          onClick={onOrder}
+          className="fixed right-4 top-4 z-[80] inline-flex items-center gap-1.5 rounded-full bg-[#181816] hover:bg-[#C6A679] hover:text-[#181816] text-[#FAF9F6] px-4 py-2 text-xs font-semibold shadow-lg transition-all active:scale-95 cursor-pointer backdrop-blur"
+        >
+          <Zap size={14} className="text-[#C6A679]" />
+          <span>Pesan Template Ini (Rp{orderPrice ? orderPrice.toLocaleString('id-ID') : '49.000'})</span>
         </button>
       )}
     </div>

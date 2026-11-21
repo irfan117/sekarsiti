@@ -73,12 +73,14 @@ const FEEDBACK_SCRIPT = createStandardSourceFeedbackScript({
   entryMessageClass: 'mt-0.5 text-[11px] leading-relaxed text-shell-100/85 whitespace-pre-line',
 });
 
-export const JurnalPesisirTemplate: React.FC<Props> = ({ onBackToLanding, customData }) => (
+export const JurnalPesisirTemplate: React.FC<Props> = ({ onBackToLanding, onOrderViaWhatsApp, customData }) => (
   <StandardSourceTemplateFrame
     sourceHtml={coastalJournalSource}
     title={`Undangan ${customData?.brideName || 'Alina'} & ${customData?.groomName || 'Rayhan'} — Jurnal Pesisir`}
     invitation={customData}
     onBackToLanding={onBackToLanding}
+    onOrder={onOrderViaWhatsApp}
+    orderPrice={49000}
     dataScript={DATA_SCRIPT}
     feedbackScript={FEEDBACK_SCRIPT}
   />

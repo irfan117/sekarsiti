@@ -424,11 +424,22 @@ export default function App() {
   }, [syncViewFromUrl]);
 
   const handleOpenOrderModal = (item?: InvitationItem) => {
+    if (item && (item.id.startsWith('standar-') || STANDARD_TEMPLATES.some((t) => t.id === item.id))) {
+      handleOpenOrderForm(item);
+      return;
+    }
     setSelectedTemplateForOrder(item || null);
     setIsOrderModalOpen(true);
   };
 
   const handleOrderFromCatalog = (item: InvitationItem) => {
+    const isStandard =
+      item.id.startsWith('standar-') ||
+      STANDARD_TEMPLATES.some((t) => t.id === item.id);
+    if (isStandard) {
+      handleOpenOrderForm(item);
+      return;
+    }
     setSelectedTemplateForOrder(item);
     setIsOrderModalOpen(true);
     setPreviewTemplate(null);
@@ -604,7 +615,16 @@ export default function App() {
         <ActiveDemoComponent
           onBackToLanding={handleBackFromDemo}
           customData={clientPreviewData || undefined}
-          onOrderViaWhatsApp={() => handleOpenOrderModal(activeCatalogItem)}
+          onOrderViaWhatsApp={() => {
+            const isStandard =
+              activeCatalogItem.id.startsWith('standar-') ||
+              STANDARD_TEMPLATES.some((t) => t.id === activeCatalogItem.id);
+            if (isStandard) {
+              handleOpenOrderForm(activeCatalogItem);
+            } else {
+              handleOpenOrderModal(activeCatalogItem);
+            }
+          }}
         />
 
         <WhatsAppOrderModal
@@ -619,7 +639,14 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#181816] font-sans selection:bg-[#E8E5DF] selection:text-[#181816]">
       <Navbar
-        onSelectTemplateCTA={() => handleOpenOrderModal()}
+        onSelectTemplateCTA={() => {
+          const el = document.getElementById('katalog-standar') || document.getElementById('koleksi');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth' });
+          } else {
+            handleOpenOrderForm(STANDARD_TEMPLATES[0]);
+          }
+        }}
       />
 
       <main className="flex-1">
@@ -632,6 +659,7 @@ export default function App() {
         <TemplateCollection
           onPreviewTemplate={setPreviewTemplate}
           onOrderViaWhatsApp={handleOrderFromCatalog}
+          onOrderStandard={handleOpenOrderForm}
           onOpenDedicatedDemo={handleOpenDedicatedDemo}
           onPreviewPortfolio={(portfolioItem) => {
             const targetDemo = resolveDemoViewFromId(portfolioItem.templateId);

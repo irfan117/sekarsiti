@@ -53,12 +53,14 @@ const FEEDBACK_SCRIPT = createStandardSourceFeedbackScript({
   },
 });
 
-export const VoilierDeSoieTemplate: React.FC<Props> = ({ onBackToLanding, customData }) => (
+export const VoilierDeSoieTemplate: React.FC<Props> = ({ onBackToLanding, onOrderViaWhatsApp, customData }) => (
   <StandardSourceTemplateFrame
     sourceHtml={sourceHtml}
     title={`Undangan ${customData?.brideName || 'Nadia'} & ${customData?.groomName || 'Arkan'} — Voilier de Soie`}
     invitation={customData}
     onBackToLanding={onBackToLanding}
+    onOrder={onOrderViaWhatsApp}
+    orderPrice={49000}
     dataScript={DATA_SCRIPT}
     feedbackScript={FEEDBACK_SCRIPT}
   />

@@ -72,8 +72,18 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   const defaultTemplate = initialTemplate || STANDARD_TEMPLATES[0] || TEMPLATES[0];
   const [templateId, setTemplateId] = useState<string>(defaultTemplate.id);
 
+  const isInitialStandard = Boolean(
+    defaultTemplate.id.startsWith('standar-') ||
+    STANDARD_TEMPLATES.some((item) => item.id === defaultTemplate.id)
+  );
+
   // Paket Layanan & Mode Visual
-  const [packageTier, setPackageTier] = useState<'essential' | 'editorial'>('essential');
+  const [packageTier, setPackageTier] = useState<'standar' | 'essential' | 'editorial'>(
+    isInitialStandard ? 'standar' : 'editorial'
+  );
+  const [catalogCategoryFilter, setCatalogCategoryFilter] = useState<'standard' | 'editorial'>(
+    isInitialStandard ? 'standard' : 'editorial'
+  );
   const [designMode, setDesignMode] = useState<'with_photos' | 'typography_pure'>('with_photos');
 
   // Data Pemesan & Mempelai
@@ -132,6 +142,26 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   const [isPaidSettled, setIsPaidSettled] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
+  const isStandardTemplate = useMemo(() => {
+    return (
+      STANDARD_TEMPLATES.some((item) => item.id === templateId) ||
+      templateId.startsWith('standar-') ||
+      packageTier === 'standar'
+    );
+  }, [templateId, packageTier]);
+
+  const handleSelectTemplate = (id: string) => {
+    setTemplateId(id);
+    const isStd = STANDARD_TEMPLATES.some((item) => item.id === id) || id.startsWith('standar-');
+    if (isStd) {
+      setPackageTier('standar');
+      setCatalogCategoryFilter('standard');
+    } else if (packageTier === 'standar') {
+      setPackageTier('editorial');
+      setCatalogCategoryFilter('editorial');
+    }
+  };
+
   const selectedTemplate = useMemo(
     () => ORDERABLE_TEMPLATES.find((item) => item.id === templateId) || ORDERABLE_TEMPLATES[0],
     [templateId]
@@ -143,11 +173,14 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   );
 
   const finalPrice = useMemo(() => {
-    if (packageTier === 'essential') {
-      return STANDARD_TEMPLATES.some((item) => item.id === templateId) ? selectedTemplate.price : 99000;
+    if (isStandardTemplate || packageTier === 'standar') {
+      return selectedTemplate.price || 49000;
     }
-    return selectedTemplate.price || 199000;
-  }, [packageTier, selectedTemplate]);
+    if (packageTier === 'editorial') {
+      return selectedTemplate.price || 199000;
+    }
+    return 99000;
+  }, [isStandardTemplate, packageTier, selectedTemplate]);
 
   const formattedPrice = new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -283,7 +316,7 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
       clientEmail,
       templateId: templateId as TemplateId,
       status: 'pending',
-      packageTier,
+      packageTier: isStandardTemplate || packageTier === 'standar' ? 'standar' : packageTier,
       designMode,
       paymentStatus: 'unpaid',
       slug: buildSlug(brideName, groomName),
@@ -321,7 +354,11 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     const openWhatsAppDirect = () => {
       const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ssiti.tech';
       const previewUrl = `${origin}/?client=${encodeURIComponent(newOrder.slug || newOrder.id)}`;
-      const tierName = packageTier === 'essential' ? 'Seri Esensial Editorial' : 'Seri Editorial Signature';
+      const tierName = isStandardTemplate || packageTier === 'standar'
+        ? 'Paket Seri Standar (Aktivasi Otomatis)'
+        : packageTier === 'essential'
+        ? 'Seri Esensial Editorial'
+        : 'Seri Editorial Signature';
       const modeName = designMode === 'typography_pure' ? 'Mode Tipografi & Ornamen (Tanpa Foto Prewed)' : 'Dengan Foto Prewedding';
 
       const message = `Halo Sekarsiti Studio, saya sudah mengirim formulir data pesanan undangan digital:
@@ -357,7 +394,7 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
             clientName: displayClientName,
             clientEmail: clientEmail.trim() || undefined,
             clientPhone: clientPhone.trim() || undefined,
-            templateTitle: `${packageTier === 'essential' ? 'Seri Esensial' : 'Seri Editorial'} - ${selectedTemplate.title}`,
+            templateTitle: `${isStandardTemplate || packageTier === 'standar' ? 'Seri Standar' : (packageTier === 'editorial' ? 'Seri Editorial' : 'Seri Esensial')} - ${selectedTemplate.title}`,
           },
           {
             onSuccess: (result) => {
@@ -527,59 +564,82 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
               {/* 1A: PILIHAN TINGKAT LAYANAN */}
               <div>
                 <label className="block text-xs font-semibold text-[#414A35] mb-2">
-                  Tingkat Layanan (Pilih Seri yang Sesuai Kebutuhan Anda)
+                  Tingkat Layanan
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Card Seri Esensial Editorial */}
-                  <div
-                    onClick={() => setPackageTier('essential')}
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      packageTier === 'essential'
-                        ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
-                        : 'border-stone-200 hover:border-stone-300 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="text-xs font-bold text-[#2C2E28]">Seri Esensial Editorial</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                        Aktivasi Instan &amp; Mandiri
+                {isStandardTemplate ? (
+                  <div className="p-4 sm:p-5 rounded-xl border-2 border-[#414A35] bg-[#FAF8F3] shadow-xs space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-[#C5A880]" />
+                        <span className="text-xs sm:text-sm font-bold text-[#2C2E28]">
+                          Paket Seri Standar &mdash; Aktivasi Mandiri Otomatis
+                        </span>
+                      </div>
+                      <span className="text-[10px] sm:text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
+                        Aktivasi Instan &bull; Siap Sebar Hari Ini
                       </span>
                     </div>
-                    <p className="text-[11px] text-stone-600 leading-relaxed mb-3">
-                      Solusi praktis &amp; mandiri. Data diisi mandiri, bayar instan via QRIS/VA Midtrans, langsung aktif seketika dengan Portal Mempelai.
+                    <p className="text-[11px] text-stone-600 leading-relaxed">
+                      Pemesanan 100% mandiri dan otomatis. Anda cukup melengkapi formulir data acara di bawah, menyelesaikan pembayaran instan via QRIS / Virtual Account Midtrans (Rp{finalPrice.toLocaleString('id-ID')}), dan undangan Anda langsung terbit aktif seketika tanpa perlu menunggu konfirmasi admin WhatsApp! Akses penuh Portal Klien langsung diberikan untuk mengelola buku tamu, RSVP, rekening amplop, dan musik.
                     </p>
-                    <div className="flex items-baseline justify-between pt-2 border-t border-stone-200/60">
-                      <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Biaya Investasi</span>
-                      <span className="text-sm font-bold text-[#414A35]">Rp99.000</span>
+                    <div className="flex items-baseline justify-between pt-2 border-t border-stone-200/80">
+                      <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Biaya Investasi Standar</span>
+                      <span className="text-base sm:text-lg font-bold text-[#414A35]">Rp{finalPrice.toLocaleString('id-ID')}</span>
                     </div>
                   </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Card Seri Esensial Editorial */}
+                    <div
+                      onClick={() => setPackageTier('essential')}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        packageTier === 'essential'
+                          ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
+                          : 'border-stone-200 hover:border-stone-300 bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="text-xs font-bold text-[#2C2E28]">Seri Esensial Editorial</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                          Aktivasi Instan &amp; Mandiri
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-stone-600 leading-relaxed mb-3">
+                        Solusi praktis &amp; mandiri. Data diisi mandiri, bayar instan via QRIS/VA Midtrans, langsung aktif seketika dengan Portal Mempelai.
+                      </p>
+                      <div className="flex items-baseline justify-between pt-2 border-t border-stone-200/60">
+                        <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Biaya Investasi</span>
+                        <span className="text-sm font-bold text-[#414A35]">Rp99.000</span>
+                      </div>
+                    </div>
 
-                  {/* Card Seri Editorial Signature */}
-                  <div
-                    onClick={() => setPackageTier('editorial')}
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      packageTier === 'editorial'
-                        ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
-                        : 'border-stone-200 hover:border-stone-300 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="text-xs font-bold text-[#2C2E28]">Seri Editorial Signature</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C5A880]/30 text-[#846741]">
-                        Kurasi &amp; Pendampingan Penuh
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-stone-600 leading-relaxed mb-3">
-                      Didampingi desainer Sekarsiti, konsultasi palet warna &amp; tipografi kustom, revisi fleksibel, dan fitur WA blast massal.
-                    </p>
-                    <div className="flex items-baseline justify-between pt-2 border-t border-stone-200/60">
-                      <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Biaya Investasi</span>
-                      <span className="text-sm font-bold text-[#414A35]">
-                        Rp{selectedTemplate.price.toLocaleString('id-ID')}
-                      </span>
+                    {/* Card Seri Editorial Signature */}
+                    <div
+                      onClick={() => setPackageTier('editorial')}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        packageTier === 'editorial'
+                          ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
+                          : 'border-stone-200 hover:border-stone-300 bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="text-xs font-bold text-[#2C2E28]">Seri Editorial Signature</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C5A880]/30 text-[#846741]">
+                          Kurasi &amp; Pendampingan Penuh
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-stone-600 leading-relaxed mb-3">
+                        Didampingi desainer Sekarsiti, konsultasi palet warna &amp; tipografi kustom, revisi fleksibel, dan fitur WA blast massal.
+                      </p>
+                      <div className="flex items-baseline justify-between pt-2 border-t border-stone-200/60">
+                        <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Biaya Investasi</span>
+                        <span className="text-sm font-bold text-[#414A35]">
+                          Rp{selectedTemplate.price.toLocaleString('id-ID')}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* 1B: PILIHAN MODE VISUAL (DENGAN FOTO VS TANPA FOTO) */}
@@ -628,36 +688,86 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
 
               {/* 1C: PILIH TEMPLATE */}
               <div>
-                <label className="block text-xs font-semibold text-[#414A35] mb-2">
-                  Pilih Tema Desain
-                </label>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                  <label className="block text-xs font-semibold text-[#414A35]">
+                    Pilih Tema Desain Undangan
+                  </label>
+                  <div className="inline-flex p-1 bg-stone-100 rounded-lg text-xs self-start sm:self-auto border border-stone-200/60">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCatalogCategoryFilter('standard');
+                        if (!isStandardTemplate) {
+                          handleSelectTemplate(STANDARD_TEMPLATES[0].id);
+                        }
+                      }}
+                      className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                        catalogCategoryFilter === 'standard'
+                          ? 'bg-white text-[#2C2E28] shadow-xs'
+                          : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      Koleksi Seri Standar (Rp49.000)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCatalogCategoryFilter('editorial');
+                        if (isStandardTemplate) {
+                          handleSelectTemplate(TEMPLATES[0].id);
+                        }
+                      }}
+                      className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                        catalogCategoryFilter === 'editorial'
+                          ? 'bg-white text-[#2C2E28] shadow-xs'
+                          : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      Koleksi Seri Editorial (Mulai Rp199.000)
+                    </button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {ORDERABLE_TEMPLATES.map((item) => {
+                  {(catalogCategoryFilter === 'standard' ? STANDARD_TEMPLATES : TEMPLATES).map((item) => {
                     const isSelected = templateId === item.id;
+                    const itemIsStandard =
+                      STANDARD_TEMPLATES.some((s) => s.id === item.id) || item.id.startsWith('standar-');
+                    const displayedItemPrice = itemIsStandard
+                      ? item.price
+                      : packageTier === 'essential'
+                      ? 99000
+                      : item.price;
+
                     return (
                       <div
                         key={item.id}
-                        onClick={() => setTemplateId(item.id)}
+                        onClick={() => handleSelectTemplate(item.id)}
                         className={`p-3 rounded-xl border-2 cursor-pointer transition-all ${
                           isSelected
-                            ? 'border-[#414A35] bg-[#F7F5EF] shadow-xs'
+                            ? 'border-[#414A35] bg-[#F7F5EF] shadow-xs ring-2 ring-[#414A35]/15'
                             : 'border-stone-200 hover:border-stone-300 bg-white'
                         }`}
                       >
-                        <div className="aspect-[16/10] rounded-lg overflow-hidden mb-2 bg-stone-100">
+                        <div className="aspect-[16/10] rounded-lg overflow-hidden mb-2 bg-stone-100 relative">
                           <img
                             src={item.image}
                             alt={item.title}
                             className="w-full h-full object-cover"
                           />
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 bg-[#414A35] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
+                              Terpilih ✓
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-xs text-[#2C2E28]">{item.title}</p>
-                            <p className="text-[10px] text-stone-500">{item.styleLabel}</p>
+                          <div className="min-w-0 pr-2">
+                            <p className="font-bold text-xs text-[#2C2E28] truncate">{item.title}</p>
+                            <p className="text-[10px] text-stone-500 truncate">{item.styleLabel}</p>
                           </div>
-                          <span className="text-[11px] font-bold text-[#414A35]">
-                            {packageTier === 'essential' && !STANDARD_TEMPLATES.some((standard) => standard.id === item.id) ? 'Rp99.000' : `Rp${item.price.toLocaleString('id-ID')}`}
+                          <span className="text-[11px] font-bold text-[#414A35] shrink-0">
+                            Rp{displayedItemPrice.toLocaleString('id-ID')}
                           </span>
                         </div>
                       </div>
@@ -1258,7 +1368,7 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
 
               <div>
                 <label className="block text-xs font-medium text-stone-700 mb-1">
-                  Catatan Khusus untuk Tim Desainer (Opsional)
+                  Catatan Tambahan untuk Undangan (Opsional)
                 </label>
                 <textarea
                   rows={2}
@@ -1279,7 +1389,7 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                     {formattedPrice}
                   </span>
                   <span className="text-[11px] text-stone-500 font-medium">
-                    ({packageTier === 'essential' ? 'Seri Esensial' : 'Seri Signature'} &middot; {designMode === 'typography_pure' ? 'Mode Tipografi' : 'Dengan Foto'})
+                    ({isStandardTemplate || packageTier === 'standar' ? 'Paket Seri Standar Instan' : (packageTier === 'essential' ? 'Seri Esensial' : 'Seri Signature')} &middot; {designMode === 'typography_pure' ? 'Mode Tipografi' : 'Dengan Foto'})
                   </span>
                 </div>
               </div>
@@ -1294,7 +1404,7 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                       className="inline-flex items-center justify-center gap-2 py-2.5 px-5 border border-stone-300 hover:bg-stone-100 disabled:opacity-50 text-stone-700 rounded-full text-xs font-semibold transition-all cursor-pointer shadow-2xs"
                     >
                       <MessageCircle className="w-3.5 h-3.5 text-stone-500" />
-                      <span>Simpan &amp; Konfirmasi Manual (WA)</span>
+                      <span>Simpan Draf (Bantuan WA)</span>
                     </button>
 
                     <button
@@ -1310,8 +1420,8 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                         </>
                       ) : (
                         <>
-                          <ShieldCheck className="w-4 h-4 text-[#C5A880]" />
-                          <span>Bayar Instan &amp; Aktifkan ({formattedPrice})</span>
+                          <Zap className="w-4 h-4 text-[#C5A880]" />
+                          <span>Bayar Otomatis &amp; Terbitkan ({formattedPrice})</span>
                         </>
                       )}
                     </button>

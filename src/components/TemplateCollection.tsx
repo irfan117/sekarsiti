@@ -79,6 +79,7 @@ function getEditorialMeta(id: string) {
 interface TemplateCollectionProps {
   onPreviewTemplate: (item: InvitationItem) => void;
   onOrderViaWhatsApp: (item: InvitationItem) => void;
+  onOrderStandard?: (item: InvitationItem) => void;
   onOpenDedicatedDemo: (templateId: string) => void;
   onPreviewPortfolio?: (item: PortfolioItemData) => void;
 }
@@ -86,6 +87,7 @@ interface TemplateCollectionProps {
 export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
   onPreviewTemplate,
   onOrderViaWhatsApp,
+  onOrderStandard,
   onOpenDedicatedDemo,
   onPreviewPortfolio,
 }) => {
@@ -147,28 +149,26 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
               Undangan Pernikahan Digital, Sesuai Gaya Anda.
             </h2>
             <p className="font-sans text-base text-[#716E68] font-light leading-relaxed max-w-2xl">
-              Pilih desain yang paling dekat dengan cerita Anda, lihat demo interaktifnya, lalu pesan
-              langsung dari katalog. Setiap template standar mendukung personalisasi data acara,
-              musik, lokasi, RSVP, dan buku ucapan melalui portal klien.
+              Pilih desain yang paling sesuai dengan impian Anda, buka demo interaktifnya, lalu lakukan pemesanan mandiri 100% otomatis. Bayar instan via Midtrans (QRIS / Virtual Account) Rp49.000 dan undangan Anda langsung terbit aktif seketika lengkap dengan Portal Klien untuk kelola RSVP, buku tamu, dan musik.
             </p>
 
             {/* Feature Highlights Banner */}
             <div className="flex flex-wrap items-center gap-2.5 pt-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-[12px] font-medium border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Harga mulai Rp{Math.min(...STANDARD_TEMPLATES.map((item) => item.price)).toLocaleString('id-ID')}
+                Rp49.000 &middot; Aktivasi Otomatis
               </span>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-stone-100 text-stone-700 text-[12px] font-medium border border-stone-200">
                 <Zap className="w-3.5 h-3.5 text-amber-600" />
-                Demo Interaktif
+                Langsung Jadi Hari Ini
               </span>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-stone-100 text-stone-700 text-[12px] font-medium border border-stone-200">
                 <Sparkles className="w-3.5 h-3.5 text-[#C6A679]" />
-                Personalisasi Data Acara
+                Portal Klien Mandiri (PIN)
               </span>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-stone-100 text-stone-700 text-[12px] font-medium border border-stone-200">
                 <ShieldCheck className="w-3.5 h-3.5 text-stone-500" />
-                RSVP &amp; Buku Ucapan
+                RSVP, Musik, &amp; Amplop Digital
               </span>
             </div>
           </div>
@@ -289,11 +289,11 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
                         </button>
 
                         <button
-                          onClick={() => onOrderViaWhatsApp(item)}
-                          className="inline-flex items-center gap-1.5 text-[12px] font-sans font-semibold text-[#FAF9F6] bg-[#181816] hover:bg-[#C6A679] py-1.5 px-3.5 rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap shadow-sm"
+                          onClick={() => (onOrderStandard ? onOrderStandard(item) : onOrderViaWhatsApp(item))}
+                          className="inline-flex items-center gap-1.5 text-[12px] font-sans font-semibold text-[#FAF9F6] bg-[#414A35] hover:bg-[#2C2E28] py-1.5 px-3.5 rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap shadow-sm active:scale-95"
                         >
-                          <MessageCircle className="w-3.5 h-3.5" />
-                          Pesan
+                          <Zap className="w-3.5 h-3.5 text-[#C6A679]" />
+                          Pesan Instan
                         </button>
                       </div>
                     </div>
