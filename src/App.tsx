@@ -363,10 +363,18 @@ export default function App() {
     }
 
     if (orderParam || viewParam === 'order') {
+      const isStandardParam = STANDARD_TEMPLATES.some((item) => item.id === orderParam);
+      if (orderParam && !isStandardParam && TEMPLATES.some((t) => t.id === orderParam)) {
+        // Jika parameter adalah template editorial, arahkan ke modal konsultasi WhatsApp desainer
+        const targetEditorial = TEMPLATES.find((t) => t.id === orderParam);
+        setSelectedTemplateForOrder(targetEditorial || null);
+        setIsOrderModalOpen(true);
+        setCurrentView('landing');
+        return;
+      }
       const selectedOrderTemplate =
-        STANDARD_TEMPLATES.find((item) => item.id === orderParam) ||
-        TEMPLATES.find((item) => item.id === orderParam);
-      setSelectedTemplateForOrder(selectedOrderTemplate || STANDARD_TEMPLATES[0] || TEMPLATES[0]);
+        STANDARD_TEMPLATES.find((item) => item.id === orderParam) || STANDARD_TEMPLATES[0];
+      setSelectedTemplateForOrder(selectedOrderTemplate);
       setClientPreviewData(null);
       setIsAdminPreviewMode(false);
       setCurrentView('order-form');

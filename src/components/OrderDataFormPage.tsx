@@ -3,40 +3,57 @@ import {
   ArrowLeft,
   CheckCircle2,
   MessageCircle,
-  Send,
   Upload,
   Sparkles,
-  Link2,
   Image as ImageIcon,
   Heart,
   Calendar,
-  MapPin,
   CreditCard,
   Music,
   Loader2,
   Play,
   Pause,
-  Disc,
   Check,
   ShieldCheck,
   Lock,
   ExternalLink,
   Copy,
   Zap,
-  Info,
-  Layers
+  Eye,
+  Trash2,
+  Mail,
+  User as UserIcon,
 } from 'lucide-react';
 import { AdminStore } from '../admin/adminStore';
-import { TEMPLATES } from '../data/catalog';
 import { STANDARD_TEMPLATES } from '../data/standardCatalog';
 import { TEMPLATE_REGISTRY } from '../admin/templateRegistry';
 import { InvitationItem } from '../types';
 import { TemplateId, ClientInvitationData } from '../types/clientInvitation';
-import { uploadToCloudinary, isCloudinaryConfigured } from '../utils/cloudinaryUpload';
+import {
+  uploadToCloudinary,
+  isCloudinaryConfigured,
+  deleteFromCloudinary,
+} from '../utils/cloudinaryUpload';
 import { smartPlaceAssets } from '../services/mediaAssetAssistant';
-import { fetchMusicTracks, MusicTrack } from '../services/musicService';
+import {
+  fetchMusicTracks,
+  MusicTrack,
+  uploadMusicToCloudinary,
+} from '../services/musicService';
 import { triggerMidtransCheckout, isMidtransConfigured } from '../services/midtransService';
 import { safeCopyToClipboard } from '../utils/clipboardUtils';
+import { useAuth } from '../context/AuthContext';
+
+// Import all 9 Standard Template components for live interactive preview
+import { RoyalClassicTemplate } from '../templates/standard/RoyalClassicTemplate';
+import { JurnalPesisirTemplate } from '../templates/standard/JurnalPesisirTemplate';
+import { LangitPorselenTemplate } from '../templates/standard/LangitPorselenTemplate';
+import { LEclipseDamourTemplate } from '../templates/standard/LEclipseDamourTemplate';
+import { SimpulSutraTemplate } from '../templates/standard/SimpulSutraTemplate';
+import { SerenadeCameliaTemplate } from '../templates/standard/SerenadeCameliaTemplate';
+import { GrandPelaminanTemplate } from '../templates/standard/GrandPelaminanTemplate';
+import { TimelessBotanicalTemplate } from '../templates/standard/TimelessBotanicalTemplate';
+import { VoilierDeSoieTemplate } from '../templates/standard/VoilierDeSoieTemplate';
 
 interface OrderDataFormPageProps {
   initialTemplate?: InvitationItem | null;
@@ -44,7 +61,19 @@ interface OrderDataFormPageProps {
 }
 
 const ADMIN_PHONE = '6283850714456';
-const ORDERABLE_TEMPLATES: InvitationItem[] = [...STANDARD_TEMPLATES, ...TEMPLATES];
+const ORDERABLE_TEMPLATES: InvitationItem[] = STANDARD_TEMPLATES;
+
+const STANDARD_COMPONENTS_MAP: Record<string, React.FC<any>> = {
+  'standar-royal-classic': RoyalClassicTemplate,
+  'standar-jurnal-pesisir': JurnalPesisirTemplate,
+  'standar-langit-porselen': LangitPorselenTemplate,
+  'standar-eclipse-amour': LEclipseDamourTemplate,
+  'standar-simpul-sutra': SimpulSutraTemplate,
+  'standar-serenade-camelia': SerenadeCameliaTemplate,
+  'standar-grand-pelaminan': GrandPelaminanTemplate,
+  'standar-timeless-botanical': TimelessBotanicalTemplate,
+  'standar-voilier-de-soie': VoilierDeSoieTemplate,
+};
 
 function formatEventDate(dateValue: string): string {
   if (!dateValue) return '';
@@ -69,21 +98,24 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   initialTemplate,
   onBackToLanding,
 }) => {
-  const defaultTemplate = initialTemplate || STANDARD_TEMPLATES[0] || TEMPLATES[0];
+  // Auth state
+  const { user, signIn, signUp, signOut } = useAuth();
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  // Default to a standard template
+  const defaultTemplate = useMemo(() => {
+    if (initialTemplate && STANDARD_TEMPLATES.some((t) => t.id === initialTemplate.id)) {
+      return initialTemplate;
+    }
+    return STANDARD_TEMPLATES[0];
+  }, [initialTemplate]);
+
   const [templateId, setTemplateId] = useState<string>(defaultTemplate.id);
-
-  const isInitialStandard = Boolean(
-    defaultTemplate.id.startsWith('standar-') ||
-    STANDARD_TEMPLATES.some((item) => item.id === defaultTemplate.id)
-  );
-
-  // Paket Layanan & Mode Visual
-  const [packageTier, setPackageTier] = useState<'standar' | 'essential' | 'editorial'>(
-    isInitialStandard ? 'standar' : 'editorial'
-  );
-  const [catalogCategoryFilter, setCatalogCategoryFilter] = useState<'standard' | 'editorial'>(
-    isInitialStandard ? 'standard' : 'editorial'
-  );
   const [designMode, setDesignMode] = useState<'with_photos' | 'typography_pure'>('with_photos');
 
   // Data Pemesan & Mempelai
@@ -119,9 +151,15 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   const [accountHolder, setAccountHolder] = useState('');
   const [notes, setNotes] = useState('');
 
-  // Pilihan Musik Awal: 'theme' (bawaan tema) | 'catalog' (katalog Sekarsiti)
-  // Musik kustom sendiri akan diunggah oleh klien di Portal Mempelai setelah undangan jadi
-  const [musicChoice, setMusicChoice] = useState<'theme' | 'catalog'>('theme');
+  // Musik: 'catalog' (katalog Sekarsiti) | 'custom' (1 slot upload kustom)
+  const [musicChoice, setMusicChoice] = useState<'catalog' | 'custom'>('catalog');
+  const [customAudioUrl, setCustomAudioUrl] = useState('');
+  const [customAudioTitle, setCustomAudioTitle] = useState('');
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [audioUploadError, setAudioUploadError] = useState<string | null>(null);
+  const [isPlayingCustomAudio, setIsPlayingCustomAudio] = useState(false);
+  const customAudioPlayerRef = useRef<HTMLAudioElement | null>(null);
+
   const [catalogTracks, setCatalogTracks] = useState<MusicTrack[]>([]);
   const [selectedCatalogTrack, setSelectedCatalogTrack] = useState<MusicTrack | null>(null);
   const [playingCatalogId, setPlayingCatalogId] = useState<string | null>(null);
@@ -135,32 +173,22 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   const [uploadProgressText, setUploadProgressText] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  // Live Preview State
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<ClientInvitationData | null>(null);
+
   // Status Submit & Pembayaran Gateway
   const [submittedOrder, setSubmittedOrder] = useState<ClientInvitationData | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaidSettled, setIsPaidSettled] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const isStandardTemplate = useMemo(() => {
-    return (
-      STANDARD_TEMPLATES.some((item) => item.id === templateId) ||
-      templateId.startsWith('standar-') ||
-      packageTier === 'standar'
-    );
-  }, [templateId, packageTier]);
-
-  const handleSelectTemplate = (id: string) => {
-    setTemplateId(id);
-    const isStd = STANDARD_TEMPLATES.some((item) => item.id === id) || id.startsWith('standar-');
-    if (isStd) {
-      setPackageTier('standar');
-      setCatalogCategoryFilter('standard');
-    } else if (packageTier === 'standar') {
-      setPackageTier('editorial');
-      setCatalogCategoryFilter('editorial');
+  // Sync logged in email
+  useEffect(() => {
+    if (user?.email && !clientEmail) {
+      setClientEmail(user.email);
     }
-  };
+  }, [user, clientEmail]);
 
   const selectedTemplate = useMemo(
     () => ORDERABLE_TEMPLATES.find((item) => item.id === templateId) || ORDERABLE_TEMPLATES[0],
@@ -168,27 +196,38 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
   );
 
   const activeTemplateDef = useMemo(
-    () => TEMPLATE_REGISTRY[templateId as TemplateId] || TEMPLATE_REGISTRY['ruang-rasa'],
+    () => TEMPLATE_REGISTRY[templateId as TemplateId] || TEMPLATE_REGISTRY['standar-royal-classic'] || TEMPLATE_REGISTRY['ruang-rasa'],
     [templateId]
   );
 
-  const finalPrice = useMemo(() => {
-    if (isStandardTemplate || packageTier === 'standar') {
-      return selectedTemplate.price || 49000;
-    }
-    if (packageTier === 'editorial') {
-      return selectedTemplate.price || 199000;
-    }
-    return 99000;
-  }, [isStandardTemplate, packageTier, selectedTemplate]);
+  const finalPrice = 49000;
+  const formattedPrice = 'Rp49.000';
 
-  const formattedPrice = new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(finalPrice);
+  // Auth Submit Handler
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setAuthLoading(true);
 
-  // Upload handler langsung ke Cloudinary
+    try {
+      if (authMode === 'login') {
+        const { error } = await signIn(authEmail.trim(), authPassword);
+        if (error) throw error;
+      } else {
+        if (!authName.trim()) {
+          throw new Error('Mohon isi nama lengkap calon pengantin.');
+        }
+        const { error } = await signUp(authEmail.trim(), authPassword, authName.trim());
+        if (error) throw error;
+      }
+    } catch (err: any) {
+      setAuthError(err?.message || 'Otentikasi gagal. Silakan periksa kembali email dan kata sandi Anda.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // Upload Foto Prewedding langsung ke Cloudinary
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -208,7 +247,6 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
           const cloudUrl = await uploadToCloudinary(file);
           newUrls.push(cloudUrl);
         } else {
-          // Fallback FileReader base64 jika offline/dev
           const base64 = await new Promise<string>((resolve) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
@@ -229,16 +267,81 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     }
   };
 
+  // Hapus foto prewedding dan picu hapus dari Cloudinary jika ada
   const handleRemovePhoto = (idx: number) => {
+    const urlToRemove = uploadedPhotos[idx];
+    if (urlToRemove) {
+      deleteFromCloudinary(urlToRemove);
+    }
     setUploadedPhotos((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // Fetch katalog musik resmi Sekarsiti untuk pilihan di form
+  // Upload Musik Kustom (1 slot) ke Cloudinary
+  const handleCustomAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAudioUploadError(null);
+    setIsUploadingAudio(true);
+
+    try {
+      // Hapus file lama di Cloudinary jika sudah pernah upload sebelumnya
+      if (customAudioUrl) {
+        deleteFromCloudinary(customAudioUrl);
+      }
+
+      const uploadedUrl = await uploadMusicToCloudinary(file);
+      const cleanTitle = file.name.replace(/\.[^/.]+$/, '');
+      setCustomAudioUrl(uploadedUrl);
+      setCustomAudioTitle(cleanTitle);
+      setMusicChoice('custom');
+    } catch (err: any) {
+      console.error('Upload audio gagal:', err);
+      setAudioUploadError(err.message || 'Gagal mengunggah file musik.');
+    } finally {
+      setIsUploadingAudio(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveCustomAudio = () => {
+    if (customAudioUrl) {
+      deleteFromCloudinary(customAudioUrl);
+    }
+    setCustomAudioUrl('');
+    setCustomAudioTitle('');
+    setIsPlayingCustomAudio(false);
+    customAudioPlayerRef.current?.pause();
+  };
+
+  const handleTogglePlayCustomAudio = () => {
+    if (!customAudioUrl) return;
+    if (isPlayingCustomAudio) {
+      customAudioPlayerRef.current?.pause();
+      setIsPlayingCustomAudio(false);
+    } else {
+      if (!customAudioPlayerRef.current) {
+        customAudioPlayerRef.current = new Audio(customAudioUrl);
+      } else {
+        customAudioPlayerRef.current.src = customAudioUrl;
+      }
+      customAudioPlayerRef.current
+        .play()
+        .then(() => setIsPlayingCustomAudio(true))
+        .catch(() => {});
+      customAudioPlayerRef.current.onended = () => setIsPlayingCustomAudio(false);
+    }
+  };
+
+  // Fetch katalog musik resmi Sekarsiti
   useEffect(() => {
     setIsLoadingCatalog(true);
     fetchMusicTracks()
       .then((data) => {
         setCatalogTracks(data || []);
+        if (data && data.length > 0 && !selectedCatalogTrack) {
+          setSelectedCatalogTrack(data[0]);
+        }
       })
       .catch((err) => {
         console.warn('Gagal memuat katalog musik di form:', err);
@@ -250,6 +353,8 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     return () => {
       audioPreviewRef.current?.pause();
       audioPreviewRef.current = null;
+      customAudioPlayerRef.current?.pause();
+      customAudioPlayerRef.current = null;
     };
   }, []);
 
@@ -276,21 +381,41 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  const handleProcessOrder = async (withMidtrans: boolean) => {
-    setIsSubmitting(true);
+  // BUKA LIVE PREVIEW SEBELUM BAYAR
+  const handleOpenLivePreview = (e: React.FormEvent) => {
+    e.preventDefault();
 
-    const displayClientName =
-      clientName.trim() || `${brideName || 'Mempelai'} & ${groomName || 'Pasangan'}`;
+    if (!clientName.trim()) {
+      alert('Mohon cantumkan nama pemesan.');
+      return;
+    }
+    if (!clientPhone.trim()) {
+      alert('Mohon cantumkan nomor WhatsApp aktif.');
+      return;
+    }
+    if (!brideName.trim() || !groomName.trim()) {
+      alert('Mohon cantumkan nama panggilan kedua mempelai.');
+      return;
+    }
+    if (!eventDate) {
+      alert('Mohon tentukan tanggal perayaan utama.');
+      return;
+    }
+    if (!city.trim()) {
+      alert('Mohon cantumkan kota / wilayah perayaan.');
+      return;
+    }
+
+    const displayClientName = clientName.trim() || `${brideName.trim()} & ${groomName.trim()}`;
     const eventDateFormatted = formatEventDate(eventDate);
-    const countdownIsoDate = eventDate ? `${eventDate}T08:00:00` : undefined;
+    const countdownIsoDate = eventDate ? `${eventDate}T08:00:00` : `${new Date().toISOString().slice(0, 10)}T08:00:00`;
 
-    // Distribusikan aset cerdas ke slot template
     const rawMediaCandidate = {
       heroImage: uploadedPhotos[0] || '',
       bridePortrait: uploadedPhotos[1] || '',
       groomPortrait: uploadedPhotos[2] || '',
       galleryImages: uploadedPhotos,
-      gdriveFolderUrl: gdriveLink.trim() || undefined
+      gdriveFolderUrl: gdriveLink.trim() || undefined,
     };
 
     const { placedMedia } = smartPlaceAssets(
@@ -299,24 +424,29 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
       uploadedPhotos
     );
 
-    // Tentukan musik awal: pilihan katalog Sekarsiti atau bawaan tema (lagu kustom sendiri nanti diunggah di Portal Mempelai)
-    let finalSongTitle = activeTemplateDef.defaultData?.songTitle || 'Instrumen Pernikahan Romantis';
-    let finalAudioUrl = activeTemplateDef.defaultData?.audioUrl || '';
-    let musicSummary = `Bawaan Tema (${selectedTemplate.title})`;
+    let finalSongTitle = 'Instrumen Pernikahan Romantis';
+    let finalAudioUrl = activeTemplateDef?.defaultData?.audioUrl || '';
 
-    if (musicChoice === 'catalog' && selectedCatalogTrack) {
+    if (musicChoice === 'custom' && customAudioUrl) {
+      finalSongTitle = customAudioTitle || 'Lagu Pilihan Mempelai';
+      finalAudioUrl = customAudioUrl;
+    } else if (musicChoice === 'catalog' && selectedCatalogTrack) {
       finalSongTitle = `${selectedCatalogTrack.title} - ${selectedCatalogTrack.artist}`;
       finalAudioUrl = selectedCatalogTrack.audio_url;
-      musicSummary = `Katalog Sekarsiti (${finalSongTitle})`;
     }
 
-    const newOrder = AdminStore.create({
+    const compiledData: ClientInvitationData = {
+      id: `draft-${Date.now()}`,
       clientName: displayClientName,
-      clientPhone,
-      clientEmail,
+      clientPhone: clientPhone.trim(),
+      clientEmail: user?.email || clientEmail.trim(),
       templateId: templateId as TemplateId,
-      status: 'pending',
-      packageTier: isStandardTemplate || packageTier === 'standar' ? 'standar' : packageTier,
+      status: 'published', // set published agar seluruh fitur template tampil di live preview
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      quoteText: 'Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya.',
+      quoteSource: 'QS. Ar-Rum: 21',
+      packageTier: 'standar',
       designMode,
       paymentStatus: 'unpaid',
       slug: buildSlug(brideName, groomName),
@@ -345,103 +475,286 @@ export const OrderDataFormPage: React.FC<OrderDataFormPageProps> = ({
         heroImage: placedMedia.heroImage || uploadedPhotos[0] || '',
         bridePortrait: placedMedia.bridePortrait || uploadedPhotos[1] || '',
         groomPortrait: placedMedia.groomPortrait || uploadedPhotos[2] || '',
-        galleryImages: placedMedia.galleryImages?.length > 0 ? placedMedia.galleryImages : uploadedPhotos
-      }
-    });
-
-    setSubmittedOrder(newOrder);
-
-    const openWhatsAppDirect = () => {
-      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ssiti.tech';
-      const previewUrl = `${origin}/?client=${encodeURIComponent(newOrder.slug || newOrder.id)}`;
-      const tierName = isStandardTemplate || packageTier === 'standar'
-        ? 'Paket Seri Standar (Aktivasi Otomatis)'
-        : packageTier === 'essential'
-        ? 'Seri Esensial Editorial'
-        : 'Seri Editorial Signature';
-      const modeName = designMode === 'typography_pure' ? 'Mode Tipografi & Ornamen (Tanpa Foto Prewed)' : 'Dengan Foto Prewedding';
-
-      const message = `Halo Sekarsiti Studio, saya sudah mengirim formulir data pesanan undangan digital:
-
-• *ID Pemesanan:* ${newOrder.id}
-• *Paket Layanan:* ${tierName}
-• *Mode Visual:* ${modeName}
-• *Template:* ${selectedTemplate.title} (${selectedTemplate.styleLabel})
-• *Nama Pemesan:* ${displayClientName}
-• *WhatsApp:* ${clientPhone || '-'}
-• *Mempelai:* ${brideName} & ${groomName}
-• *Tanggal Acara:* ${eventDateFormatted || '-'}
-• *Kota / Lokasi:* ${city ? `${city} · ` : ''}${resepsiVenue || '-'}${referralCode ? `\n• *Kode Referral:* ${referralCode}` : ''}
-• *Musik Latar:* ${musicSummary}
-• *Jumlah Foto Diunggah:* ${uploadedPhotos.length} foto${gdriveLink ? `\n• *Link Google Drive:* ${gdriveLink}` : ''}
-${notes ? `• *Catatan Tambahan:* ${notes}\n` : ''}
-Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
-
-      window.open(
-        `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`,
-        '_blank',
-        'noopener,noreferrer'
-      );
+        galleryImages: placedMedia.galleryImages?.length > 0 ? placedMedia.galleryImages : uploadedPhotos,
+      },
     };
 
-    if (withMidtrans && isMidtransConfigured()) {
-      setIsProcessingPayment(true);
-      try {
-        await triggerMidtransCheckout(
-          {
-            orderId: newOrder.id,
-            grossAmount: finalPrice,
-            clientName: displayClientName,
-            clientEmail: clientEmail.trim() || undefined,
-            clientPhone: clientPhone.trim() || undefined,
-            templateTitle: `${isStandardTemplate || packageTier === 'standar' ? 'Seri Standar' : (packageTier === 'editorial' ? 'Seri Editorial' : 'Seri Esensial')} - ${selectedTemplate.title}`,
+    setPreviewData(compiledData);
+    setIsPreviewOpen(true);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  // LANJUT BAYAR DARI DALAM LIVE PREVIEW
+  const handleProceedToPayment = async (dataToPay: ClientInvitationData) => {
+    setIsProcessingPayment(true);
+
+    const newOrder = AdminStore.create({
+      ...dataToPay,
+      status: 'pending',
+    });
+
+    try {
+      await triggerMidtransCheckout(
+        {
+          orderId: newOrder.id,
+          grossAmount: 49000,
+          clientName: newOrder.clientName,
+          clientEmail: newOrder.clientEmail || user?.email || undefined,
+          clientPhone: newOrder.clientPhone || undefined,
+          templateTitle: `Seri Standar - ${selectedTemplate.title}`,
+        },
+        {
+          onSuccess: (_result) => {
+            const paidOrder = AdminStore.markAsPaidAndPublished(newOrder.id);
+            setSubmittedOrder(paidOrder);
+            setIsPaidSettled(true);
+            setIsPreviewOpen(false);
+            setIsProcessingPayment(false);
+            window.scrollTo({ top: 0, behavior: 'instant' });
           },
-          {
-            onSuccess: (result) => {
-              const paidOrder = AdminStore.markAsPaidAndPublished(newOrder.id);
-              setSubmittedOrder(paidOrder);
-              setIsPaidSettled(true);
-              setIsProcessingPayment(false);
-              setIsSubmitting(false);
-            },
-            onPending: (result) => {
-              setIsProcessingPayment(false);
-              setIsSubmitting(false);
-            },
-            onError: (err) => {
-              console.error('Midtrans payment error:', err);
-              setIsProcessingPayment(false);
-              setIsSubmitting(false);
-              openWhatsAppDirect();
-            },
-            onClose: () => {
-              setIsProcessingPayment(false);
-              setIsSubmitting(false);
-            }
-          }
-        );
-      } catch (err) {
-        console.error('Midtrans checkout error:', err);
-        setIsProcessingPayment(false);
-        setIsSubmitting(false);
-        openWhatsAppDirect();
-      }
-    } else {
-      setIsSubmitting(false);
-      openWhatsAppDirect();
+          onPending: (_result) => {
+            setIsProcessingPayment(false);
+          },
+          onError: (err) => {
+            console.error('Midtrans payment error:', err);
+            setIsProcessingPayment(false);
+            alert('Pembayaran belum berhasil atau dibatalkan. Silakan coba kembali.');
+          },
+          onClose: () => {
+            setIsProcessingPayment(false);
+          },
+        }
+      );
+    } catch (err: any) {
+      console.error('Midtrans checkout error:', err);
+      setIsProcessingPayment(false);
+      alert('Tidak dapat memproses gateway pembayaran: ' + (err.message || 'Coba lagi.'));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleProcessOrder(isMidtransConfigured());
-  };
+  // Selected Template Component for Live Preview
+  const SelectedTemplateComponent = STANDARD_COMPONENTS_MAP[templateId] || RoyalClassicTemplate;
 
+  // 1. GERBANG LOGIN / OTENTIKASI JIKA BELUM LOGIN
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#FAF9F6] text-[#2C2E28] flex flex-col justify-between selection:bg-[#E8E5DF]">
+        <header className="border-b border-[#EBE6DD] bg-white/90 backdrop-blur-md sticky top-0 z-40">
+          <div className="max-w-4xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={onBackToLanding}
+              className="inline-flex items-center gap-2 text-xs font-semibold text-[#414A35] hover:text-[#2C2E28] cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Kembali ke Beranda</span>
+            </button>
+            <span className="font-['Fraunces',serif] text-base text-[#414A35] font-semibold">sekarsiti</span>
+          </div>
+        </header>
+
+        <main className="max-w-md mx-auto w-full px-5 py-12 flex-1 flex flex-col justify-center">
+          <div className="bg-white border border-[#EBE6DD] rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="text-center space-y-2">
+              <div className="inline-flex p-3 rounded-2xl bg-[#FAF8F3] border border-[#EBE6DD] text-[#414A35] mb-1">
+                <Lock className="w-6 h-6 text-[#C5A880]" />
+              </div>
+              <h1 className="text-2xl font-serif font-normal text-[#2C2E28]">
+                {authMode === 'login' ? 'Masuk ke Akun Mempelai' : 'Daftar Akun Mempelai'}
+              </h1>
+              <p className="text-xs text-stone-600 leading-relaxed max-w-xs mx-auto">
+                Untuk menjaga keamanan data pernikahan Anda dan mencegah pengiriman data spam, silakan masuk atau daftarkan akun terlebih dahulu sebelum mengisi formulir.
+              </p>
+            </div>
+
+            {/* Tab Toggle */}
+            <div className="flex p-1 bg-stone-100 rounded-xl text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('login');
+                  setAuthError(null);
+                }}
+                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
+                  authMode === 'login'
+                    ? 'bg-white text-[#2C2E28] shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                }`}
+              >
+                Masuk (Login)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthError(null);
+                }}
+                className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
+                  authMode === 'register'
+                    ? 'bg-white text-[#2C2E28] shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                }`}
+              >
+                Daftar Akun Baru
+              </button>
+            </div>
+
+            {authError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs">
+                {authError}
+              </div>
+            )}
+
+            <form onSubmit={handleAuthSubmit} className="space-y-4 text-left">
+              {authMode === 'register' && (
+                <div>
+                  <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                    Nama Lengkap Calon Pengantin <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <UserIcon className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      required
+                      value={authName}
+                      onChange={(e) => setAuthName(e.target.value)}
+                      placeholder="Contoh: Kirana & Adhitya"
+                      className="w-full text-xs pl-9 p-2.5 rounded-xl border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                  Alamat Email Aktif <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
+                  <input
+                    type="email"
+                    required
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    placeholder="nama@gmail.com"
+                    className="w-full text-xs pl-9 p-2.5 rounded-xl border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#414A35] mb-1">
+                  Kata Sandi <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    placeholder="Minimal 6 karakter"
+                    className="w-full text-xs pl-9 p-2.5 rounded-xl border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={authLoading}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-[#414A35] hover:bg-[#343B2A] text-white rounded-xl text-xs font-semibold shadow-md transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+              >
+                {authLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>{authMode === 'login' ? 'Masuk & Lanjutkan Pemesanan' : 'Daftar & Lanjutkan Pemesanan'}</span>
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="pt-2 text-center">
+              <span className="text-[11px] text-stone-500">
+                Data Anda terlindungi &middot; Bebas spam 100%
+              </span>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // 2. TAMPILAN FULLSCREEN LIVE PREVIEW (SEBELUM BAYAR)
+  if (isPreviewOpen && previewData) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-[#FAF9F6] flex flex-col h-screen w-screen overflow-hidden">
+        {/* Top Floating Control Bar */}
+        <header className="bg-[#181816] text-[#FAF8F5] px-4 sm:px-6 py-3 border-b border-white/10 flex items-center justify-between gap-3 shadow-xl shrink-0 z-50">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setIsPreviewOpen(false)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-colors cursor-pointer shrink-0"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Ubah Data Formulir</span>
+            </button>
+            <div className="truncate hidden sm:block">
+              <p className="text-xs font-bold leading-tight truncate">
+                Pratinjau: {previewData.brideName} &amp; {previewData.groomName}
+              </p>
+              <p className="text-[10px] text-stone-400 truncate">
+                {selectedTemplate.title} &middot; Seri Standar Rp49.000
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="hidden md:inline-block text-[11px] text-emerald-400 font-medium">
+              ✓ Cek tampilan undangan Anda di bawah ini
+            </span>
+            <button
+              type="button"
+              disabled={isProcessingPayment}
+              onClick={() => handleProceedToPayment(previewData)}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#C5A880] hover:bg-[#d4b993] text-[#181816] text-xs font-bold shadow-lg transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
+            >
+              {isProcessingPayment ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-[#181816]" />
+                  <span>Menyiapkan Pembayaran...</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4 text-[#181816]" />
+                  <span>Lanjut Bayar &amp; Aktifkan (Rp49.000)</span>
+                </>
+              )}
+            </button>
+          </div>
+        </header>
+
+        {/* Live Template Frame */}
+        <div className="flex-1 w-full h-full relative overflow-hidden bg-[#EDE9E0]">
+          <SelectedTemplateComponent
+            customData={previewData}
+            onBackToLanding={() => setIsPreviewOpen(false)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // 3. FORMULIR PEMESANAN RESMI (SERI STANDAR)
   return (
-    <div className="min-h-screen bg-[#F7F5EF] text-[#2C2E28] font-sans text-left">
-      {/* Top Navbar */}
-      <header className="px-5 sm:px-8 py-4 border-b border-[#EBE6DD] bg-white/80 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#2C2E28] flex flex-col justify-between selection:bg-[#E8E5DF]">
+      <header className="border-b border-[#EBE6DD] bg-white/90 backdrop-blur-md sticky top-0 z-40">
+        <div className="max-w-4xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           <button
             type="button"
             onClick={onBackToLanding}
@@ -454,40 +767,46 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+      <main className="max-w-4xl mx-auto px-5 sm:px-8 py-8 sm:py-12 flex-1">
         <div className="space-y-8">
-          {/* Hero Banner */}
-          <div className="space-y-2">
-            <span className="text-xs uppercase tracking-widest font-semibold text-[#7A8B74] block">
-              Formulir Pemesanan Resmi
-            </span>
+          {/* Header Banner & User Badge */}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs uppercase tracking-widest font-semibold text-[#7A8B74] block">
+                Formulir Pemesanan Mandiri &middot; Seri Standar Rp49.000
+              </span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>Akun Mempelai: <strong>{user?.email}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => signOut()}
+                  className="text-stone-500 hover:text-stone-900 underline ml-1 cursor-pointer"
+                >
+                  Keluar
+                </button>
+              </div>
+            </div>
+
             <h1 className="text-3xl sm:text-4xl font-serif font-normal text-[#2C2E28]">
-              Lengkapi Data &amp; Aset Undangan
+              Lengkapi Data Undangan Anda
             </h1>
             <p className="text-xs sm:text-sm text-stone-600 max-w-xl leading-relaxed">
-              Silakan lengkapi formulir berikut. Data dan foto yang Anda kirimkan akan otomatis masuk ke sistem kami untuk disusun menjadi draf undangan yang rapi dan estetis.
+              Isi data acara pernikahan Anda di bawah ini. Setelah selesai, Anda dapat langsung melihat <strong>Pratinjau Nyata (Live Preview)</strong> hasil undangan sebelum melakukan pembayaran otomatis.
             </p>
           </div>
 
           {/* Success & Celebration Banner */}
           {submittedOrder && (
-            <div className={`p-5 sm:p-6 rounded-2xl border space-y-4 shadow-sm animate-fade-in ${
-              isPaidSettled || submittedOrder.status === 'published'
-                ? 'bg-gradient-to-br from-emerald-50 via-teal-50/40 to-emerald-50 border-emerald-300 text-emerald-950'
-                : 'bg-amber-50/90 border-amber-300 text-amber-950'
-            }`}>
+            <div className="p-5 sm:p-6 rounded-2xl border space-y-4 shadow-sm bg-gradient-to-br from-emerald-50 via-teal-50/40 to-emerald-50 border-emerald-300 text-emerald-950">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <h3 className="font-bold text-sm sm:text-base">
-                    {isPaidSettled || submittedOrder.status === 'published'
-                      ? 'Pembayaran Terverifikasi & Undangan Aktif Seketika! 🎉'
-                      : 'Data Berhasil Terkirim & Draf Siap Ditinjau!'}
+                    Pembayaran Terverifikasi &amp; Undangan Aktif Seketika! 🎉
                   </h3>
                   <p className="text-xs text-stone-700 leading-relaxed">
-                    {isPaidSettled || submittedOrder.status === 'published'
-                      ? `Selamat! Undangan digital Anda (${submittedOrder.clientName}) kini telah resmi aktif dan siap disebarkan ke para tamu.`
-                      : `Pesanan Anda dengan nomor draf ${submittedOrder.id} telah tercatat di sistem kami. Tim kurator Sekarsiti akan segera meninjau pesanan Anda.`}
+                    Selamat! Undangan digital Anda ({submittedOrder.clientName}) kini telah resmi aktif dan siap disebarkan ke para tamu.
                   </p>
                 </div>
               </div>
@@ -553,93 +872,62 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* STEP 1: PILIH PAKET LAYANAN & DESAIN TEMA */}
+          <form onSubmit={handleOpenLivePreview} className="space-y-6">
+            {/* STEP 1: PILIH TEMA DESAIN SERI STANDAR */}
             <div className="bg-white border border-[#EBE6DD] rounded-2xl p-5 sm:p-7 shadow-xs space-y-6">
-              <div className="flex items-center gap-2 border-b border-[#F2EFE8] pb-3">
-                <Sparkles className="w-4 h-4 text-[#C5A880]" />
-                <h2 className="text-sm font-bold text-[#2C2E28]">1. Pilihan Paket Layanan &amp; Desain Tema</h2>
+              <div className="flex items-center justify-between border-b border-[#F2EFE8] pb-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#C5A880]" />
+                  <h2 className="text-sm font-bold text-[#2C2E28]">1. Pilihan Desain Tema Seri Standar</h2>
+                </div>
+                <span className="text-xs font-bold text-[#414A35] bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                  Investasi: Rp49.000
+                </span>
               </div>
 
-              {/* 1A: PILIHAN TINGKAT LAYANAN */}
+              {/* 1A: PILIH TEMPLATE DARI 9 SERI STANDAR */}
               <div>
                 <label className="block text-xs font-semibold text-[#414A35] mb-2">
-                  Tingkat Layanan
+                  Pilih Tema Desain (9 Pilihan Tersedia)
                 </label>
-                {isStandardTemplate ? (
-                  <div className="p-4 sm:p-5 rounded-xl border-2 border-[#414A35] bg-[#FAF8F3] shadow-xs space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-[#C5A880]" />
-                        <span className="text-xs sm:text-sm font-bold text-[#2C2E28]">
-                          Paket Seri Standar &mdash; Aktivasi Mandiri Otomatis
-                        </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {ORDERABLE_TEMPLATES.map((item) => {
+                    const isSelected = templateId === item.id;
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => setTemplateId(item.id)}
+                        className={`p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                          isSelected
+                            ? 'border-[#414A35] bg-[#F7F5EF] shadow-xs ring-2 ring-[#414A35]/15'
+                            : 'border-stone-200 hover:border-stone-300 bg-white'
+                        }`}
+                      >
+                        <div className="aspect-[16/10] rounded-lg overflow-hidden mb-2 bg-stone-100 relative">
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 bg-[#414A35] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
+                              Terpilih ✓
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="min-w-0 pr-2">
+                            <p className="font-bold text-xs text-[#2C2E28] truncate">{item.title}</p>
+                            <p className="text-[10px] text-stone-500 truncate">{item.styleLabel}</p>
+                          </div>
+                          <span className="text-[11px] font-bold text-[#414A35] shrink-0">
+                            Rp49.000
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-[10px] sm:text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
-                        Aktivasi Instan &bull; Siap Sebar Hari Ini
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-stone-600 leading-relaxed">
-                      Pemesanan 100% mandiri dan otomatis. Anda cukup melengkapi formulir data acara di bawah, menyelesaikan pembayaran instan via QRIS / Virtual Account Midtrans (Rp{finalPrice.toLocaleString('id-ID')}), dan undangan Anda langsung terbit aktif seketika tanpa perlu menunggu konfirmasi admin WhatsApp! Akses penuh Portal Klien langsung diberikan untuk mengelola buku tamu, RSVP, rekening amplop, dan musik.
-                    </p>
-                    <div className="flex items-baseline justify-between pt-2 border-t border-stone-200/80">
-                      <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Biaya Investasi Standar</span>
-                      <span className="text-base sm:text-lg font-bold text-[#414A35]">Rp{finalPrice.toLocaleString('id-ID')}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Card Seri Esensial Editorial */}
-                    <div
-                      onClick={() => setPackageTier('essential')}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        packageTier === 'essential'
-                          ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
-                          : 'border-stone-200 hover:border-stone-300 bg-white'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-xs font-bold text-[#2C2E28]">Seri Esensial Editorial</span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                          Aktivasi Instan &amp; Mandiri
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-stone-600 leading-relaxed mb-3">
-                        Solusi praktis &amp; mandiri. Data diisi mandiri, bayar instan via QRIS/VA Midtrans, langsung aktif seketika dengan Portal Mempelai.
-                      </p>
-                      <div className="flex items-baseline justify-between pt-2 border-t border-stone-200/60">
-                        <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Biaya Investasi</span>
-                        <span className="text-sm font-bold text-[#414A35]">Rp99.000</span>
-                      </div>
-                    </div>
-
-                    {/* Card Seri Editorial Signature */}
-                    <div
-                      onClick={() => setPackageTier('editorial')}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        packageTier === 'editorial'
-                          ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
-                          : 'border-stone-200 hover:border-stone-300 bg-white'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-xs font-bold text-[#2C2E28]">Seri Editorial Signature</span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C5A880]/30 text-[#846741]">
-                          Kurasi &amp; Pendampingan Penuh
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-stone-600 leading-relaxed mb-3">
-                        Didampingi desainer Sekarsiti, konsultasi palet warna &amp; tipografi kustom, revisi fleksibel, dan fitur WA blast massal.
-                      </p>
-                      <div className="flex items-baseline justify-between pt-2 border-t border-stone-200/60">
-                        <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Biaya Investasi</span>
-                        <span className="text-sm font-bold text-[#414A35]">
-                          Rp{selectedTemplate.price.toLocaleString('id-ID')}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    );
+                  })}
+                </div>
               </div>
 
               {/* 1B: PILIHAN MODE VISUAL (DENGAN FOTO VS TANPA FOTO) */}
@@ -685,96 +973,6 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                   </div>
                 </div>
               </div>
-
-              {/* 1C: PILIH TEMPLATE */}
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                  <label className="block text-xs font-semibold text-[#414A35]">
-                    Pilih Tema Desain Undangan
-                  </label>
-                  <div className="inline-flex p-1 bg-stone-100 rounded-lg text-xs self-start sm:self-auto border border-stone-200/60">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCatalogCategoryFilter('standard');
-                        if (!isStandardTemplate) {
-                          handleSelectTemplate(STANDARD_TEMPLATES[0].id);
-                        }
-                      }}
-                      className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                        catalogCategoryFilter === 'standard'
-                          ? 'bg-white text-[#2C2E28] shadow-xs'
-                          : 'text-stone-500 hover:text-stone-800'
-                      }`}
-                    >
-                      Koleksi Seri Standar (Rp49.000)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCatalogCategoryFilter('editorial');
-                        if (isStandardTemplate) {
-                          handleSelectTemplate(TEMPLATES[0].id);
-                        }
-                      }}
-                      className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                        catalogCategoryFilter === 'editorial'
-                          ? 'bg-white text-[#2C2E28] shadow-xs'
-                          : 'text-stone-500 hover:text-stone-800'
-                      }`}
-                    >
-                      Koleksi Seri Editorial (Mulai Rp199.000)
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {(catalogCategoryFilter === 'standard' ? STANDARD_TEMPLATES : TEMPLATES).map((item) => {
-                    const isSelected = templateId === item.id;
-                    const itemIsStandard =
-                      STANDARD_TEMPLATES.some((s) => s.id === item.id) || item.id.startsWith('standar-');
-                    const displayedItemPrice = itemIsStandard
-                      ? item.price
-                      : packageTier === 'essential'
-                      ? 99000
-                      : item.price;
-
-                    return (
-                      <div
-                        key={item.id}
-                        onClick={() => handleSelectTemplate(item.id)}
-                        className={`p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                          isSelected
-                            ? 'border-[#414A35] bg-[#F7F5EF] shadow-xs ring-2 ring-[#414A35]/15'
-                            : 'border-stone-200 hover:border-stone-300 bg-white'
-                        }`}
-                      >
-                        <div className="aspect-[16/10] rounded-lg overflow-hidden mb-2 bg-stone-100 relative">
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-full h-full object-cover"
-                          />
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 bg-[#414A35] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
-                              Terpilih ✓
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="min-w-0 pr-2">
-                            <p className="font-bold text-xs text-[#2C2E28] truncate">{item.title}</p>
-                            <p className="text-[10px] text-stone-500 truncate">{item.styleLabel}</p>
-                          </div>
-                          <span className="text-[11px] font-bold text-[#414A35] shrink-0">
-                            Rp{displayedItemPrice.toLocaleString('id-ID')}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
 
             {/* STEP 2: DATA KONTAK & PEMESAN */}
@@ -815,14 +1013,13 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
 
                 <div>
                   <label className="block text-xs font-semibold text-[#414A35] mb-1">
-                    Alamat Email (Opsional)
+                    Alamat Email (Terkunci ke Akun)
                   </label>
                   <input
                     type="email"
-                    value={clientEmail}
-                    onChange={(e) => setClientEmail(e.target.value)}
-                    placeholder="email@anda.com"
-                    className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
+                    readOnly
+                    value={user?.email || clientEmail}
+                    className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-stone-50 font-mono text-stone-700 cursor-not-allowed"
                   />
                 </div>
 
@@ -1065,238 +1262,257 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                 </div>
               ) : (
                 <p className="text-xs text-stone-600">
-                  Unggah foto prewedding atau momen terbaik Anda (bebas jumlah, tanpa batasan). Foto yang diunggah akan otomatis dipetakan secara cerdas ke sampul utama, potret mempelai, dan galeri momen.
+                  Unggah foto prewedding atau momen terbaik Anda (bebas jumlah). Foto yang diunggah akan otomatis dipetakan secara cerdas ke sampul utama, potret mempelai, dan galeri momen.
                 </p>
               )}
 
-              {/* Upload Dropzone */}
-              <div className="border-2 border-dashed border-[#C5A880]/60 rounded-xl p-6 text-center bg-[#FAF8F5] space-y-3">
-                <div className="w-12 h-12 rounded-full bg-[#C5A880]/20 text-[#93754F] flex items-center justify-center mx-auto">
-                  {isUploadingFiles ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : (
-                    <Upload className="w-6 h-6" />
-                  )}
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold text-stone-800">
-                    {isUploadingFiles ? uploadProgressText : 'Pilih Foto dari Perangkat Anda'}
-                  </p>
-                  <p className="text-[11px] text-stone-500 mt-0.5">
-                    Mendukung JPG, PNG, WEBP (bisa pilih banyak foto sekaligus)
-                  </p>
-                </div>
-
-                <label className="inline-flex items-center gap-2 px-4 py-2 bg-[#414A35] hover:bg-[#343B2A] text-white rounded-lg text-xs font-medium cursor-pointer transition-colors shadow-xs">
-                  <span>Pilih File Foto</span>
+              {/* File Uploader */}
+              <div className="space-y-3">
+                <div className="border-2 border-dashed border-[#EBE6DD] hover:border-[#414A35] rounded-xl p-6 text-center transition-colors bg-[#FAF8F5] relative">
                   <input
                     type="file"
                     multiple
                     accept="image/*"
-                    disabled={isUploadingFiles}
                     onChange={handlePhotoUpload}
-                    className="hidden"
+                    disabled={isUploadingFiles}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                   />
-                </label>
-              </div>
-
-              {uploadError && (
-                <p className="text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200">
-                  {uploadError}
-                </p>
-              )}
-
-              {/* Thumbnail List */}
-              {uploadedPhotos.length > 0 && (
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center justify-between text-xs text-stone-600">
-                    <span className="font-semibold text-emerald-800">
-                      ✓ {uploadedPhotos.length} foto berhasil diunggah
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setUploadedPhotos([])}
-                      className="text-[11px] text-red-600 hover:underline cursor-pointer"
-                    >
-                      Kosongkan Semua
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
-                    {uploadedPhotos.map((url, idx) => (
-                      <div
-                        key={idx}
-                        className="relative aspect-square rounded-lg overflow-hidden border border-stone-200 bg-stone-100 group shadow-2xs"
-                      >
-                        <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
-                        <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1 rounded font-mono">
-                          #{idx + 1}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemovePhoto(idx)}
-                          className="absolute top-1 right-1 w-5 h-5 bg-red-600/90 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-xs"
-                          title="Hapus foto ini"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Tautan Alternatif Google Drive */}
-              <div className="pt-2 border-t border-stone-200">
-                <label className="block text-xs font-medium text-[#414A35] mb-1">
-                  Atau Cantumkan Link Folder Google Drive (Opsional):
-                </label>
-                <input
-                  type="url"
-                  value={gdriveLink}
-                  onChange={(e) => setGdriveLink(e.target.value)}
-                  placeholder="https://drive.google.com/drive/folders/..."
-                  className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
-                />
-                <span className="text-[10px] text-stone-400 block mt-1">
-                  Pastikan akses link di Google Drive disetel ke "Siapa saja yang memiliki tautan (Viewer)".
-                </span>
-              </div>
-            </div>
-
-            {/* STEP 6: AMPLOP DIGITAL & MUSIK */}
-            <div className="bg-white border border-[#EBE6DD] rounded-2xl p-5 sm:p-7 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 border-b border-[#F2EFE8] pb-3">
-                <CreditCard className="w-4 h-4 text-[#C5A880]" />
-                <h2 className="text-sm font-bold text-[#2C2E28]">6. Tanda Kasih &amp; Lagu Favorit</h2>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">Bank / Dompet Digital</label>
-                  <input
-                    type="text"
-                    value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
-                    placeholder="BCA / Mandiri / GoPay"
-                    className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">Nomor Rekening</label>
-                  <input
-                    type="text"
-                    value={accountNumber}
-                    onChange={(e) => setAccountNumber(e.target.value)}
-                    placeholder="Contoh: 1234567890"
-                    className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">Atas Nama Pemilik</label>
-                  <input
-                    type="text"
-                    value={accountHolder}
-                    onChange={(e) => setAccountHolder(e.target.value)}
-                    placeholder="Nama di buku tabungan"
-                    className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white"
-                  />
-                </div>
-              </div>
-
-              {/* Pengaturan Musik Pengiring Undangan */}
-              <div className="p-4 sm:p-5 bg-[#FAF8F5] border border-stone-200/80 rounded-2xl space-y-3.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Music className="w-4 h-4 text-[#C5A880]" />
-                    <span className="text-xs font-bold text-stone-800 uppercase tracking-wider">
-                      Musik Pengiring Undangan
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-stone-500 font-medium">Bisa diubah kapan saja</span>
-                </div>
-
-                <p className="text-xs text-stone-600 leading-relaxed">
-                  Pilih musik pengiring yang akan diputar otomatis saat tamu membuka undangan. Jika ada kendala mengunggah file sekarang, Anda bisa memilih musik katalog terlebih dahulu dan menggantinya nanti di Portal Mempelai.
-                </p>
-
-                {/* 2 Tab Mode Pemilihan Musik Awal */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setMusicChoice('theme')}
-                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      musicChoice === 'theme'
-                        ? 'border-[#414A35] bg-white shadow-xs text-stone-900 font-bold'
-                        : 'border-stone-200 bg-stone-50/60 hover:bg-white text-stone-600'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <Disc className={`w-3.5 h-3.5 ${musicChoice === 'theme' ? 'text-[#C5A880]' : 'text-stone-400'}`} />
-                      <span>1. Musik Bawaan Tema (Default)</span>
-                    </div>
-                    <p className="text-[10px] text-stone-400 font-normal mt-0.5 truncate">
-                      Tema {selectedTemplate.title} ({selectedTemplate.styleLabel})
+                  <div className="space-y-2 pointer-events-none">
+                    <Upload className="w-8 h-8 text-[#414A35] mx-auto opacity-70" />
+                    <p className="text-xs font-semibold text-[#2C2E28]">
+                      {isUploadingFiles ? uploadProgressText : 'Pilih atau Seret Foto ke Sini'}
                     </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setMusicChoice('catalog')}
-                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      musicChoice === 'catalog'
-                        ? 'border-[#414A35] bg-white shadow-xs text-stone-900 font-bold'
-                        : 'border-stone-200 bg-stone-50/60 hover:bg-white text-stone-600'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <Music className={`w-3.5 h-3.5 ${musicChoice === 'catalog' ? 'text-[#C5A880]' : 'text-stone-400'}`} />
-                      <span>2. Pilih dari Katalog Sekarsiti</span>
-                    </div>
-                    <p className="text-[10px] text-stone-400 font-normal mt-0.5 truncate">
-                      {selectedCatalogTrack ? selectedCatalogTrack.title : `${catalogTracks.length} Pilihan Lagu Tersedia`}
+                    <p className="text-[10px] text-stone-500">
+                      Mendukung format JPG, PNG, WebP. Foto dikompresi otomatis tanpa pecah.
                     </p>
-                  </button>
+                  </div>
                 </div>
 
-                {/* KONTEN TAB 1: BAWAAN TEMA */}
-                {musicChoice === 'theme' && (
-                  <div className="p-3 bg-white border border-stone-200 rounded-xl flex items-center justify-between text-xs animate-fade-in">
-                    <div>
-                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
-                        Musik Terpilih:
-                      </span>
-                      <p className="font-semibold text-stone-800 mt-0.5">
-                        Alunan Musik Tema {selectedTemplate.title} ({selectedTemplate.styleLabel})
-                      </p>
-                    </div>
-                    <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-semibold">
-                      Otomatis Terpasang
+                {uploadError && (
+                  <p className="text-xs text-red-600 font-medium">⚠️ {uploadError}</p>
+                )}
+
+                {/* Preview Thumbnail Grid */}
+                {uploadedPhotos.length > 0 && (
+                  <div className="space-y-2 pt-2">
+                    <span className="text-[11px] font-semibold text-stone-600 block">
+                      Foto Terunggah ({uploadedPhotos.length} foto):
                     </span>
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                      {uploadedPhotos.map((url, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group border border-stone-200 bg-stone-100">
+                          <img
+                            src={url}
+                            alt={`Upload ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePhoto(idx)}
+                            className="absolute top-1 right-1 p-1 bg-red-600 hover:bg-red-700 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-xs"
+                            title="Hapus foto"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
-                {/* KONTEN TAB 2: KATALOG RESMI SEKARSITI */}
-                {musicChoice === 'catalog' && (
-                  <div className="p-3 bg-white border border-stone-200 rounded-xl space-y-2 animate-fade-in">
-                    <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-                      <span className="text-[11px] font-bold text-stone-700">
-                        Pilih Lagu dari Pustaka Musik Resmi Sekarsiti:
-                      </span>
-                      <span className="text-[10px] text-stone-400">
-                        Klik tombol play untuk dengar
-                      </span>
+                {/* Opsi Tautan Google Drive */}
+                <div className="pt-2">
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                    Atau Cantumkan Tautan Google Drive (Jika foto berukuran sangat besar)
+                  </label>
+                  <input
+                    type="url"
+                    value={gdriveLink}
+                    onChange={(e) => setGdriveLink(e.target.value)}
+                    placeholder="https://drive.google.com/drive/folders/..."
+                    className="w-full text-xs p-2 rounded-lg border border-[#EBE6DD] bg-white focus:outline-none focus:border-[#414A35]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* STEP 6: AMPLOP DIGITAL & MUSIK PENGIRING */}
+            <div className="bg-white border border-[#EBE6DD] rounded-2xl p-5 sm:p-7 shadow-xs space-y-6">
+              <div className="flex items-center gap-2 border-b border-[#F2EFE8] pb-3">
+                <CreditCard className="w-4 h-4 text-[#C5A880]" />
+                <h2 className="text-sm font-bold text-[#2C2E28]">6. Rekening Amplop Digital &amp; Musik Pengiring</h2>
+              </div>
+
+              {/* Amplop Digital */}
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-[#414A35] uppercase tracking-wider">
+                  Rekening Amplop Digital (Hadiah Pernikahan)
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] text-stone-600 mb-1">Nama Bank / e-Wallet</label>
+                    <input
+                      type="text"
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      placeholder="BCA / Mandiri / GoPay"
+                      className="w-full text-xs p-2 rounded-lg border border-stone-200 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-stone-600 mb-1">Nomor Rekening / HP</label>
+                    <input
+                      type="text"
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value)}
+                      placeholder="Contoh: 1234567890"
+                      className="w-full text-xs p-2 rounded-lg border border-stone-200 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-stone-600 mb-1">Nama Pemilik Rekening</label>
+                    <input
+                      type="text"
+                      value={accountHolder}
+                      onChange={(e) => setAccountHolder(e.target.value)}
+                      placeholder="Nama di buku rekening"
+                      className="w-full text-xs p-2 rounded-lg border border-stone-200 bg-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Musik Pengiring Undangan (1 Slot Custom Audio vs Katalog Sekarsiti) */}
+              <div className="space-y-3 pt-3 border-t border-[#F2EFE8]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Music className="w-4 h-4 text-[#C5A880]" />
+                    <label className="text-xs font-bold text-[#414A35] uppercase tracking-wider">
+                      Musik Pengiring Undangan (1 Slot)
+                    </label>
+                  </div>
+                  <span className="text-[10px] text-stone-500 font-medium">Bisa diganti kapan saja di Portal</span>
+                </div>
+
+                {/* 2 Pilihan Sumber Musik: Upload Musik Kustom Sendiri vs Katalog */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Opsi 1: Upload Musik Kustom Sendiri */}
+                  <div
+                    onClick={() => setMusicChoice('custom')}
+                    className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                      musicChoice === 'custom'
+                        ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
+                        : 'border-stone-200 hover:border-stone-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-[#2C2E28]">1. Upload Musik Kustom Sendiri</span>
+                      {musicChoice === 'custom' && (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          Aktif
+                        </span>
+                      )}
                     </div>
+                    <p className="text-[11px] text-stone-600 leading-relaxed">
+                      Unggah file lagu romantis pilihan Anda (.mp3 / .wav / .m4a). Maksimal 1 file.
+                    </p>
+                  </div>
+
+                  {/* Opsi 2: Pilih dari Katalog Resmi Sekarsiti */}
+                  <div
+                    onClick={() => setMusicChoice('catalog')}
+                    className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                      musicChoice === 'catalog'
+                        ? 'border-[#414A35] bg-[#FAF8F3] shadow-xs'
+                        : 'border-stone-200 hover:border-stone-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-[#2C2E28]">2. Pilih dari Katalog Sekarsiti</span>
+                      {musicChoice === 'catalog' && (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          Aktif
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-stone-600 leading-relaxed">
+                      Pilihan instrumen piano &amp; biola romantis bebas royalti siap pakai.
+                    </p>
+                  </div>
+                </div>
+
+                {/* AREA TAMPILAN SESUAI SUMBER MUSIK */}
+                {musicChoice === 'custom' ? (
+                  <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 space-y-3">
+                    <span className="text-xs font-semibold text-stone-800 block">
+                      Slot File Musik Kustom (1 File Audio):
+                    </span>
+
+                    {!customAudioUrl ? (
+                      <div className="border-2 border-dashed border-stone-300 hover:border-[#414A35] rounded-xl p-5 text-center bg-white transition-colors relative">
+                        <input
+                          type="file"
+                          accept="audio/*,.mp3,.wav,.m4a"
+                          onChange={handleCustomAudioUpload}
+                          disabled={isUploadingAudio}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                        />
+                        <div className="space-y-1.5 pointer-events-none">
+                          <Music className="w-6 h-6 text-[#414A35] mx-auto opacity-70" />
+                          <p className="text-xs font-semibold text-stone-800">
+                            {isUploadingAudio ? 'Mengunggah file audio ke cloud...' : 'Klik untuk Pilih File Musik (.mp3, .wav, .m4a)'}
+                          </p>
+                          <p className="text-[10px] text-stone-500">
+                            Maksimal 10 MB &middot; Otomatis diputar lembut saat undangan dibuka
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-white border border-[#414A35] rounded-xl flex items-center justify-between gap-3 shadow-2xs">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <button
+                            type="button"
+                            onClick={handleTogglePlayCustomAudio}
+                            className="p-2 rounded-full bg-[#414A35] text-white hover:bg-[#343B2A] transition-colors cursor-pointer shrink-0"
+                            title={isPlayingCustomAudio ? 'Jeda preview' : 'Putar preview'}
+                          >
+                            {isPlayingCustomAudio ? <Pause className="w-4 h-4 text-[#C5A880]" /> : <Play className="w-4 h-4" />}
+                          </button>
+                          <div className="truncate">
+                            <p className="text-xs font-bold text-stone-900 truncate">
+                              {customAudioTitle || 'File Musik Kustom Anda'}
+                            </p>
+                            <span className="text-[10px] text-emerald-700 font-medium">✓ Terunggah &amp; Siap Diputar</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={handleRemoveCustomAudio}
+                            className="p-1.5 text-stone-400 hover:text-red-600 transition-colors cursor-pointer"
+                            title="Hapus / Ganti Musik"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {audioUploadError && (
+                      <p className="text-xs text-red-600 font-medium">⚠️ {audioUploadError}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+                    <span className="text-xs font-semibold text-stone-800 block">
+                      Pilih dari Katalog Resmi:
+                    </span>
 
                     {isLoadingCatalog ? (
-                      <div className="p-4 text-center text-xs text-stone-500 flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin text-[#C5A880]" />
-                        <span>Memuat pustaka musik...</span>
-                      </div>
-                    ) : catalogTracks.length === 0 ? (
-                      <div className="p-3 text-stone-400 text-xs text-center border border-dashed rounded-lg">
-                        Belum ada koleksi katalog. Musik bawaan tema akan otomatis digunakan.
+                      <div className="py-4 text-center text-xs text-stone-500 flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-[#414A35]" />
+                        <span>Memuat katalog musik Sekarsiti...</span>
                       </div>
                     ) : (
                       <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
@@ -1353,17 +1569,6 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                     )}
                   </div>
                 )}
-
-                {/* Info Card Musik Kustom di Portal */}
-                <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs text-amber-900 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-[11px]">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                    <span>Ingin Memakai Lagu Sendiri?</span>
-                  </div>
-                  <p className="text-[11px] text-amber-800/90 leading-relaxed">
-                    Untuk memastikan proses pemesanan awal berjalan cepat &amp; lancar tanpa kendala jaringan, silakan pilih musik bawaan atau katalog di atas terlebih dahulu. Nanti setelah draf undangan siap, Anda dapat <strong>mengunggah file lagu Anda sendiri (.mp3)</strong> secara bebas di <strong>Portal Mempelai</strong>.
-                  </p>
-                </div>
               </div>
 
               <div>
@@ -1374,77 +1579,35 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Contoh: Tolong foto sampul gunakan yang berlatar senja, dresscode warna sage green..."
+                  placeholder="Contoh: Dresscode warna sage green, mohon sertakan petunjuk parkir..."
                   className="w-full text-xs p-2.5 rounded-lg border border-[#EBE6DD] bg-white resize-none"
                 />
               </div>
             </div>
 
-            {/* Bottom Actions */}
+            {/* Bottom Actions: LIHAT PRATINJAU UNDANGAN */}
             <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-[#F2EFE8]">
               <div>
-                <span className="text-xs text-stone-500 block">Total Investasi:</span>
+                <span className="text-xs text-stone-500 block">Total Investasi Seri Standar:</span>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-lg font-bold text-[#414A35]">
+                  <span className="text-xl font-bold text-[#414A35]">
                     {formattedPrice}
                   </span>
                   <span className="text-[11px] text-stone-500 font-medium">
-                    ({isStandardTemplate || packageTier === 'standar' ? 'Paket Seri Standar Instan' : (packageTier === 'essential' ? 'Seri Esensial' : 'Seri Signature')} &middot; {designMode === 'typography_pure' ? 'Mode Tipografi' : 'Dengan Foto'})
+                    (Paket Standar Instan &middot; {designMode === 'typography_pure' ? 'Mode Tipografi' : 'Dengan Foto'})
                   </span>
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                {isMidtransConfigured() ? (
-                  <>
-                    <button
-                      type="button"
-                      disabled={isSubmitting || isUploadingFiles || isProcessingPayment}
-                      onClick={() => handleProcessOrder(false)}
-                      className="inline-flex items-center justify-center gap-2 py-2.5 px-5 border border-stone-300 hover:bg-stone-100 disabled:opacity-50 text-stone-700 rounded-full text-xs font-semibold transition-all cursor-pointer shadow-2xs"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5 text-stone-500" />
-                      <span>Simpan Draf (Bantuan WA)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={isSubmitting || isUploadingFiles || isProcessingPayment}
-                      onClick={() => handleProcessOrder(true)}
-                      className="inline-flex items-center justify-center gap-2 py-3 px-7 bg-[#414A35] hover:bg-[#343B2A] disabled:opacity-50 text-[#F7F5EF] rounded-full text-sm font-semibold transition-all cursor-pointer shadow-md active:scale-95"
-                    >
-                      {isProcessingPayment || isSubmitting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Menyiapkan Pembayaran...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Zap className="w-4 h-4 text-[#C5A880]" />
-                          <span>Bayar Otomatis &amp; Terbitkan ({formattedPrice})</span>
-                        </>
-                      )}
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="submit"
-                    disabled={isSubmitting || isUploadingFiles}
-                    className="inline-flex items-center justify-center gap-2 py-3 px-8 bg-[#414A35] hover:bg-[#343B2A] disabled:opacity-50 text-[#F7F5EF] rounded-full text-sm font-semibold transition-all cursor-pointer shadow-md active:scale-95"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Menyimpan Draf Pesanan...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        <span>Kirim Data Pesanan &amp; Konfirmasi WA</span>
-                      </>
-                    )}
-                  </button>
-                )}
+                <button
+                  type="submit"
+                  disabled={isUploadingFiles || isUploadingAudio}
+                  className="inline-flex items-center justify-center gap-2 py-3.5 px-8 bg-[#414A35] hover:bg-[#343B2A] disabled:opacity-50 text-[#F7F5EF] rounded-full text-sm font-bold transition-all cursor-pointer shadow-lg active:scale-95"
+                >
+                  <Eye className="w-4 h-4 text-[#C5A880]" />
+                  <span>Lihat Pratinjau Undangan (Live Preview) &rarr;</span>
+                </button>
               </div>
             </div>
           </form>
@@ -1458,7 +1621,7 @@ Mohon info tindak lanjut dan peninjauannya ya. Terima kasih! 🙏`;
               className="inline-flex items-center gap-2 text-xs font-semibold text-[#414A35] hover:text-[#2C2E28] hover:underline"
             >
               <MessageCircle className="w-4 h-4 text-emerald-600" />
-              <span>Butuh bantuan atau ingin konsultasi via WhatsApp terlebih dahulu? Klik di sini</span>
+              <span>Butuh bantuan atau ingin konsultasi via WhatsApp? Klik di sini</span>
             </a>
           </div>
         </div>

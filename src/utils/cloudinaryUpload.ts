@@ -303,3 +303,60 @@ export function getOptimizedImageUrl(url: string, width = 1200, quality = 'auto'
 
   return url;
 }
+
+/**
+ * Mengekstrak public_id dan resource_type dari URL Cloudinary
+ */
+export function extractCloudinaryPublicId(url: string): { publicId: string; resourceType: 'image' | 'video' | 'raw' } | null {
+  if (!url || typeof url !== 'string' || !url.includes('res.cloudinary.com')) {
+    return null;
+  }
+  try {
+    const isVideo = isVideoUrl(url) || /\.(mp3|wav|m4a|aac|ogg|webm|mp4)$/i.test(url);
+    const resourceType: 'image' | 'video' | 'raw' = isVideo ? 'video' : 'image';
+
+    const uploadIndex = url.indexOf('/upload/');
+    if (uploadIndex === -1) return null;
+
+    const pathAfterUpload = url.substring(uploadIndex + 8);
+    const parts = pathAfterUpload.split('/');
+    const versionIndex = parts.findIndex((p) => /^v\d+$/.test(p));
+
+    let restParts = parts;
+    if (versionIndex !== -1) {
+      restParts = parts.slice(versionIndex + 1);
+    } else if (parts.length > 1 && parts[0].includes(',')) {
+      restParts = parts.slice(1);
+    }
+
+    const fileWithExt = restParts.join('/');
+    const lastDotIndex = fileWithExt.lastIndexOf('.');
+    const publicId = lastDotIndex !== -1 ? fileWithExt.substring(0, lastDotIndex) : fileWithExt;
+
+    return publicId ? { publicId, resourceType } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Menghapus aset dari Cloudinary melalui backend edge function
+ */
+export async function deleteFromCloudinary(url: string): Promise<boolean> {
+  const extracted = extractCloudinaryPublicId(url);
+  if (!extracted) return false;
+
+  try {
+    const response = await fetch('/api/cloudinary/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(extracted),
+    });
+    const data = await response.json().catch(() => ({}));
+    return Boolean(data.success);
+  } catch (err) {
+    console.warn('Gagal menghapus aset Cloudinary via API:', err);
+    return false;
+  }
+}
+

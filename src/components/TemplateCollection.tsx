@@ -475,7 +475,7 @@ export const TemplateCollection: React.FC<TemplateCollectionProps> = ({
                           className="inline-flex items-center gap-1.5 text-[12px] font-sans font-semibold text-[#FAF9F6] bg-[#181816] hover:bg-[#C6A679] py-1.5 px-3.5 rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap shadow-sm"
                         >
                           <MessageCircle className="w-3.5 h-3.5" />
-                          Pesan
+                          Konsultasi Desain (WA)
                         </button>
                       </div>
 
